@@ -165,7 +165,7 @@ cd web && npx playwright test
 ## Project Structure (top-level)
 
 ```
-sundayalbum-claude/
+sundayalbum/
 ├── CLAUDE.md            # This file
 ├── pyproject.toml
 ├── requirements.txt

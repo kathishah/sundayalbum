@@ -7,7 +7,7 @@ struct CLIOutputParserTests {
     // MARK: - jobStarted
 
     @Test func parsesProcessingLine() {
-        let line = "14:23:01 - src.pipeline - INFO - Processing: /Users/dev/dev/sundayalbum-claude/test-images/IMG_cave_normal.HEIC"
+        let line = "14:23:01 - src.pipeline - INFO - Processing: /Users/dev/dev/sundayalbum/test-images/IMG_cave_normal.HEIC"
         #expect(CLIOutputParser.parse(line: line) == .jobStarted)
     }
 

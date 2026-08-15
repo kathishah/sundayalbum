@@ -64,7 +64,7 @@ python -m src.cli process test-images/IMG_cave_prores.DNG --output ./output/ --d
 ## Project Structure
 
 ```
-sundayalbum-claude/
+sundayalbum/
 ├── src/                        # Source code
 │   ├── preprocessing/          # Image loading and normalization
 │   ├── page_detection/         # (Phase 2)

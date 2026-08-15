@@ -246,7 +246,7 @@
 			isa = PBXGroup;
 			children = (
 				0208DE45F0B6599534563701 /* SundayAlbum */,
-				941DFB633431766878D01FBB /* sundayalbum-claude */,
+				941DFB633431766878D01FBB /* sundayalbum */,
 				5649BB83E2F3F747EF5C7004 /* SundayAlbumTests */,
 				C25A6D7545F937F83FC1C6B5 /* SundayAlbumUITests */,
 				95703CC6B661BE9B45B10495 /* Frameworks */,
@@ -254,14 +254,14 @@
 			);
 			sourceTree = "<group>";
 		};
-		941DFB633431766878D01FBB /* sundayalbum-claude */ = {
+		941DFB633431766878D01FBB /* sundayalbum */ = {
 			isa = PBXGroup;
 			children = (
 				A5F35C286EC1F00606976D31 /* requirements-runtime.txt */,
 				C679D50EC49A24C5473628C8 /* src */,
 				533A452982EB9402F84C4095 /* scripts */,
 			);
-			name = "sundayalbum-claude";
+			name = "sundayalbum";
 			path = ..;
 			sourceTree = "<group>";
 		};

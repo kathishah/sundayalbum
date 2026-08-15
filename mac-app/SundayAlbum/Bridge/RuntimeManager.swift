@@ -77,7 +77,7 @@ final class RuntimeManager {
             }
         }
         // Explicit fallback for the dev machine
-        let fallback = URL(fileURLWithPath: "/Users/dev/dev/sundayalbum-claude")
+        let fallback = URL(fileURLWithPath: "/Users/dev/dev/sundayalbum")
         if FileManager.default.fileExists(atPath: fallback.appendingPathComponent(".venv").path) {
             return fallback
         }
