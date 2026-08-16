@@ -40,3 +40,5 @@ Development log for Sunday Album. Entries fall into two categories:
 | 2026-04-12 | [photo-boundary-override](2026-04-12-photo-boundary-override.md) | Plan: user-editable photo detection regions + reprocess from photo_split; fixes photo_split re-detection bug |
 | 2026-04-12 | [reprocess-ui-gaps](2026-04-12-reprocess-ui-gaps.md) | Plan: fill reprocess gaps — 3 unwired macOS step views, web saturation_boost naming mismatch, new CLI flags |
 | 2026-04-13 | [step-function-routing](2026-04-13-step-function-routing.md) | Plan: move skip routing into Step Functions Choice states; handlers become position-agnostic |
+| 2026-08-15 | [monorepo-layout](2026-08-15-monorepo-layout.md) | Spec: rearrange repo into apps/ packages/ services/; keep `src` import names |
+| 2026-08-15 | [monorepo-implementation-plan](2026-08-15-monorepo-implementation-plan.md) | Plan: 5 commits (git-mv → pyproject/conftest → Docker/CDK/CI → macOS PYTHONPATH → docs) |

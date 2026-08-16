@@ -14,6 +14,7 @@ dist/
 build/
 tmp/
 .DS_Store
+default.profraw
 
 test-images-2/
 test-images-3/
