@@ -20,6 +20,10 @@ on:
           - dev
           - prod
 
+permissions:
+  id-token: write
+  contents: read
+
 env:
   AWS_REGION: us-west-2
   ACCOUNT_ID: "680073251743"
