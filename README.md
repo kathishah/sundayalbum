@@ -2,7 +2,7 @@
 
 Free tool to digitize physical photo album pages into clean individual digital photos.
 
-This is the **Phase 1** implementation with project scaffold, image loading (HEIC + DNG), and basic CLI.
+Full pipeline with HEIC/DNG loading, AI-assisted orientation, glare removal, color restoration, and a SwiftUI macOS app.
 
 ## Setup
 
@@ -120,27 +120,9 @@ ruff check packages/pipeline/src/
 ruff format packages/pipeline/src/
 ```
 
-## Phase 1 Complete ✓
-
-- [x] Project scaffold with pyproject.toml and requirements.txt
-- [x] Full directory structure with modules
-- [x] HEIC image loading with pillow-heif
-- [x] DNG/RAW image loading with rawpy
-- [x] EXIF orientation handling
-- [x] Image normalization and thumbnails
-- [x] CLI with Click framework (process, check, compare commands)
-- [x] Pipeline orchestrator with PipelineConfig
-- [x] Debug output utilities
-- [x] Comprehensive tests for image loading
-
-## Next Steps
-
-See `docs/PHASED_PLAN_Claude_Code.md` for Phase 2 and beyond.
-
 ## Documentation
 
 - `CLAUDE.md` - Main project instructions and technical specifications
-- `docs/PHASED_PLAN_Claude_Code.md` - Phased implementation plan
-- `docs/PRD_Album_Digitizer.md` - Product requirements
-- `docs/Implementation_Album_Digitizer.md` - Full implementation guide
-- `docs/UI_Design_Album_Digitizer.md` - UI design (future phases)
+- `docs/SYSTEM_ARCHITECTURE.md` - System architecture and component overview
+- `docs/CONTRIBUTING.md` - Development setup and testing guide
+- `docs/PIPELINE_STEPS.md` - Per-step implementation reference

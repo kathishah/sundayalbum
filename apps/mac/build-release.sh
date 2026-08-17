@@ -2,7 +2,7 @@
 # build-release.sh — Build a distributable Sunday Album .dmg (and .zip fallback).
 #
 # Usage:
-#   cd mac-app && ./build-release.sh
+#   cd apps/mac && ./build-release.sh
 #
 # Output:
 #   ~/Desktop/SundayAlbum-<version>-beta1.dmg   ← primary artifact (drag-to-install)

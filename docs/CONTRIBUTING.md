@@ -30,7 +30,7 @@ brew install opencv libheif libraw imagemagick
 
 # 2. Create Python environment
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r packages/pipeline/requirements.txt
 
 # 3. Add API keys (Anthropic + OpenAI — both optional, see PIPELINE_STEPS.md for fallbacks)
 echo '{ "ANTHROPIC_API_KEY": "sk-ant-...", "OPENAI_API_KEY": "sk-..." }' > secrets.json
@@ -217,7 +217,7 @@ no real S3 or DynamoDB needed. The pre-commit hook runs these on every commit.
 | `tests/test_glare.py` | `pytest tests/test_glare.py -v` | Glare detection (OpenCV) | Yes | No |
 | `tests/test_photo_detection.py` | `pytest tests/test_photo_detection.py -v` | Photo boundary detection | Yes | No |
 | `tests/test_phase6_integration.py` | `pytest tests/test_phase6_integration.py -v` | End-to-end photo split | Yes | No |
-| Playwright E2E | `cd web && npx playwright test` | Full web UI on dev.sundayalbum.com | No | Yes (dev env) |
+| Playwright E2E | `cd apps/web && npx playwright test` | Full web UI on dev.sundayalbum.com | No | Yes (dev env) |
 
 **Run the fast suite before committing** (the pre-commit hook does this automatically):
 ```bash

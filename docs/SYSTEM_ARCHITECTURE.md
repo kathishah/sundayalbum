@@ -132,8 +132,9 @@ For per-step implementation details, tunable params, and debug output: see `docs
 
 ### Resuming from a step (reprocessing)
 
-The web app supports `POST /jobs/{jobId}/reprocess?from_step={step}`. Step Functions evaluates
-`start_from` in the event and skips earlier steps using `should_skip()` in `handlers/common.py`.
+The web app supports `POST /jobs/{jobId}/reprocess?from_step={step}`. Step Functions uses
+Choice states to evaluate `start_from` in the event and route to `Pass` states for skipped steps,
+avoiding unnecessary Lambda invocations.
 
 Per-photo steps can be re-run for a single photo via `reprocess_photo_index`.
 

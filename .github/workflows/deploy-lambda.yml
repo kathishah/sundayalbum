@@ -81,7 +81,7 @@ jobs:
             echo "Updating ${FN_NAME}..."
             aws lambda update-function-code \
               --function-name "${FN_NAME}" \
-              --zip-file fileb://../../api.zip \
+              --zip-file fileb://api.zip \
               --no-cli-pager
             aws lambda wait function-updated --function-name "${FN_NAME}"
             echo "${FN_NAME} ✓"

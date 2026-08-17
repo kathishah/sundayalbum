@@ -386,7 +386,7 @@ No sigmoid contrast — contrast is handled by Stage 3.
 
 ## 10. finalize
 
-**Handler:** `sa-pipeline-finalize` | **RAM:** 1024 MB | **Source:** `handlers/finalize.py`
+**Handler:** `sa-pipeline-finalize` | **RAM:** 1024 MB | **Source:** `services/handlers/finalize.py`
 
 ### What it does
 Web/Lambda path only. Collects the `14_photo_NN_enhanced.jpg` output keys produced by
