@@ -52,6 +52,35 @@ jobs:
             echo "stage=dev" >> $GITHUB_OUTPUT
           fi
 
+      - name: Debug OIDC token claims
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          OIDC_TOKEN=$(curl -s -H "Authorization: bearer $GITHUB_TOKEN" \
+            -H "Accept: application/json; api-version=2.0" \
+            "https://actions.githubusercontent.com/_apis/userinfo?audience=sts.amazonaws.com" 2>/dev/null || true)
+          echo "OIDC audience response: $OIDC_TOKEN"
+          # Try the OIDC endpoint directly
+          OIDC_URL="https://token.actions.githubusercontent.com"
+          echo "Requesting OIDC token from $OIDC_URL"
+          PAYLOAD=$(echo -n '{"aud":"sts.amazonaws.com"}' | base64 -w0)
+          TOKEN_RESPONSE=$(curl -s -X POST "$OIDC_URL" \
+            -H "Authorization: bearer $GITHUB_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"aud\":\"sts.amazonaws.com\"}" 2>/dev/null || true)
+          if [ -n "$TOKEN_RESPONSE" ]; then
+            TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.value // empty' 2>/dev/null)
+            if [ -n "$TOKEN" ]; then
+              PAYLOAD_PART=$(echo "$TOKEN" | cut -d'.' -f2)
+              echo "OIDC token payload (decoded):"
+              echo "$PAYLOAD_PART" | base64 -d 2>/dev/null | jq . 2>/dev/null || echo "$PAYLOAD_PART"
+            else
+              echo "No token value in response: $TOKEN_RESPONSE"
+            fi
+          else
+            echo "No response from OIDC endpoint"
+          fi
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
