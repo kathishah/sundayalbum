@@ -25,7 +25,7 @@ Steps read input from `StorageBackend` and write output back to it — no side e
 
 ## 1. load
 
-**Handler:** `sa-pipeline-load` | **RAM:** 3008 MB | **Source:** `src/steps/load.py`
+**Handler:** `sa-pipeline-load` | **RAM:** 3008 MB | **Source:** `packages/pipeline/src/steps/load.py`
 
 ### What it does
 Reads the uploaded image from storage, decodes it based on format, applies EXIF orientation,
@@ -54,7 +54,7 @@ HEIC is recommended for iteration speed.
 
 ## 2. normalize
 
-**Handler:** `sa-pipeline-normalize` | **Source:** `src/steps/normalize.py`
+**Handler:** `sa-pipeline-normalize` | **Source:** `packages/pipeline/src/steps/normalize.py`
 
 ### What it does
 Resizes the loaded image to a working resolution (capped at 4000px on the longest edge,
@@ -74,7 +74,7 @@ Uses `INTER_AREA` for downscaling (best quality for shrinking).
 
 ## 3. page_detect
 
-**Handler:** `sa-pipeline-page-detect` | **Source:** `src/steps/page_detect.py` → `src/page_detection/detector.py`
+**Handler:** `sa-pipeline-page-detect` | **Source:** `packages/pipeline/src/steps/page_detect.py` → `packages/pipeline/src/page_detection/detector.py`
 
 ### What it does
 Finds the boundary of the album page (or individual print) within the image frame.
@@ -102,7 +102,7 @@ and returns the full image bounds — the perspective step becomes a no-op.
 
 ## 4. perspective
 
-**Handler:** `sa-pipeline-perspective` | **Source:** `src/steps/perspective.py` → `src/page_detection/perspective.py`
+**Handler:** `sa-pipeline-perspective` | **Source:** `packages/pipeline/src/steps/perspective.py` → `packages/pipeline/src/page_detection/perspective.py`
 
 ### What it does
 Applies a homographic (perspective) transform using the corners from `page_detect`, producing
@@ -126,7 +126,7 @@ Uses `cv2.warpPerspective` with `INTER_CUBIC` for quality.
 ## 5. photo_detect + photo_split
 
 **Handlers:** `sa-pipeline-photo-detect`, `sa-pipeline-photo-split`  
-**Source:** `src/steps/photo_detect.py`, `src/steps/photo_split.py` → `src/photo_detection/`
+**Source:** `packages/pipeline/src/steps/photo_detect.py`, `packages/pipeline/src/steps/photo_split.py` → `packages/pipeline/src/photo_detection/`
 
 ### What it does
 `photo_detect`: Finds individual photo boundaries within the (now fronto-parallel) album page.  
@@ -207,7 +207,7 @@ overlay from scratch.
 
 ## 6. ai_orient
 
-**Handler:** `sa-pipeline-ai-orient` | **Source:** `src/steps/ai_orient.py` → `src/ai/claude_vision.py`
+**Handler:** `sa-pipeline-ai-orient` | **Source:** `packages/pipeline/src/steps/ai_orient.py` → `packages/pipeline/src/ai/claude_vision.py`
 
 ### What it does
 Detects gross orientation errors (multiples of 90°) in each extracted photo — prints are
@@ -242,7 +242,7 @@ new top") to help the model reason about direction rather than guessing.
 
 ## 7. glare_remove
 
-**Handler:** `sa-pipeline-glare-remove` | **Timeout:** 300s | **Source:** `src/steps/glare_remove.py`
+**Handler:** `sa-pipeline-glare-remove` | **Timeout:** 300s | **Source:** `packages/pipeline/src/steps/glare_remove.py`
 
 ### What it does
 Removes glare from each extracted photo. Two paths:
@@ -293,7 +293,7 @@ OpenAI handles both well. OpenCV fallback works adequately only on sleeve glare.
 
 ## 8. geometry
 
-**Handler:** `sa-pipeline-geometry` | **Source:** `src/steps/geometry.py` → `src/geometry/`
+**Handler:** `sa-pipeline-geometry` | **Source:** `packages/pipeline/src/steps/geometry.py` → `packages/pipeline/src/geometry/`
 
 ### What it does
 Per-photo geometry corrections. Currently acts as a **near pass-through** — both active
@@ -301,17 +301,17 @@ sub-steps are disabled due to false positive rates on real photos.
 
 ### Sub-steps and current status
 
-**Keystone correction** (`src/geometry/keystone.py`):  
+**Keystone correction** (`packages/pipeline/src/geometry/keystone.py`):  
 Homographic correction for per-photo perspective distortion. Available but typically not
 triggered at this stage since `photo_split` already applies a homography during extraction.
 
-**Small-angle rotation** (`src/geometry/rotation.py`) — **DISABLED:**  
+**Small-angle rotation** (`packages/pipeline/src/geometry/rotation.py`) — **DISABLED:**  
 `_detect_small_rotation()` uses Hough line transform to find dominant lines and computes
 their median angle. Fires on image content (boat rigging, rock edges, road lines) rather
 than the photo frame. Returns `0.0` unconditionally. Intended replacement: detect the white
 border of the physical print and use its angle.
 
-**Dewarp** (`src/geometry/dewarp.py`) — **DISABLED:**  
+**Dewarp** (`packages/pipeline/src/geometry/dewarp.py`) — **DISABLED:**  
 `correct_warp()` detects barrel/pincushion distortion via Hough lines. Two problems:
 (1) iPhone corrects lens distortion in-camera before writing HEIC, so there's nothing to
 correct. (2) Hough detector fires on curved content (rock walls, roads).
@@ -331,20 +331,20 @@ Controlled by `use_dewarp: False` in config.
 
 ## 9. color_restore
 
-**Handler:** `sa-pipeline-color-restore` | **Source:** `src/steps/color_restore.py` → `src/color/`
+**Handler:** `sa-pipeline-color-restore` | **Source:** `packages/pipeline/src/steps/color_restore.py` → `packages/pipeline/src/color/`
 
 ### What it does
 Four-stage color restoration chain applied to each photo:
 
-**Stage 1 — White balance** (`src/color/white_balance.py`):  
+**Stage 1 — White balance** (`packages/pipeline/src/color/white_balance.py`):  
 Gray-world method: adjusts per-channel means so the average color is neutral. Skipped when
 color-cast score is below 0.08 to protect intentionally warm/cool scenes.
 
-**Stage 2 — Deyellowing** (`src/color/deyellow.py`):  
+**Stage 2 — Deyellowing** (`packages/pipeline/src/color/deyellow.py`):  
 Converts to LAB color space. Analyzes the b* channel (blue–yellow axis) and applies an
 adaptive shift toward neutral. Conservative: does not remove intentional warm tones (sunsets).
 
-**Stage 3 — Fade restoration** (`src/color/restore.py`):  
+**Stage 3 — Fade restoration** (`packages/pipeline/src/color/restore.py`):  
 3-stage adaptive algorithm (replaced CLAHE in April 2026 — CLAHE caused dimming and grain):
 
 - *White-point stretch*: Scales so the 99th-percentile luminance reaches 0.96.
@@ -361,7 +361,7 @@ adaptive shift toward neutral. Conservative: does not remove intentional warm to
 
 - *Ceiling guard*: If mean luminance exceeds 0.75 after the above, scales back down.
 
-**Stage 4 — Sharpening** (`src/color/enhance.py`):  
+**Stage 4 — Sharpening** (`packages/pipeline/src/color/enhance.py`):  
 Unsharp mask on the L channel only (luminance sharpening, no color fringing).
 No sigmoid contrast — contrast is handled by Stage 3.
 

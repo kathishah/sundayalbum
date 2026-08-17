@@ -24,7 +24,7 @@ source .venv/bin/activate  # On macOS/Linux
 ### 3. Install Python Dependencies
 
 ```bash
-pip install -r requirements.txt
+pip install -r packages/pipeline/requirements.txt
 # or for development
 pip install -e ".[dev]"
 ```
@@ -65,23 +65,31 @@ python -m src.cli process test-images/IMG_cave_prores.DNG --output ./output/ --d
 
 ```
 sundayalbum/
-├── src/                        # Source code
-│   ├── preprocessing/          # Image loading and normalization
-│   ├── page_detection/         # (Phase 2)
-│   ├── glare/                  # (Phase 3-5)
-│   ├── photo_detection/        # (Phase 6)
-│   ├── geometry/               # (Phase 7)
-│   ├── color/                  # (Phase 8)
-│   ├── ai/                     # (Phase 9)
-│   ├── utils/                  # Debug and utilities
-│   ├── pipeline.py             # Main pipeline orchestrator
-│   └── cli.py                  # CLI interface
-├── tests/                      # Tests
-├── test-images/                # Test images (gitignored)
-├── output/                     # Processed output (gitignored)
-├── debug/                      # Debug visualizations (gitignored)
-└── docs/                       # Documentation
-
+├── apps/
+│   ├── web/             # Next.js web frontend + marketing site
+│   └── mac/             # SwiftUI macOS app
+├── packages/
+│   └── pipeline/        # Shared image-processing engine
+│       └── src/         # Python pipeline source
+│           ├── preprocessing/   # Image loading and normalization
+│           ├── page_detection/  # (Phase 2)
+│           ├── glare/           # (Phase 3-5)
+│           ├── photo_detection/ # (Phase 6)
+│           ├── geometry/        # (Phase 7)
+│           ├── color/           # (Phase 8)
+│           ├── ai/              # (Phase 9)
+│           ├── utils/           # Debug and utilities
+│           ├── pipeline.py      # Main pipeline orchestrator
+│           └── cli.py           # CLI interface
+├── services/
+│   ├── api/             # Lambda handlers — auth, jobs, settings, websocket
+│   ├── handlers/        # Lambda handlers — pipeline steps
+│   └── infra/           # AWS CDK stack
+├── tests/               # Tests
+├── test-images/         # Test images (gitignored)
+├── output/              # Processed output (gitignored)
+├── debug/               # Debug visualizations (gitignored)
+└── docs/                # Documentation
 ```
 
 ## Testing
@@ -103,13 +111,13 @@ This project follows strict typing and code quality standards:
 
 ```bash
 # Type checking
-mypy src/
+mypy packages/pipeline/src/
 
 # Linting
-ruff check src/
+ruff check packages/pipeline/src/
 
 # Auto-format
-ruff format src/
+ruff format packages/pipeline/src/
 ```
 
 ## Phase 1 Complete ✓

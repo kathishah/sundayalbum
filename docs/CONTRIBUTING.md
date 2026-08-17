@@ -63,7 +63,7 @@ CLI (local)           macOS app             Web app (AWS)
 python -m src.cli  →  SwiftUI → CLI    →    Next.js → Lambda → Step Functions
         │                  │                               │
         └──────────────────┴───────────────────────────────┘
-                    same src/steps/*.py code
+                    same packages/pipeline/src/steps/*.py code
                     same PipelineConfig params
                     different StorageBackend (local vs S3)
 ```
@@ -107,21 +107,21 @@ regressions: `python -m src.cli process test-images/ --output ./output/ --batch 
 
 | I want to… | Start here |
 |------------|------------|
-| Fix photo detection (wrong count, bad split) | `src/photo_detection/detector.py` + test images above |
+| Fix photo detection (wrong count, bad split) | `packages/pipeline/src/photo_detection/detector.py` + test images above |
 | Manually override detected photo boundaries | Web/macOS: Photo Split step → drag any corner handle freely (non-rectangular quads supported) → "Confirm & Re-run"; CLI: `--forced-detections` JSON with `bbox` and/or `corners` — see `docs/PIPELINE_STEPS.md` → Step 5 |
-| Fix page detection (background in output) | `src/page_detection/detector.py` + `src/page_detection/perspective.py` |
-| Tune color / fade restoration | `src/color/restore.py` — params in `docs/PIPELINE_STEPS.md` → Step 9 |
-| Tune white balance or deyellowing | `src/color/white_balance.py`, `src/color/deyellow.py` |
-| Fix glare removal (OpenCV path) | `src/glare/` — `detector.py`, `remover_single.py` |
-| Change orientation correction | `src/steps/ai_orient.py` → `src/ai/claude_vision.py` |
+| Fix page detection (background in output) | `packages/pipeline/src/page_detection/detector.py` + `packages/pipeline/src/page_detection/perspective.py` |
+| Tune color / fade restoration | `packages/pipeline/src/color/restore.py` — params in `docs/PIPELINE_STEPS.md` → Step 9 |
+| Tune white balance or deyellowing | `packages/pipeline/src/color/white_balance.py`, `packages/pipeline/src/color/deyellow.py` |
+| Fix glare removal (OpenCV path) | `packages/pipeline/src/glare/` — `detector.py`, `remover_single.py` |
+| Change orientation correction | `packages/pipeline/src/steps/ai_orient.py` → `packages/pipeline/src/ai/claude_vision.py` |
 | Add or change a pipeline step | See [How to Add a Pipeline Step](#how-to-add-a-pipeline-step) below |
-| Fix a web API bug | `api/` + `tests/api/` |
-| Fix a Lambda handler bug | `handlers/` + `tests/handlers/` |
-| Change AWS infrastructure (CDK) | `infra/infra/sundayalbum_stack.py` |
-| Update the macOS app | `mac-app/SundayAlbum/` |
-| Edit a public marketing page | `web/src/app/(public)/` |
-| Edit the marketing nav or footer | `web/src/components/MarketingNav.tsx`, `MarketingFooter.tsx` |
-| Replace pipeline page demo images | Resize from `debug/` into `web/public/demo/pipeline/` (see `journal/2026-04-10-public-website.md`) |
+| Fix a web API bug | `services/api/` + `tests/api/` |
+| Fix a Lambda handler bug | `services/handlers/` + `tests/handlers/` |
+| Change AWS infrastructure (CDK) | `services/infra/infra/sundayalbum_stack.py` |
+| Update the macOS app | `apps/mac/SundayAlbum/` |
+| Edit a public marketing page | `apps/web/src/app/(public)/` |
+| Edit the marketing nav or footer | `apps/web/src/components/MarketingNav.tsx`, `MarketingFooter.tsx` |
+| Replace pipeline page demo images | Resize from `debug/` into `apps/web/public/demo/pipeline/` (see `journal/2026-04-10-public-website.md`) |
 | Understand a past algorithm decision | `journal/INDEX.md` → find the relevant entry |
 
 ---
@@ -130,7 +130,7 @@ regressions: `python -m src.cli process test-images/ --output ./output/ --batch 
 
 Adding a step involves **five files**. Follow the existing steps as templates.
 
-### 1. Create the step function — `src/steps/mystep.py`
+### 1. Create the step function — `packages/pipeline/src/steps/mystep.py`
 
 Every step is a pure function with this signature:
 
@@ -156,7 +156,7 @@ Rules:
 - Write at least one `debug/{stem}_NN_mystep.jpg` output when `config.debug` is set
 - Use `logging.debug/info/warning` — never `print()`
 
-### 2. Register it in the CLI — `src/pipeline.py`
+### 2. Register it in the CLI — `packages/pipeline/src/pipeline.py`
 
 Add an entry to the `PIPELINE_STEPS` list so it appears in `python -m src.cli status`:
 
@@ -172,17 +172,16 @@ Add an entry to the `PIPELINE_STEPS` list so it appears in `python -m src.cli st
 
 Wire the step into `run_pipeline()` in the same file.
 
-### 3. Create the Lambda handler — `handlers/mystep.py`
+### 3. Create the Lambda handler — `services/handlers/mystep.py`
 
 The handler wraps the step function for the Step Functions / Lambda execution context.
-Copy `handlers/normalize.py` as a starting point — it's the simplest handler.
+Copy `services/handlers/normalize.py` as a starting point — it's the simplest handler.
 Key responsibilities:
-- Call `should_skip()` at the top to support reprocessing from a later step
 - Call `update_step()` to write progress to DynamoDB (triggers WebSocket push)
 - Call `fail_job()` on exceptions
 - Return the updated event dict for the next Step Functions state
 
-### 4. Define the Lambda in CDK — `infra/infra/sundayalbum_stack.py`
+### 4. Define the Lambda in CDK — `services/infra/infra/sundayalbum_stack.py`
 
 Add a `pipeline_fn()` call alongside the others:
 
