@@ -97,7 +97,7 @@ final class RuntimeManager {
     }
 
     /// Working directory for `python -m src.cli …` invocations.
-    /// - Dev: project root (contains `src/` as a package on the Python path).
+    /// - Dev: project root (contains `test-images/`, `output/`, `secrets.json`, etc.).
     /// - Production: bundle `Contents/Resources/` (where `src/` was copied).
     var cliWorkingDirectory: URL {
         if let devRoot = Self.devProjectRoot {
@@ -106,10 +106,14 @@ final class RuntimeManager {
         return Bundle.main.resourceURL ?? URL(fileURLWithPath: NSTemporaryDirectory())
     }
 
-    /// Extra `PYTHONPATH` to inject in production so the bundled `src/` is importable.
-    /// Returns `nil` in dev (CWD already covers it).
+    /// Extra `PYTHONPATH` to inject so the `src/` package is importable.
+    /// - Dev: `{repo}/packages/pipeline` (src moved there in the monorepo refactor).
+    /// - Production: `Contents/Resources/` (where `src/` is copied into the bundle).
     var extraPythonPath: String? {
-        Self.isDevBuild ? nil : Bundle.main.resourceURL?.path
+        if let devRoot = Self.devProjectRoot {
+            return devRoot.appendingPathComponent("packages/pipeline").path
+        }
+        return Bundle.main.resourceURL?.path
     }
 
     // MARK: - Init
