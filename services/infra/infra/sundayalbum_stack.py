@@ -279,7 +279,7 @@ class SundayAlbumStack(Stack):
                 construct_id,
                 function_name=f"{fn_base}{suffix}",
                 code=lambda_.DockerImageCode.from_image_asset(
-                    "../",
+                    "../../",
                     cmd=[handler],
                     platform=ecr_assets.Platform.LINUX_ARM64,
                 ),

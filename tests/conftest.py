@@ -24,10 +24,11 @@ from moto import mock_aws
 
 _ROOT = Path(__file__).resolve().parent.parent
 for _p in [
-    str(_ROOT),                         # project root (handlers/, src/)
-    str(_ROOT / "api"),                 # api/ modules
-    str(_ROOT / "tests" / "api"),       # helpers.py
-    str(_ROOT / "tests" / "handlers"),  # handler_helpers.py
+    str(_ROOT / "packages" / "pipeline"),  # src
+    str(_ROOT / "services"),               # handlers
+    str(_ROOT / "services" / "api"),       # api modules (flat)
+    str(_ROOT / "tests" / "api"),          # helpers.py
+    str(_ROOT / "tests" / "handlers"),     # handler_helpers.py
 ]:
     if _p not in sys.path:
         sys.path.insert(0, _p)

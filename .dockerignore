@@ -18,13 +18,13 @@ uploads/
 models/
 
 # macOS app
-mac-app/
+apps/mac/
 
 # CDK infra (not needed in Lambda image)
-infra/
+services/infra/
 
-# Web frontend (Phase 3)
-web/
+# Web frontend
+apps/web/
 
 # Git
 .git/

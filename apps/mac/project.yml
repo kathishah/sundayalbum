@@ -54,9 +54,9 @@ targets:
       # requirements-runtime.txt — pip deps list read by setup-runtime.sh
       # src/               — Python package; PYTHONPATH is set to Contents/Resources/
       #                       in production so `python -m src.cli` resolves correctly
-      - path: ../scripts/setup-runtime.sh
-      - path: ../requirements-runtime.txt
-      - path: ../src
+      - path: ../../scripts/setup-runtime.sh
+      - path: ../../packages/pipeline/requirements-runtime.txt
+      - path: ../../packages/pipeline/src
         type: folder
     dependencies:
       - sdk: Photos.framework

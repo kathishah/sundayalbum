@@ -4,11 +4,10 @@ on:
   push:
     branches: [main, dev]
     paths:
-      - "api/**"
-      - "handlers/**"
-      - "src/**"
+      - "services/api/**"
+      - "services/handlers/**"
+      - "packages/pipeline/**"
       - "Dockerfile"
-      - "requirements-lambda.txt"
       - ".github/workflows/deploy-lambda.yml"
   workflow_dispatch:
     inputs:
@@ -70,9 +69,9 @@ jobs:
 
       - name: Zip API code
         run: |
-          cd api
-          zip -r ../api.zip .
-          echo "API zip: $(du -sh ../api.zip | cut -f1)"
+          cd services/api
+          zip -r ../../api.zip .
+          echo "API zip: $(du -sh ../../api.zip | cut -f1)"
 
       - name: Update API Lambda functions
         run: |

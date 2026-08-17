@@ -118,15 +118,15 @@ struct LibraryView: View {
 
     private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
         guard !providers.isEmpty else { return false }
-        Task { @MainActor in
-            var dropped: [URL] = []
-            for provider in providers {
-                if let url = await provider.loadFileURL() {
-                    dropped.append(url)
+        let state = appState
+        for provider in providers {
+            provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
+                guard let data = item as? Data,
+                      let url = URL(dataRepresentation: data, relativeTo: nil) else { return }
+                Task { @MainActor in
+                    state.addFiles(FileImporter.resolveURLs([url]))
                 }
             }
-            let resolved = FileImporter.resolveURLs(dropped)
-            appState.addFiles(resolved)
         }
         return true
     }

@@ -14,15 +14,16 @@ dist/
 build/
 tmp/
 .DS_Store
+default.profraw
 
 test-images-2/
 test-images-3/
 
 # macOS app build artifacts
-mac-app/.build/
-mac-app/SundayAlbum.xcodeproj/project.xcworkspace/
-mac-app/SundayAlbum.xcodeproj/xcuserdata/
+apps/mac/.build/
+apps/mac/SundayAlbum.xcodeproj/project.xcworkspace/
+apps/mac/SundayAlbum.xcodeproj/xcuserdata/
 
 # Next.js
-web/tsconfig.tsbuildinfo
-mac-app/SundayAlbum/BuildInfo.swift
+apps/web/tsconfig.tsbuildinfo
+apps/mac/SundayAlbum/BuildInfo.swift

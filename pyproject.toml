@@ -45,12 +45,17 @@ dev = [
 [project.scripts]
 sundayalbum = "src.cli:main"
 
-[tool.setuptools]
-packages = ["src"]
+[tool.setuptools.packages.find]
+where = ["packages/pipeline"]
 
 [tool.pytest.ini_options]
 addopts = "--import-mode=importlib"
 testpaths = ["tests"]
+pythonpath = [
+  "packages/pipeline",
+  "services",
+  "services/api",
+]
 
 [tool.ruff]
 line-length = 100

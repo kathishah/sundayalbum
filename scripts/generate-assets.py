@@ -3,9 +3,9 @@
 generate-assets.py — Generate Sunday Album app icon + DMG background.
 
 Outputs:
-  mac-app/SundayAlbum/Assets.xcassets/AppIcon.appiconset/   (all 9 icon sizes)
-  mac-app/assets/dmg-background@2x.png                      (1320x800 Retina DMG bg)
-  mac-app/assets/dmg-background.png                         (660x400 1x fallback)
+  apps/mac/SundayAlbum/Assets.xcassets/AppIcon.appiconset/   (all 9 icon sizes)
+  apps/mac/assets/dmg-background@2x.png                      (1320x800 Retina DMG bg)
+  apps/mac/assets/dmg-background.png                         (660x400 1x fallback)
 
 Run from repo root:
   source .venv/bin/activate
@@ -18,8 +18,8 @@ from PIL import Image, ImageDraw, ImageFilter
 
 # ── Repo paths ──────────────────────────────────────────────────────────────
 REPO = Path(__file__).parent.parent
-ICON_DIR = REPO / "mac-app/SundayAlbum/Assets.xcassets/AppIcon.appiconset"
-ASSETS_DIR = REPO / "mac-app/assets"
+ICON_DIR = REPO / "apps/mac/SundayAlbum/Assets.xcassets/AppIcon.appiconset"
+ASSETS_DIR = REPO / "apps/mac/assets"
 ICON_DIR.mkdir(parents=True, exist_ok=True)
 ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 
