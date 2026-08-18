@@ -3,12 +3,12 @@ name: Test API + Handlers
 on:
   push:
     paths:
-      - "api/**"
-      - "handlers/**"
+      - "services/api/**"
+      - "services/handlers/**"
       - "tests/api/**"
       - "tests/handlers/**"
-      - "src/storage/**"
-      - "src/steps/**"
+      - "packages/pipeline/src/storage/**"
+      - "packages/pipeline/src/steps/**"
 
 jobs:
   test:

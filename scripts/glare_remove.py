@@ -1,4 +1,4 @@
-#!/Users/dev/dev/sundayalbum-claude/.venv/bin/python3
+#!/Users/dev/dev/sundayalbum/.venv/bin/python3
 """
 glare_remove.py
 

@@ -45,7 +45,7 @@ brew install opencv libheif libraw imagemagick
 # Python environment
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r packages/pipeline/requirements.txt
 # or: pip install -e ".[dev]"
 
 # Verify
@@ -153,8 +153,8 @@ xcodebuild test \
   -destination 'platform=macOS' \
   -only-testing:SundayAlbumUITests
 
-# ── Web E2E (Playwright) — requires web/.auth/session.json ───────────────────────
-cd web && npx playwright test
+# ── Web E2E (Playwright) — requires apps/web/.auth/session.json ──────────────────
+cd apps/web && npx playwright test
 ```
 
 **Never use** `xcodebuild test -scheme SundayAlbum` **without a `-skip-testing` or
@@ -165,42 +165,50 @@ cd web && npx playwright test
 ## Project Structure (top-level)
 
 ```
-sundayalbum-claude/
+sundayalbum/
 ├── CLAUDE.md            # This file
 ├── pyproject.toml
-├── requirements.txt
 ├── secrets.json         # Gitignored — API keys
 ├── docs/                # Architecture, pipeline, archive
 ├── journal/             # Development log
-├── scripts/             # fetch-test-images.sh
+├── scripts/             # fetch-test-images.sh, sunday, setup-runtime.sh
 ├── test-images/         # Gitignored — 10 test images (5 HEIC + 5 DNG)
-├── src/                 # Python pipeline source
-│   ├── cli.py
-│   ├── pipeline.py
-│   ├── steps/           # Pure-function step implementations
-│   ├── preprocessing/
-│   ├── page_detection/
-│   ├── glare/
-│   ├── photo_detection/
-│   ├── geometry/
-│   ├── color/
-│   ├── ai/
-│   └── utils/
-├── api/                 # Lambda handlers — auth, jobs, settings, websocket
-├── handlers/            # Lambda handlers — pipeline steps
-├── infra/               # AWS CDK stack
-├── web/                 # Next.js web frontend
-├── mac-app/             # SwiftUI macOS app
-└── tests/               # pytest suite
+├── apps/
+│   ├── web/             # Next.js web frontend + marketing site
+│   └── mac/             # SwiftUI macOS app
+├── packages/
+│   └── pipeline/        # Shared image-processing engine
+│       ├── src/         # Python pipeline source (package name: `src`)
+│       │   ├── cli.py
+│       │   ├── pipeline.py
+│       │   ├── steps/   # Pure-function step implementations
+│       │   ├── preprocessing/
+│       │   ├── page_detection/
+│       │   ├── glare/
+│       │   ├── photo_detection/
+│       │   ├── geometry/
+│       │   ├── color/
+│       │   ├── ai/
+│       │   └── utils/
+│       ├── requirements.txt
+│       ├── requirements-lambda.txt
+│       └── requirements-runtime.txt
+├── services/
+│   ├── api/             # Lambda handlers — auth, jobs, settings, websocket
+│   ├── handlers/        # Lambda handlers — pipeline steps
+│   └── infra/           # AWS CDK stack
+├── tests/               # pytest suite (spans all three trees)
+├── Dockerfile           # Pipeline Lambda image (context = repo root)
+└── .venv/               # Stays at root (macOS dev-mode contract)
 ```
 
 ### macOS app builds
 
 ```bash
-cd mac-app && bash build-release.sh   # → ~/Desktop/SundayAlbum-1.0-beta1.dmg
+cd apps/mac && bash build-release.sh   # → ~/Desktop/SundayAlbum-1.0-beta1.dmg
 ```
 
-`build-release.sh` stamps `mac-app/SundayAlbum/BuildInfo.swift` with the PST build date
+`build-release.sh` stamps `apps/mac/SundayAlbum/BuildInfo.swift` with the PST build date
 (`yyyy-mm-dd-hh-min`) before compiling. The file is committed with value `"dev"` so IDE
 (Debug) builds show "dev" in the About panel; release builds show the real timestamp.
 Do not edit `BuildInfo.swift` by hand — it is overwritten on every release build.
@@ -235,6 +243,6 @@ feature/my-change  ──PR──►  dev  ──PR──►  main
 2. Open PR to `dev` — triggers CI, auto-deploys to dev environment on merge
 3. Open PR from `dev` → `main` for production releases
 
-CDK infrastructure changes: deployed manually via `cdk deploy` from `infra/`. Not in CI.
+CDK infrastructure changes: deployed manually via `cdk deploy` from `services/infra/`. Not in CI.
 
 See `docs/SYSTEM_ARCHITECTURE.md` for GitHub Actions workflow details and AWS resource names.

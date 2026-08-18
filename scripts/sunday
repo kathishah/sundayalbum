@@ -29,6 +29,9 @@ if [[ -z "${VIRTUAL_ENV:-}" ]]; then
     fi
 fi
 
+# Ensure src package is importable after monorepo move
+export PYTHONPATH="${PROJECT_ROOT}/packages/pipeline:${PYTHONPATH:-}"
+
 # Change to project root so relative paths (test-images/, output/, etc.) resolve correctly
 cd "$PROJECT_ROOT"
 

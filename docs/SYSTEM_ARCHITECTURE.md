@@ -33,7 +33,7 @@ Three delivery surfaces share one image processing pipeline:
 | Surface | Status | Entry point |
 |---|---|---|
 | **Python CLI** | Production | `python -m src.cli process ...` |
-| **macOS app** | Production | `mac-app/` — SwiftUI shell over Python CLI |
+| **macOS app** | Production | `apps/mac/` — SwiftUI shell over Python CLI |
 | **Web app** | Production (dev + prod) | Next.js → AWS Lambda pipeline |
 
 The web app also serves a public marketing site (no auth required) at `www.sundayalbum.com`
@@ -88,7 +88,7 @@ via the `(public)` Next.js route group. See [Public Marketing Site](#public-mark
 
 ### Execution model
 
-All pipeline steps live in `src/steps/`. Each is a pure function:
+All pipeline steps live in `packages/pipeline/src/steps/`. Each is a pure function:
 
 ```
 run(storage: StorageBackend, stem: str, config: PipelineConfig, photo_index?) → dict
@@ -132,8 +132,9 @@ For per-step implementation details, tunable params, and debug output: see `docs
 
 ### Resuming from a step (reprocessing)
 
-The web app supports `POST /jobs/{jobId}/reprocess?from_step={step}`. Step Functions evaluates
-`start_from` in the event and skips earlier steps using `should_skip()` in `handlers/common.py`.
+The web app supports `POST /jobs/{jobId}/reprocess?from_step={step}`. Step Functions uses
+Choice states to evaluate `start_from` in the event and route to `Pass` states for skipped steps,
+avoiding unnecessary Lambda invocations.
 
 Per-photo steps can be re-run for a single photo via `reprocess_photo_index`.
 
@@ -149,7 +150,7 @@ OpenAI `gpt-image-1.5` (`images.edit`) is the default glare removal path. It per
 diffusion-based inpainting with scene understanding — it knows what the photo should look like
 and reconstructs it. The scene description from the `ai_orient` step is included in the prompt.
 
-The OpenCV inpainting fallback (`src/glare/remover_single.py`) is kept for when the OpenAI key
+The OpenCV inpainting fallback (`packages/pipeline/src/glare/remover_single.py`) is kept for when the OpenAI key
 is absent or `--no-openai-glare` is passed. Quality is significantly worse, especially for
 sleeve glare (album pages with plastic covers).
 
@@ -169,7 +170,7 @@ description. Combining all three in one call saves latency.
 
 ### Hough-line rotation detection: disabled
 
-`_detect_small_rotation()` in `src/geometry/rotation.py` finds dominant lines via Hough
+`_detect_small_rotation()` in `packages/pipeline/src/geometry/rotation.py` finds dominant lines via Hough
 transform and computes their median angle as the correction angle. It fires on **image content**
 (boat rigging, car bodies, rock edges) rather than the physical photo frame, producing false
 corrections on already-correct images. The function returns `0.0` unconditionally.
@@ -179,7 +180,7 @@ angle. The `correct_rotation()` function is the intended home for this.
 
 ### Dewarp: disabled
 
-`correct_warp()` in `src/geometry/dewarp.py` uses Hough lines to detect curvature. Two problems:
+`correct_warp()` in `packages/pipeline/src/geometry/dewarp.py` uses Hough lines to detect curvature. Two problems:
 1. iPhone corrects barrel/pincushion distortion in-camera before writing HEIC — nothing to fix.
 2. The Hough detector fires on curved content edges (rock walls, curved roads).
 
@@ -246,7 +247,7 @@ All CTAs use relative paths (`/login`, `/settings`) so the same build works on e
 
 ### Demo assets
 
-Static images served from `web/public/demo/`:
+Static images served from `apps/web/public/demo/`:
 - `cave-stage-{0,1,2}.jpg` — hero animation frames (raw → deglared → restored)
 - `pair-a-{before,after}.jpg`, `pair-b-*.jpg` — landing page demo sliders
 - `pipeline/{01–09}*.jpg` — one image per pipeline step from `IMG_1268.HEIC`
@@ -329,7 +330,7 @@ Single Dockerfile builds one image; each Lambda gets a different `CMD` override.
 
 ## macOS App
 
-**Location:** `mac-app/`  
+**Location:** `apps/mac/`  
 **Technology:** SwiftUI (native macOS, ARM64), Python CLI bridge
 
 The macOS app shells out to `python -m src.cli process ...` — the same CLI used for local
@@ -338,12 +339,12 @@ development. No macOS-specific processing code. Processing runs in-process on th
 **Key integration points:**
 - Drag-drop album page input via `NSOpenPanel` / drop target on the main view
 - Spawns Python CLI as a subprocess; reads stdout/stderr for progress
-- Step-by-step debug view mirrors the web app's step detail UI (SwiftUI components in `mac-app/SundayAlbum/Views/`)
+- Step-by-step debug view mirrors the web app's step detail UI (SwiftUI components in `apps/mac/SundayAlbum/Views/`)
 - Output export to Photos.app or Finder
 - API keys stored in macOS Keychain (not `secrets.json`)
 
 **Design system:** "Warm Archival" — same color tokens and animation timing as the web app
-(defined in `mac-app/SundayAlbum/Theme/DesignSystem.swift`; web equivalent in `web/tailwind.config.ts`).
+(defined in `apps/mac/SundayAlbum/Theme/DesignSystem.swift`; web equivalent in `apps/web/tailwind.config.ts`).
 
 ---
 
@@ -362,15 +363,15 @@ feature/my-change  ──PR──►  dev  ──PR──►  main
 - **Feature work:** Branch from `dev` (e.g. `feature/my-change`). Open PR to `dev`.
 - **Dev environment:** Every merge to `dev` auto-deploys web + Lambdas.
 - **Production release:** PR from `dev` → `main`. Merge triggers prod deploy.
-- **CDK / infrastructure changes:** Deployed manually via `cdk deploy` from `infra/`. Not automated.
+- **CDK / infrastructure changes:** Deployed manually via `cdk deploy` from `services/infra/`. Not automated.
 
 ### GitHub Actions workflows
 
 | Workflow | Trigger | What it does |
 |---|---|---|
-| `deploy-web.yml` | Push to `dev` or `main` (when `web/**` changes) | Build Next.js Docker image → push to ECR → deploy to App Runner |
-| `deploy-lambda.yml` | Push to `dev` or `main` (when `api/**`, `handlers/**`, `src/**` change) | Zip API Lambdas + build/push pipeline Docker image → update all Lambdas |
-| `test-api.yml` | Push to any branch (when `api/**` or `tests/api\|handlers/**` change) | Run 36 pytest tests (moto, no real AWS) |
+| `deploy-web.yml` | Push to `dev` or `main` (when `apps/web/**` changes) | Build Next.js Docker image → push to ECR → deploy to App Runner |
+| `deploy-lambda.yml` | Push to `dev` or `main` (when `services/api/**`, `services/handlers/**`, `packages/pipeline/**` change) | Zip API Lambdas + build/push pipeline Docker image → update all Lambdas |
+| `test-api.yml` | Push to any branch (when `services/api/**` or `tests/api\|handlers/**` change) | Run 36 pytest tests (moto, no real AWS) |
 | `test-web.yml` | Manual (`workflow_dispatch`) only | Run 12 Playwright E2E tests against `dev.sundayalbum.com` |
 
 **IAM role:** `github-actions-sundayalbum` (OIDC, no long-lived credentials).
@@ -379,8 +380,8 @@ feature/my-change  ──PR──►  dev  ──PR──►  main
 
 Runs on every `git commit`:
 1. `pytest tests/api/ tests/handlers/ -q` — 36 moto-backed tests, ~5s
-2. `npx playwright test` from `web/` — 12 Playwright E2E against dev.sundayalbum.com, ~33s
-   (skipped if `web/.auth/session.json` doesn't exist)
+2. `npx playwright test` from `apps/web/` — 12 Playwright E2E against dev.sundayalbum.com, ~33s
+   (skipped if `apps/web/.auth/session.json` doesn't exist)
 
 Install once per clone: `git config core.hooksPath .githooks`  
 Skip for a one-off commit: `SKIP_HOOKS=1 git commit -m "wip"`
@@ -398,8 +399,8 @@ The pipeline uses Anthropic (orientation) and OpenAI (glare removal). Resolution
 ```
 
 Keys are resolved once at the execution boundary:
-- **CLI / macOS:** `load_secrets()` in `src/utils/secrets.py` reads `secrets.json` (falling back to env vars); injects into `PipelineConfig`
-- **Lambda:** `make_config(overrides, user_keys)` in `handlers/common.py` fetches system keys from Secrets Manager (cached via `lru_cache`) and merges with user-supplied keys
+- **CLI / macOS:** `load_secrets()` in `packages/pipeline/src/utils/secrets.py` reads `secrets.json` (falling back to env vars); injects into `PipelineConfig`
+- **Lambda:** `make_config(overrides, user_keys)` in `services/handlers/common.py` fetches system keys from Secrets Manager (cached via `lru_cache`) and merges with user-supplied keys
 
 Pipeline steps never read environment variables or call `load_secrets()` directly.
 
@@ -459,5 +460,5 @@ Domain registered on Namecheap; NS records point to Route 53.
 - **Phase 9: Production hardening** — CloudFront distribution, per-user concurrency limits, CloudWatch alarms, "delete my data" endpoint.
 - **`www.sundayalbum.com` DNS** — marketing pages are built; Route 53 CNAME to App Runner not yet applied.
 - **`sundayalbum.com` apex redirect** — naked-domain redirect to `www` not yet configured.
-- **Multi-shot glare compositing** — `src/glare/remover_multi.py` exists but is not integrated. Requires multi-angle test images of the same album page.
+- **Multi-shot glare compositing** — `packages/pipeline/src/glare/remover_multi.py` exists but is not integrated. Requires multi-angle test images of the same album page.
 - **Border-based small-angle rotation** — replacement for the disabled Hough-line rotation detector. Should detect the white border of the physical print to determine frame angle.

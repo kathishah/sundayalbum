@@ -6,7 +6,7 @@ on:
       - main
       - dev
     paths:
-      - "web/**"
+      - "apps/web/**"
       - ".github/workflows/deploy-web.yml"
   workflow_dispatch:
     inputs:
@@ -18,6 +18,10 @@ on:
         options:
           - dev
           - prod
+
+permissions:
+  id-token: write
+  contents: read
 
 env:
   AWS_REGION: us-west-2
@@ -78,7 +82,7 @@ jobs:
           fi
 
       - name: Build Docker image
-        working-directory: web
+        working-directory: apps/web
         run: |
           # NEXT_PUBLIC_* vars must be baked in at build time — pass as --build-arg
           docker build \

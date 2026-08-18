@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
 const OWNER = 'kathishah'
-const REPO = 'sundayalbum-claude'
+const REPO = 'sundayalbum'
 const GH_BASE = 'https://api.github.com'
 const GH_HEADERS = {
   Accept: 'application/vnd.github+json',
