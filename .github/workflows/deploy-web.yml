@@ -52,31 +52,6 @@ jobs:
             echo "stage=dev" >> $GITHUB_OUTPUT
           fi
 
-      - name: Debug OIDC token claims
-        run: |
-          echo "ACTIONS_ID_TOKEN_REQUEST_URL: ${ACTIONS_ID_TOKEN_REQUEST_URL:-<not set>}"
-          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+<set, length: ${#ACTIONS_ID_TOKEN_REQUEST_TOKEN}>}"
-          if [ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
-            TOKEN_RESPONSE=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-              -H "Accept: application/json; api-version=2.0" \
-              "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" 2>/dev/null || true)
-            TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.value // empty' 2>/dev/null)
-            if [ -n "$TOKEN" ]; then
-              PAYLOAD_PART=$(echo "$TOKEN" | cut -d'.' -f2)
-              # Add padding if needed
-              REMAINING=$(( ${#PAYLOAD_PART} % 4 ))
-              if [ $REMAINING -ne 0 ]; then
-                PAYLOAD_PART="${PAYLOAD_PART}$(printf '=%.0s' $(seq 1 $(( 4 - REMAINING ))))"
-              fi
-              echo "OIDC token payload (decoded):"
-              echo "$PAYLOAD_PART" | base64 -d 2>/dev/null | jq . 2>/dev/null || echo "Failed to decode"
-            else
-              echo "No token value in response: $TOKEN_RESPONSE"
-            fi
-          else
-            echo "OIDC request URL not set — id-token: write permission may not be effective"
-          fi
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
