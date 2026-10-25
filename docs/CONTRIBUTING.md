@@ -34,10 +34,10 @@ brew install opencv libheif libraw imagemagick
 
 # 2. Create Python environment
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r packages/pipeline/requirements.txt
+pip install -e ".[dev]"     # makes `python -m src.cli` importable and adds pytest/moto/ruff/mypy
 
 # 3. Add API keys (Anthropic + OpenAI — both optional, see PIPELINE_STEPS.md for fallbacks)
-echo '{ "ANTHROPIC_API_KEY": "sk-ant-...", "OPENAI_API_KEY": "sk-..." }' > secrets.json
+cp .env.example .env     # then edit .env (gitignored); a secrets.json is read only from packages/pipeline/
 
 # 4. Download test images
 bash scripts/fetch-test-images.sh
