@@ -1,7 +1,7 @@
 # Sunday Album — System Architecture
 
-**Last updated:** 2026-04-10  
-**Status:** Current — canonical reference for system design, components, and SDLC.
+**Last updated:** 2026-10-24 (paths and identifiers refreshed after the Aug 2026 monorepo move; design content last reviewed 2026-04-10)  
+**Status:** Current — canonical reference for system design, components, and SDLC. Operations: `docs/OPERATIONS.md`.
 
 ---
 
@@ -278,7 +278,7 @@ WebSocket (prod): `wss://l7t59cvhyh.execute-api.us-west-2.amazonaws.com/$default
 
 | Resource | Dev name | Prod name |
 |---|---|---|
-| **S3 bucket** | `sundayalbum-data-<account-id>-us-west-2` | same (single bucket, path-separated by `user_hash`) |
+| **S3 bucket** | `sundayalbum-data-<account-id>-us-west-2-dev` | `sundayalbum-data-<account-id>-us-west-2` (objects path-separated by `user_hash`) |
 | **DynamoDB: jobs** | `sa-jobs-dev` | `sa-jobs` |
 | **DynamoDB: sessions** | `sa-sessions-dev` | `sa-sessions` |
 | **DynamoDB: WebSocket connections** | `sa-ws-connections-dev` | `sa-ws-connections` |
@@ -300,11 +300,11 @@ WebSocket (prod): `wss://l7t59cvhyh.execute-api.us-west-2.amazonaws.com/$default
 
 | Lambda | Handler | Purpose |
 |---|---|---|
-| `sa-auth{suffix}` | `api/auth.py` | Email OTP auth via SES |
-| `sa-jobs{suffix}` | `api/jobs.py` | Job CRUD, presigned S3 URLs, trigger Step Functions |
-| `sa-websocket{suffix}` | `api/websocket.py` | WebSocket connect/disconnect |
-| `sa-settings{suffix}` | `api/settings.py` | Store/retrieve user API keys in DynamoDB |
-| `sa-broadcaster{suffix}` | `api/broadcaster.py` | DynamoDB Streams → WebSocket push |
+| `sa-auth{suffix}` | `services/api/auth.py` | Email OTP auth via SES |
+| `sa-jobs{suffix}` | `services/api/jobs.py` | Job CRUD, presigned S3 URLs, trigger Step Functions |
+| `sa-websocket{suffix}` | `services/api/websocket.py` | WebSocket connect/disconnect |
+| `sa-settings{suffix}` | `services/api/settings.py` | Store/retrieve user API keys in DynamoDB |
+| `sa-broadcaster{suffix}` | `services/api/broadcaster.py` | DynamoDB Streams → WebSocket push |
 
 ### Pipeline Lambda functions (Docker / ARM64)
 
@@ -420,9 +420,9 @@ Daily job limit: 20 jobs/user/day (bypassed for admins and users with own API ke
 
 ### Transactional email (Amazon SES)
 
-OTP messages are sent with **Amazon SES** in **`us-west-2`**. The **verified domain identity** is **`sundayalbum.com`** (Easy DKIM). The **From** address is **`noreply@sundayalbum.com`**, supplied to Lambda as **`SES_SENDER`** (CDK default `infra/infra/sundayalbum_stack.py`; optional deploy-time override `ses_sender_email` in `infra/cdk.json`).
+OTP messages are sent with **Amazon SES** in **`us-west-2`**. The **verified domain identity** is **`sundayalbum.com`** (Easy DKIM). The **From** address is **`noreply@sundayalbum.com`**, supplied to Lambda as **`SES_SENDER`** (CDK default in `services/infra/infra/sundayalbum_stack.py`; optional deploy-time context override `-c ses_sender_email=...`).
 
-**DNS:** SPF (apex TXT), DKIM (`*_domainkey` CNAMEs), and a starter **DMARC** (`_dmarc` TXT) live in the same Route 53 zone as the app. One-time setup and AWS CLI commands are recorded in **`journal/2026-04-11-ses-email-deliverability.md`**; the applied Route 53 change batch is **`infra/ses-sundayalbum-dns-changes.json`**.
+**DNS:** SPF (apex TXT), DKIM (`*_domainkey` CNAMEs), and a starter **DMARC** (`_dmarc` TXT) live in the same Route 53 zone as the app. One-time setup and AWS CLI commands are recorded in **`journal/2026-04-11-ses-email-deliverability.md`**; the applied Route 53 change batch is **`services/infra/ses-sundayalbum-dns-changes.json`**.
 
 **Sandbox vs production:** SES may still be in **sandbox** mode until **production access** is approved in the account. Sandbox limits who can receive mail and daily volume; approve production access for unrestricted transactional sending to real users.
 
@@ -460,5 +460,5 @@ Domain registered on Namecheap; NS records point to Route 53.
 - **Phase 9: Production hardening** — CloudFront distribution, per-user concurrency limits, CloudWatch alarms, "delete my data" endpoint.
 - **`www.sundayalbum.com` DNS** — marketing pages are built; Route 53 CNAME to App Runner not yet applied.
 - **`sundayalbum.com` apex redirect** — naked-domain redirect to `www` not yet configured.
-- **Multi-shot glare compositing** — `packages/pipeline/src/glare/remover_multi.py` exists but is not integrated. Requires multi-angle test images of the same album page.
+- **Multi-shot glare compositing** — a `remover_multi.py` module was planned but is not in the tree. Requires multi-angle test images of the same album page.
 - **Border-based small-angle rotation** — replacement for the disabled Hough-line rotation detector. Should detect the white border of the physical print to determine frame angle.
