@@ -12,7 +12,7 @@ import path from 'path'
  *   .auth/completed-job-dev.json  /  .auth/completed-job-prod.json
  *
  * Required env vars:
- *   TEST_USER_EMAIL        e.g. chintan@reachto.me
+ *   TEST_USER_EMAIL        a verified test user, e.g. you@example.com
  *   DEV_FRONTEND_URL       e.g. https://dev.sundayalbum.com (or set STAGE=prod)
  *   DEV_API_URL            e.g. https://nodcooz758.execute-api.us-west-2.amazonaws.com
  *   SESSIONS_TABLE         DynamoDB table (default: sa-sessions-dev; prod: sa-sessions)

@@ -43,7 +43,7 @@ class S3Storage:
     Example::
 
         storage = S3Storage(
-            bucket="sundayalbum-data-123456789012-us-west-2",
+            bucket="sundayalbum-data-<account-id>-us-west-2",
             prefix="f1ceafcd...",    # SHA-256 of user email
         )
         image = storage.read_image("uploads/IMG_cave_normal.HEIC")

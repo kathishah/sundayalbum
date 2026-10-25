@@ -274,17 +274,17 @@ WebSocket (prod): `wss://l7t59cvhyh.execute-api.us-west-2.amazonaws.com/$default
 
 ### AWS Resources
 
-**Account:** `680073251743` | **Region:** `us-west-2`
+**Account:** `<account-id>` | **Region:** `us-west-2`
 
 | Resource | Dev name | Prod name |
 |---|---|---|
-| **S3 bucket** | `sundayalbum-data-680073251743-us-west-2` | same (single bucket, path-separated by `user_hash`) |
+| **S3 bucket** | `sundayalbum-data-<account-id>-us-west-2` | same (single bucket, path-separated by `user_hash`) |
 | **DynamoDB: jobs** | `sa-jobs-dev` | `sa-jobs` |
 | **DynamoDB: sessions** | `sa-sessions-dev` | `sa-sessions` |
 | **DynamoDB: WebSocket connections** | `sa-ws-connections-dev` | `sa-ws-connections` |
 | **DynamoDB: user settings** | `sa-user-settings-dev` | `sa-user-settings` |
 | **Step Functions** | `sa-pipeline-dev` | `sa-pipeline` |
-| **ECR (pipeline image)** | `sundayalbum-pipeline-dev` (mutable tags) | `cdk-hnb659fds-container-assets-680073251743-us-west-2` (immutable tags) |
+| **ECR (pipeline image)** | `sundayalbum-pipeline-dev` (mutable tags) | `cdk-hnb659fds-container-assets-<account-id>-us-west-2` (immutable tags) |
 | **Secrets Manager** | `sundayalbum/api-keys-dev` | `sundayalbum/api-keys` |
 | **CDK stack** | `SundayAlbumStack-dev` | `SundayAlbumStack` |
 

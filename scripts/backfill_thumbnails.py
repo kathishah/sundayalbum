@@ -12,6 +12,9 @@ After this backfill:
   • GET /jobs   → thumbnail_url  (01_loaded thumbnail for library card)
   • GET /jobs/{id} → thumbnail_urls (all step thumbnails for Phase 5 step-detail)
 
+The AWS account ID is read from the AWS_ACCOUNT_ID env var, or looked up from your
+current AWS credentials (STS). It is not stored in the repo.
+
 Usage:
     # Dry-run (shows what would happen, no writes)
     python scripts/backfill_thumbnails.py --stage dev --dry-run
@@ -27,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import io
+import os
 import sys
 from datetime import datetime, timezone
 
@@ -39,14 +43,21 @@ try:
 except ImportError:
     pass  # Only needed for HEIC upload fallback; debug images are always JPEG
 
-ACCOUNT_ID = "680073251743"
+def _account_id() -> str:
+    """AWS account ID: ``AWS_ACCOUNT_ID`` env var, else the caller's own account (STS)."""
+    env = os.environ.get("AWS_ACCOUNT_ID")
+    if env:
+        return env
+    return boto3.client("sts").get_caller_identity()["Account"]
+
+
 REGION = "us-west-2"
 THUMB_WIDTH = 400
 THUMB_QUALITY = 85
 
 
 def bucket_name(stage: str) -> str:
-    base = f"sundayalbum-data-{ACCOUNT_ID}-{REGION}"
+    base = f"sundayalbum-data-{_account_id()}-{REGION}"
     return base if stage == "prod" else f"{base}-{stage}"
 
 

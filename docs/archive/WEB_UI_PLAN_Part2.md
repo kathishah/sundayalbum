@@ -88,7 +88,7 @@ Before any Phase 3 infrastructure is added, the CDK stack must be parameterized 
 stage = app.node.try_get_context("stage") or "prod"
 SundayAlbumStack(app, f"SundayAlbumStack-{stage}",
     stage=stage,
-    env=cdk.Environment(account="680073251743", region="us-west-2"))
+    env=cdk.Environment(account="<account-id>", region="us-west-2"))
 ```
 
 `infra/infra/sundayalbum_stack.py` — accept `stage` parameter, suffix all hardcoded resource names:
@@ -162,7 +162,7 @@ Both keys are stored in AWS Secrets Manager (one secret per environment) and fet
 | Rate limit window | UTC midnight reset (calendar day) | Simpler to reason about than rolling 24h; matches user expectation of "20 per day" |
 | Default daily limit | 20 jobs/user/day | Generous for normal use; cost-controlled at scale |
 | Admin users (no limit) | Hardcoded `ADMIN_EMAILS` Lambda env var | Simple; no extra infra; adding new admins is a CDK redeploy (deliberate) |
-| System admin email | `kathi.shah@gmail.com` | Identified by email, consistent with existing email auth |
+| System admin email | `<admin-email>` | Identified by email, consistent with existing email auth |
 | User-supplied key storage | DynamoDB `sa-user-settings` table + KMS encryption | ~$0 vs ~$0.40/month per user for Secrets Manager; keys encrypted at rest via AWS-owned KMS CMK |
 | User key scope | Full replacement — user pays for all their usage | Cleaner UX; no confusion about which key is used for which call |
 | Behavior at limit | Job rejected with clear error; frontend shows "Add your own API keys to continue" | AI steps are core to quality; a degraded pipeline (OpenCV fallback) is not the product |
@@ -333,7 +333,7 @@ common_env = {
     ...,
     "SECRET_ARN": api_keys_secret.secret_arn,
     "USER_SETTINGS_TABLE": user_settings_table.table_name,
-    "ADMIN_EMAILS": "kathi.shah@gmail.com",
+    "ADMIN_EMAILS": "<admin-email>",
 }
 
 # New API routes
@@ -354,7 +354,7 @@ Then remove `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` from Lambda env vars (CDK dep
 #### 3.1.8 Verification
 
 - System keys fetched from Secrets Manager (not env vars) ✓
-- Admin user (`kathi.shah@gmail.com`) can submit unlimited jobs ✓
+- Admin user (`<admin-email>`) can submit unlimited jobs ✓
 - Regular user blocked after 20 jobs with 429 + clear error message ✓
 - Counter resets at UTC midnight ✓
 - User adds own keys via `PUT /settings/api-keys` → rate limit bypassed ✓
@@ -463,7 +463,7 @@ Replicate `mac-app/SundayAlbum/Views/LibraryView.swift`:
 **Dev App Runner service:** `sundayalbum-web-dev` — RUNNING
 - URL: `https://kiz3qkgvsb.us-west-2.awsapprunner.com` ✅
 - Custom domain: `https://dev.sundayalbum.com` ✅ (ACM cert validated, HTTP 200)
-- ECR repo: `680073251743.dkr.ecr.us-west-2.amazonaws.com/sundayalbum-web`
+- ECR repo: `<account-id>.dkr.ecr.us-west-2.amazonaws.com/sundayalbum-web`
 - GitHub Actions deploys on every push to `web-ui-implementation` ✅
 
 **Route 53 hosted zone:** `sundayalbum.com` (zone ID: `Z0420309YMJDXBAU344P`) ✅

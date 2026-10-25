@@ -14,7 +14,7 @@ Login OTP mail was sent with **From** showing a personal Gmail address **via** `
 ## Repo and DNS (what we checked)
 
 - **CDK** (`infra/infra/sundayalbum_stack.py`): Lambda gets `SES_SENDER` from context or default `noreply@sundayalbum.com`. IAM allows `ses:SendEmail`. There is **no** SES domain identity or mail DNS in IaC — verification is manual in AWS + Route 53.
-- **`infra/cdk.json`**: Removed the override `ses_sender_email: kathi.shah@gmail.com` so deploys use the stack default unless context is set elsewhere at deploy time.
+- **`infra/cdk.json`**: Removed the override `ses_sender_email: <admin-email>` so deploys use the stack default unless context is set elsewhere at deploy time.
 - **Public DNS** (`sundayalbum.com`, Route 53 NS): No TXT (SPF) on apex, no `_dmarc`, no MX — consistent with **web** setup only, not outbound branded mail.
 
 ---
@@ -26,7 +26,7 @@ Commands: `aws sesv2 list-email-identities`, `aws sesv2 get-account`, `aws ses g
 | Observation | Detail |
 |-------------|--------|
 | **`sundayalbum.com` as SES identity** | **Not** present. |
-| **Verified identities relevant to early testing** | `kathi.shah@gmail.com` and `chintan@reachto.me` — **EMAIL_ADDRESS**, `SUCCESS`, sending enabled. Explains using Gmail as From. |
+| **Verified identities relevant to early testing** | `<admin-email>` and `<test-user-email>` — **EMAIL_ADDRESS**, `SUCCESS`, sending enabled. Explains using Gmail as From. |
 | **Other** | Another domain `delicioustrades.com` verified; unrelated failed single-address identities. |
 | **Sandbox** | `ProductionAccessEnabled`: **false** — account is in **SES sandbox** (low quotas; sending to arbitrary users requires **production access**). |
 | **Quota snapshot** | e.g. 200/day, 1 msg/s (sandbox-class limits). |
@@ -89,7 +89,7 @@ After DNS propagated, `aws sesv2 get-email-identity` reported **`VerificationSta
 
 ### 4. Lambda `SES_SENDER`
 
-Updated **`sa-auth`** and **`sa-auth-dev`** environment so **`SES_SENDER=noreply@sundayalbum.com`** (was `kathi.shah@gmail.com`). Pattern: `get-function-configuration` → `jq` merge → `update-function-configuration` with full `Variables` map.
+Updated **`sa-auth`** and **`sa-auth-dev`** environment so **`SES_SENDER=noreply@sundayalbum.com`** (was `<admin-email>`). Pattern: `get-function-configuration` → `jq` merge → `update-function-configuration` with full `Variables` map.
 
 Future **`cdk deploy`** will keep this alignment as long as **`infra/cdk.json`** does not reintroduce `ses_sender_email` override.
 
@@ -98,7 +98,7 @@ Future **`cdk deploy`** will keep this alignment as long as **`infra/cdk.json`**
 ```bash
 aws ses send-email --region us-west-2 \
   --from "Sunday Album <noreply@sundayalbum.com>" \
-  --destination "ToAddresses=chintan@reachto.me" \
+  --destination "ToAddresses=<test-user-email>" \
   --message 'Subject={Data=Sunday Album SES CLI test,Charset=utf-8},Body={Text={Data=Domain verified. DKIM aligned.,Charset=utf-8}}'
 ```
 
