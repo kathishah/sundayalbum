@@ -9,14 +9,14 @@
 
 Photo boundary detection was working correctly for `IMG_two_pics_vertical_horizontal_normal.HEIC`
 and `IMG_three_pics_normal.HEIC` (the original test images), but failing on three newer album
-images: `bhavik_2_images.HEIC`, `devanshi_school_picnic_bus_2_images.HEIC`, and
-`devanshi_school_picnic_girls_2_images.HEIC`. All three are album pages with **two photos
+images: `spine_dark_2_images.HEIC`, `spine_scene_a_2_images.HEIC`, and
+`spine_scene_b_2_images.HEIC`. All three are album pages with **two photos
 separated by a visible album spine** (a white/cream woven-fabric binding strip running
 horizontally across the centre of the page).
 
 ---
 
-## Problem 1 — bhavik_2_images: One giant wrong crop instead of two photos
+## Problem 1 — spine_dark_2_images: One giant wrong crop instead of two photos
 
 ### Symptom
 
@@ -29,7 +29,7 @@ Contour detection found a single enormous skewed crop instead of two photos.
 ### Root Cause
 
 The imbalance check that triggers the projection fallback used **contour area** (`d.area_ratio`)
-as the area metric. For `bhavik`, the contour detector found two tiny, badly-skewed contours
+as the area metric. For `spine_dark`, the contour detector found two tiny, badly-skewed contours
 (area ratios 6.9 % and 3.4 %) whose contour areas were nearly equal — imbalance ≈ 2.0×,
 below the 2.5× threshold. But the bounding boxes of those contours were vastly different in
 size (imbalance 7.4×), because a diagonal contour produces a massive bounding box relative to
@@ -50,15 +50,15 @@ bbox_areas = [
 area_imbalance = max(bbox_areas) / (min(bbox_areas) + 1e-6)
 ```
 
-This correctly reports a 7.4× imbalance for `bhavik`, triggering the projection fallback.
+This correctly reports a 7.4× imbalance for `spine_dark`, triggering the projection fallback.
 
 ---
 
-## Problem 2 — bhavik_2_images: Projection over-splits into 4 strips
+## Problem 2 — spine_dark_2_images: Projection over-splits into 4 strips
 
 ### Symptom
 
-Even after Problem 1's fix, `bhavik` went from 1 wrong photo to 4 wrong photos. The
+Even after Problem 1's fix, `spine_dark` went from 1 wrong photo to 4 wrong photos. The
 projection-profile fallback was finding 4 edge-density valleys instead of 1 spine gap.
 
 ### Root Cause
@@ -86,11 +86,11 @@ if len(proj_detections) > 3:
 for speed, cleans the mask with morphological close + open, and converts each significant blob
 into a `PhotoDetection` via convex-hull → `minAreaRect` → ordered corners.
 
-**Result for bhavik:** 2 photos correctly extracted ✓
+**Result for spine_dark:** 2 photos correctly extracted ✓
 
 ---
 
-## Problem 3 — devanshi_bus: 3 wrong diagonal crops instead of 2 photos
+## Problem 3 — spine_scene_a: 3 wrong diagonal crops instead of 2 photos
 
 ### Symptom
 
@@ -133,11 +133,11 @@ if max(rects) < 0.45:
 The brightness-based detection (see Problem 4) correctly identifies the spine at y ≈ 50 % and
 splits into two correct photos.
 
-**Result for devanshi_bus:** 2 photos correctly extracted ✓
+**Result for spine_scene_a:** 2 photos correctly extracted ✓
 
 ---
 
-## Problem 4 — devanshi_girls: Wrong split position from projection
+## Problem 4 — spine_scene_b: Wrong split position from projection
 
 ### Symptom
 
@@ -152,7 +152,7 @@ photo. Photo 2 was the second photo missing its upper portion.
 ### Root Cause
 
 The projection fallback uses **Sobel edge density** to find low-activity horizontal rows.  For
-`devanshi_girls`, the album spine (a wide, bright, woven-fabric strip) has its own texture
+`spine_scene_b`, the album spine (a wide, bright, woven-fabric strip) has its own texture
 edges. These edges masked the spine gap in the edge profile, and the projection found the split
 at the transition between the spine border and the second photo's content — too low by ~200 px.
 
@@ -175,7 +175,7 @@ if area_imbalance > 2.5:
         ...
 ```
 
-**Result for devanshi_girls:** 2 photos correctly extracted at the correct position ✓
+**Result for spine_scene_b:** 2 photos correctly extracted at the correct position ✓
 
 ---
 
@@ -198,9 +198,9 @@ spine by looking for a bright horizontal band in the per-row mean brightness pro
 
 | Test image | Qualifying bands | Outcome |
 |---|---|---|
-| `devanshi_girls` | 1 at 51 %, max_bright 0.869 | 2 photos ✓ used |
-| `devanshi_bus` | 1 at 50 %, max_bright 0.889 | 2 photos ✓ used |
-| `bhavik` | 1 at 51 %, max_bright 0.863 (2nd fails max_bright) | 2 photos ✓ used |
+| `spine_scene_b` | 1 at 51 %, max_bright 0.869 | 2 photos ✓ used |
+| `spine_scene_a` | 1 at 50 %, max_bright 0.889 | 2 photos ✓ used |
+| `spine_dark` | 1 at 51 %, max_bright 0.863 (2nd fails max_bright) | 2 photos ✓ used |
 | `three_pics` | 1 at **69 %** | Outside 33–67 % → returns [] → projection finds 3 ✓ |
 | `two_pics` | **2** qualifying bands | Not exactly 1 → returns [] → projection finds 2 ✓ |
 
@@ -229,22 +229,22 @@ blob, so this path does not fire in practice.
 
 | Image | Expected | Before | After | Detection path |
 |---|---|---|---|---|
-| `bhavik_2_images` | 2 | **1 ✗** | **2 ✓** | imbalance → brightness spine |
-| `devanshi_school_picnic_bus_2_images` | 2 | **3 ✗** | **2 ✓** | rect < 0.45 → brightness spine |
-| `devanshi_school_picnic_girls_2_images` | 2 | **2 ✗** (wrong split) | **2 ✓** | imbalance → brightness spine |
+| `spine_dark_2_images` | 2 | **1 ✗** | **2 ✓** | imbalance → brightness spine |
+| `spine_scene_a_2_images` | 2 | **3 ✗** | **2 ✓** | rect < 0.45 → brightness spine |
+| `spine_scene_b_2_images` | 2 | **2 ✗** (wrong split) | **2 ✓** | imbalance → brightness spine |
 | `IMG_three_pics_normal` | 3 | 3 ✓ | 3 ✓ | imbalance → brightness returns [] → projection |
 | `IMG_two_pics_vertical_horizontal` | 2 | 2 ✓ | 2 ✓ | imbalance → brightness returns [] → projection |
-| `devanshi_school_picnic_girls_2_images` (formerly wrong split) | 2 | 2 ✗ | 2 ✓ | — |
-| `devanshi_school_picnic_girls_2_images` | 2 | — | 2 ✓ | — |
+| `spine_scene_b_2_images` (formerly wrong split) | 2 | 2 ✗ | 2 ✓ | — |
+| `spine_scene_b_2_images` | 2 | — | 2 ✓ | — |
 | `IMG_cave_normal` | 1 | 1 ✓ | 1 ✓ | contour direct |
 | `IMG_harbor_normal` | 1 | 1 ✓ | 1 ✓ | contour direct |
 | `IMG_skydiving_normal` | 1 | 1 ✓ | 1 ✓ | contour direct |
-| `devanshi_prachi_sadhna` | 1 | 1 ✓ | 1 ✓ | contour direct |
-| `chintan_on_razr` | 1 | 1 ✓ | 1 ✓ | 0 detected → full page |
+| `single_print_portrait` | 1 | 1 ✓ | 1 ✓ | contour direct |
+| `single_print_no_contours` | 1 | 1 ✓ | 1 ✓ | 0 detected → full page |
 | `scuba_divers_getting_ready` | 1 | 1 ✓ | 1 ✓ | contour direct |
 | `scuba_divers_in_water` | 1 | 1 ✓ | 1 ✓ | contour direct |
-| `st_jude_dinner_w_taral_black_bg` | 1 | 1 ✓ | 1 ✓ | contour direct |
-| `st_jude_dinner_w_taral_contrast_bg` | 1 | 1 ✓ | 1 ✓ | contour direct |
+| `dinner_print_black_bg` | 1 | 1 ✓ | 1 ✓ | contour direct |
+| `dinner_print_contrast_bg` | 1 | 1 ✓ | 1 ✓ | contour direct |
 
 No regressions. All 14 images produce the expected photo count with correct boundaries.
 
@@ -257,23 +257,23 @@ _detect_photos_contour
   │
   ├─ if bbox imbalance > 2.5×:
   │    1. _detect_photos_by_whiteness  (brightness spine, strict criteria)
-  │         → succeeds for spine-separated 2-photo pages (girls, bus, bhavik)
+  │         → succeeds for spine-separated 2-photo pages (scene_b, scene_a, spine_dark)
   │         → returns [] for 3-photo pages and side-by-side 2-photo pages
   │    2. _detect_photos_by_projection  (Sobel edge-density gaps)
   │         → works for white-paper-separated pages (three_pics, two_pics)
   │    3. _detect_photos_grabcut        (GrabCut blob segmentation, if projection > 3)
-  │         → works for dark-background pages (bhavik, when brightness also fails)
+  │         → works for dark-background pages (spine_dark, when brightness also fails)
   │
   └─ if max(contour_rectangularity) < 0.45:  [all contours are badly skewed]
        _detect_photos_by_whiteness
-         → catches devanshi_bus (imbalance 2.36× below 2.5× threshold)
+         → catches spine_scene_a (imbalance 2.36× below 2.5× threshold)
 ```
 
 ---
 
 ## Known Remaining Issue
 
-`devanshi_school_picnic_bus_2_images.HEIC` was previously also broken in the pre-change
+`spine_scene_a_2_images.HEIC` was previously also broken in the pre-change
 codebase (3 wrong photos via projection). The fix uses the rectangularity trigger → brightness
 spine, which correctly finds 2 photos. This is a net improvement, though the fallback hierarchy
 now has three levels of indirection — worth consolidating if more album types are added.
@@ -293,8 +293,8 @@ now has three levels of indirection — worth consolidating if more album types 
 After the spine-detection fixes, three single-photo images were still producing output that
 included visible background material from the physical surface the print was placed on:
 
-- `st_jude_dinner_w_taral_black_bg.HEIC` — dinner photo on **black leather**; output included the dark surface in the bottom ~35%.
-- `st_jude_dinner_w_taral_contrast_bg.HEIC` — same print on a **grey/white patterned album surface**; output included the patterned material in the top ~31%.
+- `dinner_print_black_bg.HEIC` — dinner photo on **black leather**; output included the dark surface in the bottom ~35%.
+- `dinner_print_contrast_bg.HEIC` — same print on a **grey/white patterned album surface**; output included the patterned material in the top ~31%.
 - `scuba_divers_in_water.HEIC` — scuba photo on **dark brown surface**; output included the surface in the bottom ~31%.
 
 The GrabCut page detector had included the background material in the "page" region, so the
@@ -302,7 +302,7 @@ perspective-corrected warped page contained both the photo print and the surroun
 
 ---
 
-## Problem 5 — st_jude_black_bg & st_jude_contrast_bg: Severely rotated diagonal crop
+## Problem 5 — dinner_black_bg & dinner_contrast_bg: Severely rotated diagonal crop
 
 ### Symptom
 
@@ -362,7 +362,7 @@ if page_was_corrected and not _has_album_page_borders(page_image):
     return [PhotoDetection(bbox=(0,0,w,h), area_ratio=1.0, ...)]  # full page
 ```
 
-The brightness-profile crop added for the st_jude images lived inside `_detect_photos_contour`,
+The brightness-profile crop added for the dinner-print images lived inside `_detect_photos_contour`,
 which is never called when this shortcut fires. So the scuba image bypassed the crop entirely.
 
 ### Fix
@@ -423,7 +423,7 @@ The function is invoked from two places in `detect_photos`:
 | Code path | Trigger | Images fixed |
 |---|---|---|
 | `_has_album_page_borders=False` shortcut | After confirming no album borders, before returning full page | `scuba_divers_in_water`, all cave/harbor/skydiving type images going forward |
-| `_detect_photos_contour` single-photo quality check | `len(detections)==1 AND rect<0.45` | `st_jude_black_bg`, `st_jude_contrast_bg` |
+| `_detect_photos_contour` single-photo quality check | `len(detections)==1 AND rect<0.45` | `dinner_black_bg`, `dinner_contrast_bg` |
 
 For cave/harbor/skydiving, the crop function returns `None` (area_ratio > 0.95 — the page is
 already a tight crop after GrabCut), so they fall through to the full-page return unchanged.
@@ -437,7 +437,7 @@ detect_photos (page_was_corrected=True)
   │
   ├─ _has_album_page_borders = False  (single print, no white borders between photos)
   │    → _find_print_crop_by_brightness  (strip dark/bright background at edges)
-  │         → succeeds: return tight crop  (scuba, st_jude-class images)
+  │         → succeeds: return tight crop  (scuba, dinner-print-class images)
   │         → None (already tight): return full page  (cave, harbor, skydiving)
   │
   └─ _has_album_page_borders = True  (album page with photo separators)
@@ -453,7 +453,7 @@ detect_photos (page_was_corrected=True)
             │
             └─ if len == 1 AND rect < 0.45:  (single skewed contour)
                  → _find_print_crop_by_brightness
-                      → succeeds: return tight crop  (st_jude images)
+                      → succeeds: return tight crop  (dinner-print images)
                       → None: return []  → pipeline uses full page
 ```
 
@@ -463,12 +463,12 @@ detect_photos (page_was_corrected=True)
 
 | Image | Expected | Before | After | Detection path |
 |---|---|---|---|---|
-| `st_jude_dinner_w_taral_black_bg` | 1 | **1 ✗** (diagonal crop) | **1 ✓** | single-rect → brightness crop |
-| `st_jude_dinner_w_taral_contrast_bg` | 1 | **1 ✗** (diagonal crop) | **1 ✓** | single-rect → brightness crop |
+| `dinner_print_black_bg` | 1 | **1 ✗** (diagonal crop) | **1 ✓** | single-rect → brightness crop |
+| `dinner_print_contrast_bg` | 1 | **1 ✗** (diagonal crop) | **1 ✓** | single-rect → brightness crop |
 | `scuba_divers_in_water` | 1 | **1 ✗** (background at bottom) | **1 ✓** | no-borders shortcut → brightness crop |
-| `bhavik_2_images` | 2 | 2 ✓ | 2 ✓ | imbalance → brightness spine |
-| `devanshi_school_picnic_bus_2_images` | 2 | 2 ✓ | 2 ✓ | rect < 0.45 → brightness spine |
-| `devanshi_school_picnic_girls_2_images` | 2 | 2 ✓ | 2 ✓ | imbalance → brightness spine |
+| `spine_dark_2_images` | 2 | 2 ✓ | 2 ✓ | imbalance → brightness spine |
+| `spine_scene_a_2_images` | 2 | 2 ✓ | 2 ✓ | rect < 0.45 → brightness spine |
+| `spine_scene_b_2_images` | 2 | 2 ✓ | 2 ✓ | imbalance → brightness spine |
 | `IMG_three_pics_normal` | 3 | 3 ✓ | 3 ✓ | contour direct |
 | `IMG_two_pics_vertical_horizontal` | 2 | 2 ✓ | 2 ✓ | contour direct |
 | `IMG_cave_normal` | 1 | 1 ✓ | 1 ✓ | no-borders → brightness returns None → full page |
