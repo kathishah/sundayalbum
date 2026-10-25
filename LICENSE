@@ -1,0 +1,27 @@
+Sunday Album
+Copyright (c) 2026 ArjunTech LLC. All rights reserved.
+
+This source code is published so that it can be read, studied and discussed. Publication is
+not a licence to use it. Unless ArjunTech LLC gives you written permission, you may not copy,
+modify, distribute, sublicense, sell, host or run this software or any part of it, or use it to
+build a competing product or service.
+
+Permitted without asking:
+  - Reading and studying the code in this repository, including on GitHub.
+  - Forking the repository on GitHub and viewing the fork there, as the GitHub Terms of Service
+    allow.
+  - Quoting short excerpts, with attribution, in reviews, discussion and teaching.
+
+Photographs: the sample photographs in apps/web/public/demo/, apps/web/tests/e2e/fixtures/ and
+in this repository's GitHub release assets are owned by or licensed to the copyright holder and
+are covered by the same reservation of rights. They may be viewed where they are published.
+
+Third-party software: dependencies installed from npm, PyPI, Homebrew and similar sources are
+not part of this repository and keep their own licences.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY ARISING FROM THE SOFTWARE OR ITS USE.
+
+To ask for permission: support@arjuntech.com
