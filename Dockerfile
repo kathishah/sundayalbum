@@ -4,7 +4,7 @@
 # Build: docker build --platform linux/amd64 -t sa-pipeline:latest .
 # Push:  see scripts/build-push-lambda.sh
 
-FROM public.ecr.aws/lambda/python:3.12
+FROM public.ecr.aws/lambda/python:3.14
 
 # pillow-heif ships bundled libheif wheels for Linux x86_64 — no system deps needed.
 # opencv-python-headless ships bundled OpenCV binaries — no libGL needed.
