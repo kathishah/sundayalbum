@@ -19,9 +19,9 @@
     "zustand": "^5"
   },
   "devDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.1019.0",
-    "@aws-sdk/client-sfn": "^3.1030.0",
-    "@playwright/test": "^1.58.2",
+    "@aws-sdk/client-dynamodb": "^3.1156.0",
+    "@aws-sdk/client-sfn": "^3.1156.0",
+    "@playwright/test": "^1.64.1",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
