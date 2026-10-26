@@ -102,18 +102,18 @@ embedded video player and poster image.
 
 Interactive slider component using real pipeline output from two test images.
 
-**Pair A — Single print** (`st_jude_dinner_w_taral_contrast_bg`):
+**Pair A — Single print** (`dinner_print_contrast_bg`):
 
 | Role | File |
 |------|------|
-| Before (source) | `test-images/st_jude_dinner_w_taral_contrast_bg.HEIC` |
-| Loaded | `debug/st_jude_dinner_w_taral_contrast_bg_01_loaded.jpg` |
-| Page detected | `debug/st_jude_dinner_w_taral_contrast_bg_02_page_detected.jpg` |
-| Page warped | `debug/st_jude_dinner_w_taral_contrast_bg_03_page_warped.jpg` |
-| Raw crop | `debug/st_jude_dinner_w_taral_contrast_bg_05_photo_01_raw.jpg` |
-| Deglared | `debug/st_jude_dinner_w_taral_contrast_bg_07_photo_01_deglared.jpg` |
-| Color restored | `debug/st_jude_dinner_w_taral_contrast_bg_13_photo_01_restored.jpg` |
-| Final output | `output/SundayAlbum_st_jude_dinner_w_taral_contrast_bg_Photo01.jpg` |
+| Before (source) | `test-images/dinner_print_contrast_bg.HEIC` |
+| Loaded | `debug/dinner_print_contrast_bg_01_loaded.jpg` |
+| Page detected | `debug/dinner_print_contrast_bg_02_page_detected.jpg` |
+| Page warped | `debug/dinner_print_contrast_bg_03_page_warped.jpg` |
+| Raw crop | `debug/dinner_print_contrast_bg_05_photo_01_raw.jpg` |
+| Deglared | `debug/dinner_print_contrast_bg_07_photo_01_deglared.jpg` |
+| Color restored | `debug/dinner_print_contrast_bg_13_photo_01_restored.jpg` |
+| Final output | `output/SundayAlbum_dinner_print_contrast_bg_Photo01.jpg` |
 
 Slider: loaded image (before) ↔ final output (after).
 

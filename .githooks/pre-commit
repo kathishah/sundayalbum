@@ -55,18 +55,21 @@ PLAYWRIGHT_BIN="$REPO_ROOT/apps/web/node_modules/.bin/playwright"
 if [ ! -f "$SESSION_FILE" ]; then
   echo "  ⚠  Playwright skipped — no dev session file found (apps/web/.auth/session-dev.json)"
   echo "     Run once from apps/web/ to create it:"
-  echo "       STAGE=dev TEST_USER_EMAIL=... DEV_FRONTEND_URL=https://dev.sundayalbum.com \\"
+  echo "       STAGE=dev TEST_USER_EMAIL=you@example.com DEV_FRONTEND_URL=https://dev.sundayalbum.com \\"
   echo "         DEV_API_URL=https://nodcooz758.execute-api.us-west-2.amazonaws.com \\"
   echo "         SESSIONS_TABLE=sa-sessions-dev npx playwright test"
 elif [ ! -f "$PLAYWRIGHT_BIN" ]; then
   echo "  ⚠  Playwright skipped — node_modules not installed"
   echo "     Run 'npm ci' from apps/web/ first"
+elif [ -z "${TEST_USER_EMAIL:-}" ]; then
+  echo "  ⚠  Playwright skipped — TEST_USER_EMAIL is not set"
+  echo "     Export the verified dev test user's address (kept out of the repo), e.g.:"
+  echo "       export TEST_USER_EMAIL=you@example.com"
 else
   echo "  ▶ Playwright E2E tests (against dev.sundayalbum.com)"
   : "${DEV_FRONTEND_URL:=https://dev.sundayalbum.com}"
   : "${DEV_API_URL:=https://nodcooz758.execute-api.us-west-2.amazonaws.com}"
   : "${SESSIONS_TABLE:=sa-sessions-dev}"
-  : "${TEST_USER_EMAIL:=chintan@reachto.me}"
 
   (cd "$REPO_ROOT/apps/web" && \
     STAGE=dev \

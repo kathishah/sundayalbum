@@ -6,6 +6,10 @@ development setup, and explains how to navigate the codebase for common contribu
 **Already set up?** See `docs/SYSTEM_ARCHITECTURE.md` for architecture decisions and
 `docs/PIPELINE_STEPS.md` for per-step implementation details.
 
+> **Pull requests:** this is a solo-maintained project. Issues and security reports are welcome
+> (see `SECURITY.md`); pull requests are not expected and may not be reviewed. Forking to learn
+> from the code is fine within the licence terms stated in the README.
+
 ---
 
 ## Table of Contents
@@ -30,10 +34,10 @@ brew install opencv libheif libraw imagemagick
 
 # 2. Create Python environment
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r packages/pipeline/requirements.txt
+pip install -e ".[dev]"     # makes `python -m src.cli` importable and adds pytest/moto/ruff/mypy
 
 # 3. Add API keys (Anthropic + OpenAI — both optional, see PIPELINE_STEPS.md for fallbacks)
-echo '{ "ANTHROPIC_API_KEY": "sk-ant-...", "OPENAI_API_KEY": "sk-..." }' > secrets.json
+cp .env.example .env     # then edit .env (gitignored); a secrets.json is read only from packages/pipeline/
 
 # 4. Download test images
 bash scripts/fetch-test-images.sh
@@ -81,6 +85,12 @@ For full architecture detail: `docs/SYSTEM_ARCHITECTURE.md`.
 14 test images covering distinct failure modes. Use this table to pick the right image(s)
 when working on a specific step.
 
+The images are the maintainer's own album scans and are published as GitHub release assets
+(`bash scripts/fetch-test-images.sh`). Rows are identified by **scenario**. The names in this
+table are descriptive aliases (people's names and event descriptions were deliberately
+removed from the docs), so the file inside the downloaded bundle may be named differently:
+match by the "Primary scenario" column and the photo count.
+
 | Image | Photos | Primary scenario | Step(s) it stresses |
 |-------|--------|-----------------|---------------------|
 | `IMG_three_pics_normal.HEIC` | 3 | Standard album page, plastic sleeve glare | `photo_detect`, `glare_remove` |
@@ -88,15 +98,15 @@ when working on a specific step.
 | `IMG_cave_normal.HEIC` | 1 | Dark tones, print glare on curved surface | `glare_remove`, `color_restore` |
 | `IMG_harbor_normal.HEIC` | 1 | Bright water reflections; distinguish glare from water content | `glare_remove` |
 | `IMG_skydiving_normal.HEIC` | 1 | Bright sky — must NOT be flagged as glare | `glare_remove` |
-| `bhavik_2_images.HEIC` | 2 | Album spine (dark background) — contour gives 1 wrong crop | `photo_detect` (spine fallback) |
-| `devanshi_school_picnic_bus_2_images.HEIC` | 2 | Album spine — contour gives 3 wrong crops | `photo_detect` (spine fallback) |
-| `devanshi_school_picnic_girls_2_images.HEIC` | 2 | Album spine with texture — split at wrong position | `photo_detect` (spine fallback) |
-| `devanshi_prachi_sadhna.HEIC` | 1 | Clean single print, standard contour detection | `photo_detect` |
-| `chintan_on_razr.HEIC` | 1 | 0 contours detected → full-page fallback | `photo_detect` (edge case) |
+| `spine_dark_2_images.HEIC` | 2 | Album spine (dark background) — contour gives 1 wrong crop | `photo_detect` (spine fallback) |
+| `spine_scene_a_2_images.HEIC` | 2 | Album spine — contour gives 3 wrong crops | `photo_detect` (spine fallback) |
+| `spine_scene_b_2_images.HEIC` | 2 | Album spine with texture — split at wrong position | `photo_detect` (spine fallback) |
+| `single_print_portrait.HEIC` | 1 | Clean single print, standard contour detection | `photo_detect` |
+| `single_print_no_contours.HEIC` | 1 | 0 contours detected → full-page fallback | `photo_detect` (edge case) |
 | `scuba_divers_getting_ready.HEIC` | 1 | Clean single print, contour direct | `photo_detect` |
 | `scuba_divers_in_water.HEIC` | 1 | Print on dark brown surface — background stripping needed | `page_detect`, `photo_split` |
-| `st_jude_dinner_w_taral_black_bg.HEIC` | 1 | Print on black leather — background stripping + diagonal crop | `page_detect`, `photo_split` |
-| `st_jude_dinner_w_taral_contrast_bg.HEIC` | 1 | Same print on patterned grey/white album surface | `page_detect`, `photo_split` |
+| `dinner_print_black_bg.HEIC` | 1 | Print on black leather — background stripping + diagonal crop | `page_detect`, `photo_split` |
+| `dinner_print_contrast_bg.HEIC` | 1 | Same print on patterned grey/white album surface | `page_detect`, `photo_split` |
 
 **Tip:** When fixing a regression, also run the full 14-image batch to check for new
 regressions: `python -m src.cli process test-images/ --output ./output/ --batch --filter "*.HEIC"`

@@ -36,7 +36,11 @@ const FIXTURE_2UP = path.join(__dirname, 'fixtures', 'test_photo_2up.jpg')
 
 const API_URL       = process.env.DEV_API_URL ?? 'https://nodcooz758.execute-api.us-west-2.amazonaws.com'
 const REGION        = process.env.AWS_DEFAULT_REGION ?? 'us-west-2'
-const STATE_MACHINE = 'arn:aws:states:us-west-2:680073251743:stateMachine:sa-pipeline-dev'
+// The dev state machine ARN is deployment config, not stored in the repo: set DEV_STATE_MACHINE_ARN,
+// or AWS_ACCOUNT_ID so the ARN can be derived.
+const STATE_MACHINE =
+  process.env.DEV_STATE_MACHINE_ARN ??
+  `arn:aws:states:${REGION}:${process.env.AWS_ACCOUNT_ID ?? ''}:stateMachine:sa-pipeline-dev`
 
 const POLL_INTERVAL_MS   = 5_000
 const REPROCESS_TIMEOUT  = 4 * 60 * 1000  // 4 min

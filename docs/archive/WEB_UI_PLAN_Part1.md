@@ -289,7 +289,7 @@ AWS CDK stack defining all resources. New: `infra/` directory.
 **Implementation notes:**
 - CDK stack name: `SundayAlbumStack` in `infra/infra/sundayalbum_stack.py`
 - API base URL: `https://e1f6o1ah49.execute-api.us-west-2.amazonaws.com`
-- S3 bucket: `sundayalbum-data-680073251743-us-west-2`
+- S3 bucket: `sundayalbum-data-<account-id>-us-west-2`
 - DynamoDB tables: `sa-sessions` (GSI: `token-index`), `sa-jobs` (DynamoDB Streams enabled), `sa-ws-connections` (GSI: `job-index`)
 - Lambda code in `api/` directory — shared zip across all 3 functions
 - SES sender uses verified identity; configured via `ses_sender_email` CDK context key
@@ -391,8 +391,8 @@ Each state updates DynamoDB `sa-jobs.current_step`. DynamoDB Streams trigger Web
 - Memory raised to 3008MB for all image-processing Lambdas (24MP HEIC decoding requires ~600MB float32 array + Python overhead; 1024MB caused OOM in Load step)
 - `start_time` and `config` must be included in Step Functions execution input from `_handle_start()` — the PrepareMap Pass state passes them through to each per-photo task
 - `finalize_job()` prefixes `output_keys` with `{user_hash}/` so DynamoDB stores full S3 paths; `jobs.py` `presign_get()` can then generate correct presigned URLs
-- Step Functions state machine ARN: `arn:aws:states:us-west-2:680073251743:stateMachine:sa-pipeline`
-- ECR repo: `680073251743.dkr.ecr.us-west-2.amazonaws.com/cdk-hnb659fds-container-assets-680073251743-us-west-2`
+- Step Functions state machine ARN: `arn:aws:states:us-west-2:<account-id>:stateMachine:sa-pipeline`
+- ECR repo: `<account-id>.dkr.ecr.us-west-2.amazonaws.com/cdk-hnb659fds-container-assets-<account-id>-us-west-2`
 
 **Files added in Phase 2:**
 - New: `src/storage/s3.py` — S3Storage backend (boto3, regional endpoint, SigV4)
