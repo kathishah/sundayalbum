@@ -29,6 +29,9 @@ Read this first if you're new to the project.
 
 Read this first when orienting to the project or making architectural decisions.
 
+### `OPERATIONS.md`
+How the AWS deployment is configured, deployed, backed up and torn down; what stays out of the repo; qualitative cost notes.
+
 ### `PIPELINE_STEPS.md`
 Per-step implementation reference. For each pipeline step:
 - What it does and which algorithm/model it uses

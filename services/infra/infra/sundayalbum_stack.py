@@ -1,6 +1,9 @@
 """CDK stack for Sunday Album Web UI — Phase 1 + Phase 2 + Phase 3."""
 
+import os
+
 from aws_cdk import (
+    Annotations,
     CfnOutput,
     Duration,
     RemovalPolicy,
@@ -197,7 +200,18 @@ class SundayAlbumStack(Stack):
         # ── Shared environment variables ─────────────────────────────────────
         # ADMIN_EMAILS: comma-separated list of emails exempt from rate limits.
         # Adding new admins requires a CDK redeploy (deliberate — not a hot config).
-        admin_emails = self.node.try_get_context("admin_emails") or "kathi.shah@gmail.com,chintan@reachto.me"
+        # The list is deployment configuration and is not stored in the repo: pass
+        # `-c admin_emails=a@example.com,b@example.com` or set SUNDAYALBUM_ADMIN_EMAILS.
+        admin_emails = (
+            self.node.try_get_context("admin_emails")
+            or os.environ.get("SUNDAYALBUM_ADMIN_EMAILS")
+            or ""
+        )
+        if not admin_emails:
+            Annotations.of(self).add_warning(
+                "ADMIN_EMAILS is empty, so no one is exempt from the daily job limit. "
+                "Pass -c admin_emails=... or set SUNDAYALBUM_ADMIN_EMAILS before deploying."
+            )
 
         common_env = {
             "SESSIONS_TABLE": sessions_table.table_name,

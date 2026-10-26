@@ -15,5 +15,5 @@ unzip -o "${ZIP_FILE}"
 echo "🧹 Cleaning up..."
 rm "${ZIP_FILE}"
 
-echo "✅ Downloaded $(ls test-images/ | wc -l) test images (~140MB total)"
+echo "✅ Downloaded $(ls test-images/ | wc -l) test images (~23 MB download)"
 

@@ -26,7 +26,9 @@ permissions:
 
 env:
   AWS_REGION: us-west-2
-  ACCOUNT_ID: "680073251743"
+  # Set as a repository secret (Settings > Secrets and variables > Actions): AWS_ACCOUNT_ID.
+  # A secret (not a variable) so the value is masked in public workflow logs.
+  ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
 # Determine stage once, reused in both jobs via outputs
 jobs:
@@ -39,10 +41,14 @@ jobs:
     steps:
       - name: Determine stage and suffix
         id: stage
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_STAGE: ${{ github.event.inputs.stage }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            STAGE="${{ github.event.inputs.stage }}"
-          elif [ "${{ github.ref_name }}" = "main" ]; then
+          if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
+            STAGE="${INPUT_STAGE}"
+          elif [ "${REF_NAME}" = "main" ]; then
             STAGE="prod"
           else
             STAGE="dev"
@@ -63,10 +69,10 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
           role-to-assume: arn:aws:iam::${{ env.ACCOUNT_ID }}:role/github-actions-sundayalbum
           aws-region: ${{ env.AWS_REGION }}
@@ -103,21 +109,21 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
           role-to-assume: arn:aws:iam::${{ env.ACCOUNT_ID }}:role/github-actions-sundayalbum
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Set up QEMU (ARM64 cross-build support)
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
         with:
           platforms: arm64
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: Resolve ECR repo for stage
         id: ecr
@@ -127,15 +133,15 @@ jobs:
           #   dev  → sundayalbum-pipeline-dev  (MUTABLE tags — no collision possible)
           #   prod → cdk-hnb659fds-container-assets-* (IMMUTABLE tags — CDK-managed)
           if [ "${STAGE}" = "prod" ]; then
-            ECR_REPO="680073251743.dkr.ecr.us-west-2.amazonaws.com/cdk-hnb659fds-container-assets-680073251743-us-west-2"
+            ECR_REPO="${ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/cdk-hnb659fds-container-assets-${ACCOUNT_ID}-us-west-2"
           else
-            ECR_REPO="680073251743.dkr.ecr.us-west-2.amazonaws.com/sundayalbum-pipeline-dev"
+            ECR_REPO="${ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/sundayalbum-pipeline-dev"
           fi
           echo "repo=${ECR_REPO}" >> $GITHUB_OUTPUT
           echo "ECR repo: ${ECR_REPO}"
 
       - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
+        uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2
 
       - name: Build and push pipeline image (linux/arm64)
         id: image

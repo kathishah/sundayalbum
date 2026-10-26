@@ -1,5 +1,9 @@
 .venv/
 secrets.json
+.env
+.env.*
+!.env.example
+node_modules/
 test-images/
 output/
 debug/

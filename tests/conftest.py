@@ -50,7 +50,7 @@ os.environ.update(
         "USER_SETTINGS_TABLE": "sa-user-settings-test",
         "S3_BUCKET": "sa-data-test",
         "SES_SENDER": "noreply@test.com",
-        "ADMIN_EMAILS": "admin@example.com,chintan@reachto.me",
+        "ADMIN_EMAILS": "admin@example.com",
         "STATE_MACHINE_ARN": (
             "arn:aws:states:us-west-2:123456789012:stateMachine:sa-pipeline-test"
         ),

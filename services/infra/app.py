@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import os
+
 import aws_cdk as cdk
 
 from infra.sundayalbum_stack import SundayAlbumStack
@@ -15,6 +17,8 @@ SundayAlbumStack(
     app,
     stack_name,
     stage=stage,
-    env=cdk.Environment(account="680073251743", region="us-west-2"),
+    # The AWS CDK CLI sets CDK_DEFAULT_ACCOUNT from the credentials/profile in use, so the
+    # account ID is not stored in the repo. Deploy with the profile for the target account.
+    env=cdk.Environment(account=os.environ.get("CDK_DEFAULT_ACCOUNT"), region="us-west-2"),
 )
 app.synth()

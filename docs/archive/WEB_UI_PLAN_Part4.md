@@ -242,7 +242,7 @@ on:
 - Test fixture: `web/tests/e2e/fixtures/test_photo.jpg` — real 900×1200 JPEG (253 KB) converted from `test-images/IMG_skydiving_normal.HEIC` using PIL. Committed to repo so CI doesn't need test-images downloaded.
 - Global setup (`global-setup.ts`) authenticates via `send-code` → DynamoDB code read → `verify`, saves session to `.auth/session.json` (storageState), then uploads the fixture and polls `GET /jobs/{id}` every 5s until `status === complete` (3-min timeout). Both the session token and the completed `job_id` are cached across runs: subsequent `npx playwright test` calls reuse both, completing in ~33s instead of ~3.5min.
 - `stepTree(page)` scoped to `page.getByRole('main').locator('nav')` to avoid matching the top-level header `<nav>`.
-- SES sandbox: `chintan@reachto.me` verified as an email identity before tests could run (one-time setup, already done).
+- SES sandbox: `<test-user-email>` verified as an email identity before tests could run (one-time setup, already done).
 - T38 uses `[data-job-id="${jobId}"]` to target the exact fixture card (see T38/T39 notes above).
 - All 12 tests (T36–T47) pass in ~33s on second run. First run takes ~3.5min waiting for pipeline completion.
 
@@ -291,7 +291,7 @@ python3 -m venv .venv && source .venv/bin/activate && pip install -e ".[dev]"
 cd web && npm ci && npx playwright install chromium --with-deps && cd ..
 
 # 3. Set env vars and run Playwright once to authenticate + seed the fixture job
-export TEST_USER_EMAIL=chintan@reachto.me
+export TEST_USER_EMAIL=<test-user-email>
 export DEV_FRONTEND_URL=https://dev.sundayalbum.com
 export DEV_API_URL=https://nodcooz758.execute-api.us-west-2.amazonaws.com
 export AWS_ACCESS_KEY_ID=<from secrets.json>
@@ -500,4 +500,4 @@ A fixed bar at the very top of every `(app)` layout page (above the navbar), sho
 - Stack name: `SundayAlbumStack` (no suffix — existing prod resources)
 - API Gateway: `https://e1f6o1ah49.execute-api.us-west-2.amazonaws.com`
 - WebSocket: `wss://l7t59cvhyh.execute-api.us-west-2.amazonaws.com/$default`
-- S3 bucket: `sundayalbum-data-680073251743-us-west-2`
+- S3 bucket: `sundayalbum-data-<account-id>-us-west-2`

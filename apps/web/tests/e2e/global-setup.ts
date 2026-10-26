@@ -14,7 +14,7 @@
  *    If the saved job is already complete it is reused across runs.
  *
  * Required env vars:
- *   TEST_USER_EMAIL        e.g. chintan@reachto.me
+ *   TEST_USER_EMAIL        a verified test user, e.g. you@example.com
  *   DEV_FRONTEND_URL       e.g. https://dev.sundayalbum.com
  *   DEV_API_URL            e.g. https://nodcooz758.execute-api.us-west-2.amazonaws.com
  *   AWS_ACCESS_KEY_ID      IAM read on sa-sessions(-dev) DynamoDB table
