@@ -7,12 +7,12 @@ orientation and restores faded color.
 This repository is the source of the whole product: the Python processing pipeline, the AWS
 backend (CDK, Lambda, Step Functions), the Next.js web app and marketing site, and the SwiftUI
 macOS app. Sunday Album is a product of [ArjunTech LLC](https://arjuntech.com); the hosted web
-app is at [sundayalbum.com](https://sundayalbum.com).
+app is at [www.sundayalbum.com](https://www.sundayalbum.com).
 
 > **Project stance:** a solo-maintained product repository, published for reference and
 > transparency. It is not packaged for others to deploy; the AWS deployment described here is the
 > maintainer's own. Issues and security reports are welcome, pull requests are not expected.
-> Licence: not yet chosen (see [Licence](#licence)).
+> Licence: all rights reserved; the source is published for reading (see [Licence](#licence)).
 >
 > **Status (Oct 2026):** the web app is live; the macOS app is a 1.0 beta. The last feature work
 > was in April 2026 and the last commit (a repository restructure) in Aug 2026. Maintained as time
@@ -20,7 +20,7 @@ app is at [sundayalbum.com](https://sundayalbum.com).
 
 ## Try it
 
-- **Web app:** [sundayalbum.com](https://sundayalbum.com), free tier of 20 pages a day, or bring
+- **Web app:** [www.sundayalbum.com](https://www.sundayalbum.com), free tier of 20 pages a day, or bring
   your own Anthropic and OpenAI keys for no limit.
 - **macOS app (beta):** the `v1.0-beta1` [release](../../releases/tag/v1.0-beta1). Requires
   macOS 14 or later and is not notarized (right-click, Open on first launch); the first launch
@@ -104,8 +104,10 @@ interface; see `docs/SYSTEM_ARCHITECTURE.md`.
 
 ## Licence
 
-No licence has been chosen yet. Until a `LICENSE` file is added, the code is published for
-reading and all rights are reserved by the copyright holder (GitHub's terms still let you view
-and fork the repository on GitHub). The sample images in the release assets and
-`apps/web/public/demo/` are the maintainer's own photographs. The hosted service is governed by
-the [Terms of Use](https://sundayalbum.com/terms).
+**All rights reserved.** The source is public so that it can be read, studied and discussed;
+that is not a licence to copy, modify, host or redistribute it. See [LICENSE](LICENSE) for what
+is allowed without asking (reading, forking on GitHub, short quotations) and how to ask for
+more. The sample photographs in the release assets and `apps/web/public/demo/` are owned by
+or licensed to ArjunTech LLC and carry the same reservation. The hosted service is governed by the
+[Terms of Use](https://www.sundayalbum.com/terms), which are consistent with this licence: they
+restrict reverse-engineering the running service, not reading the published source.

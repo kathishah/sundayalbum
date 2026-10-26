@@ -17,7 +17,7 @@ export default function TermsPage() {
             Terms of Use
           </h1>
           <p className="text-sm text-sa-stone-400 dark:text-sa-stone-500">
-            Effective date: April 14, 2026 &mdash; ArjunTech LLC
+            Effective date: October 25, 2026 &mdash; ArjunTech LLC
           </p>
         </div>
 
@@ -65,7 +65,11 @@ export default function TermsPage() {
                 Use the service to circumvent rate limits or abuse the processing pipeline.
               </li>
               <li>
-                Reverse-engineer, decompile, or attempt to extract the source code of the service.
+                Reverse-engineer, decompile, or attempt to extract non-public parts of the
+                service, such as credentials, other users&apos; data or infrastructure details.
+                Reading the source code that ArjunTech LLC publishes at
+                github.com/kathishah/sundayalbum is not restricted by this clause; that code
+                is subject to the licence stated in that repository (all rights reserved).
               </li>
               <li>Use the service in any way that violates applicable laws or regulations.</li>
             </ul>
