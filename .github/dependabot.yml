@@ -1,5 +1,7 @@
 # Dependency update PRs. Solo project: a weekly, low-volume schedule, grouped to limit noise.
 # Pull requests target `dev` (see docs/CONTRIBUTING.md); promote to `main` after review.
+# Major version updates are ignored on purpose: take a major deliberately, in its own PR.
+# Security updates are not affected by `ignore` and still open PRs (they target the default branch).
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -10,6 +12,9 @@ updates:
     groups:
       actions:
         patterns: ["*"]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: npm
     directory: "/apps/web"
@@ -20,6 +25,9 @@ updates:
     groups:
       web-minor-and-patch:
         update-types: ["minor", "patch"]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: pip
     directory: "/packages/pipeline"
@@ -27,6 +35,9 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: pip
     directory: "/services/infra"
@@ -34,15 +45,24 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: docker
     directory: "/"
     target-branch: dev
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: docker
     directory: "/apps/web"
     target-branch: dev
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]

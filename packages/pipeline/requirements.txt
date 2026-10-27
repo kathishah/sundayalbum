@@ -6,11 +6,11 @@ Pillow>=10.4.0
 
 # Format support
 pillow-heif>=0.18.0
-rawpy>=0.21.0
+rawpy>=0.27.1
 
 # CLI and utilities
 click>=8.1.0
-python-dotenv>=1.0.0
+python-dotenv>=1.2.4
 matplotlib>=3.9.0
 
 # AI APIs
