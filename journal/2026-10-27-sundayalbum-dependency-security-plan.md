@@ -1,6 +1,44 @@
 # sundayalbum: web security and dependency plan (2026-10-27)
 
-Repo `kathishah/sundayalbum` (local checkout `~/dev/sundayalbum`). Written after the October 2026 public-repo cleanup, which turned on Dependabot alerts and security updates. Everything needed is in this file and in `docs/OPERATIONS.md`. Nothing in this plan has been started.
+Repo `kathishah/sundayalbum` (local checkout `~/dev/sundayalbum`). Written after the October 2026 public-repo cleanup, which turned on Dependabot alerts and security updates. Everything needed is in this file and in `docs/OPERATIONS.md`. Execution started 2026-10-27; section 0 is the live tracker, sections 9-11 hold the results.
+
+## 0. Progress tracker (last updated 2026-10-27, mid step 7)
+Legend: done / in progress / pending / needs owner decision.
+
+| Step | Status | Where | Notes |
+|---|---|---|---|
+| 1. Sync and branch | done | `dev` pushed with `main` merged | |
+| 2. PR check for the web app | done | #87 (merged) | `Build Web` passes; a deliberately broken commit (#88, closed) failed at Type-check |
+| 3. Interim mitigation | done | #89 (merged) | `/_next/image` 404 on dev and prod |
+| 4. Upgrade (Next 15.5.28, React 19.3.1, Node 24, lockfile fixes) | done | #90 (merged) | local checks and Docker build on node:24-alpine passed |
+| 5. Verify on dev | done | dev deploy of #90 | 12 routes 200; Playwright 20 passed / 1 skipped, before and after the upgrade |
+| 6. Promote to prod | done | #92 (merge commit `b9ce386`) | prod routes 200; Dependabot: 0 critical, 0 `next` alerts |
+| 7. Dependabot tidy-up | **in progress** | see below | |
+
+Step 7 detail:
+
+| Item | Status | Next action |
+|---|---|---|
+| #94 `dependabot.yml`: ignore majors | merged into dev (`72668a6`) | promote to `main` (takes effect from `main`; deploys nothing) |
+| #95 `overrides` for next's vendored postcss (clears 4 alerts; `npm audit` 0) | open, `Build Web` green | merge to dev; promote later (touches `apps/web`, so it deploys prod: owner decides) |
+| Closed with comments: #93 (Next 16), #65, #77, #72, #81, #68, #79, #66, #75 | done | none |
+| Auto-closed by Dependabot (superseded): #74, #78, #80, #82, #83, #84, #86 | done | none |
+| Merged into dev: #67 constructs, #70 pytest 9.1.1, #71 aws-cdk-lib | done | none (no deploy path) |
+| #69 rawpy, #76 python-dotenv: merged into dev | done | dev Lambda deploys after each succeeded (runs 40537063888, 40538185202). Note: both only change `requirements.txt` / `requirements-runtime.txt` (the Mac app's runtime), not `requirements-lambda.txt`, so the Lambda image gained no new pins; its unpinned `>=` deps re-resolve on every rebuild |
+| #91 web minor/patch group: merged into dev | done | dev web deploy succeeded (run 40539127593); Playwright run 40539943227: 19 passed, 1 flaky, 1 skipped |
+| #64 GitHub Actions majors (SHAs verified against tags): merged into dev | done | dev web and Lambda deploys both succeeded on the new actions (runs 40542254827, 40542254778) |
+| Playwright on dev after #69/#76/#91 (run 40539943227) | 19 passed, 1 flaky, 1 skipped | `T-sfn-smoke-02` timed out once (240s) and passed on retry; cause unproven (cold starts after the Lambda rebuilds is the likely one). Re-run on final dev state (run 40547099640): 20 passed, 1 skipped |
+| #85 pytest 9.0.3 (security PR into `main`) | pending | close as superseded once #70 is on `main` |
+| Promote `dev` to `main` (merge commit, no squash) | pending, owner decides | after the above; deploys prod web (and Lambda if pipeline files changed) |
+| Re-run alert query on `main` | pending | expect 0 open alerts once #95 and #70 are on `main` |
+
+Remaining order (each step needs the owner's explicit OK; approvals do not carry over between sessions): (1) re-run Playwright on dev; (2) merge #94 and #95 into dev (push the local journal commits to #95 first); (3) promote `dev` to `main` with a merge commit (deploys prod web and prod Lambdas); (4) close #85, re-run the alert query on `main` (expect 0); (5) update this tracker; (6) re-check the orientation difference in prod (not a blocker).
+
+Gotchas: Dependabot reads `dependabot.yml` from `main` and evaluates alerts on `main`; its security PRs target `main` and must not be merged directly; Playwright tests the deployed dev site; GitHub shows mergeable `UNKNOWN` for a few seconds after a merge; `requirements-lambda.txt` is unpinned, so every Lambda rebuild re-resolves it.
+
+Open Dependabot alerts right now (on `main`): 4 `postcss` (fixed by #95) and 1 `pytest` (fixed by #70). Critical: 0.
+
+Follow-ups, none started: **photo orientation differs between the local macOS venv and the Linux Lambda image** (two_pics Photo01 rotated 90 degrees, three_pics Photo01 rotated 180 degrees, AI orientation off; cause unproven, see section 12). Re-check it in prod after this plan is fully executed (with AI orientation on); not a blocker for any step; pin `requirements-lambda.txt` (constraints file); drop the unused `matplotlib` and `scikit-image` requirements; Lambda Python 3.12 to 3.14 as its own task; `/api/version` `is_latest` is always false because it queries commit path `web` instead of `apps/web` (found while reading the route); items in section 7 (OIDC for `test-web.yml`, stale branches, `ADMIN_EMAILS`).
 
 ## 1. State on 2026-10-27
 - `main` = `bfc66a0` (licence A merged). `dev` = `9600632` (a merge commit that took `main`'s tree as of `f9a8ef6`); `dev` does **not** yet contain the licence commit `bfc66a0`, and merging `main` into `dev` should be clean.
@@ -75,3 +113,21 @@ Verified locally: `npm ci`, `typecheck`, `lint`, `build` pass; `docker build` of
 Remaining audit items: `npm audit` still lists the copy of `postcss` vendored inside `next` itself (the fix is Next 16, a major bump) and one moderate issue. These are build-time CSS-processing code paths, not request-time ones.
 
 Playwright note: the suite (`tests/e2e`) runs against the **deployed** dev site (`DEV_FRONTEND_URL`) and its global setup reads the DynamoDB sessions table with AWS keys. Dispatching `test-web.yml` on a branch therefore tests whatever is deployed on dev, not the branch. Run it after the upgrade has deployed to dev (and ideally once before, as the baseline).
+
+## 11. Promotion to prod and the postcss override (2026-10-27)
+Step 6 done: PR #92 (dev to main, merge commit `b9ce386`) deployed prod web. Before/after: prod ran Next 14.2.29; after the deploy `www.` and `app.sundayalbum.com` return 200 on 9 routes and `/_next/image` is 404 on both; `/api/version` reports `b9ce386`. Playwright against dev: 20 passed / 1 skipped both before the upgrade (8.3 min) and after it (6.9 min). Dependabot alerts on `main` after the deploy: 0 critical, 0 `next`; left: 4 `postcss` (the copy vendored inside `next`) and 1 `pytest`.
+
+Dependabot's answer to the postcss alerts was PR #93, which bumps `next` 15.5.28 to **16.4.3** (a major) into `main`. Not taken. Instead `package.json` gets `"overrides": { "next": { "postcss": "^8.5.32" } }`, and the locked nested copy (8.4.31) is dropped so npm re-resolves it to the top-level 8.5.32. Verified: clean `npm ci`, `typecheck`, `lint`, `build`, `docker build` on `node:24-alpine`, container serves all routes, `/_next/image` 404, `npm audit` reports 0 vulnerabilities. Revisit when Next is upgraded again: remove the override if Next's own `postcss` pin moves past 8.5.23.
+
+Note for the next person: Dependabot reads `dependabot.yml` from `main`, and its security PRs target `main` regardless of `target-branch`, so merging one deploys prod. Handle them by applying the same change on a branch into `dev` and promoting.
+
+## 12. Local test of the rebuilt Lambda image on real HEIC photos (2026-10-27)
+The Lambda image installs `requirements-lambda.txt`, whose `>=` dependencies re-resolve on every rebuild (it has no pins). #69 and #76 do not touch that file (they change the Mac app's `requirements*.txt` only), but the two dev Lambda deploys rebuilt the image anyway.
+
+Check: built the root `Dockerfile` locally for `linux/arm64` (the platform the workflow deploys) and ran the pipeline inside it on four HEICs from `test-images/` (three-photo page, two-photo page, two single-photo pages), AI steps off, no network, no keys. Resolved versions: Pillow 13.0.0, pillow-heif 1.8.1, numpy 2.5.4, scipy 1.18.1, OpenCV 5.0.0.
+- All four images processed (ok): 3, 2, 1 and 1 photos, matching expectations and a local macOS venv.
+- Same image with the older versions pinned back (Pillow 12.3.0, pillow-heif 1.5.0, numpy 2.5.2, scipy 1.18.0): **7 of 7 output files byte-identical** (md5). The package drift changed nothing for these images.
+- The local macOS venv output differs from the Linux image: a few pixels of crop on most photos, `two_pics` Photo01 rotated 90 degrees and `three_pics` Photo01 rotated 180 degrees (owner's visual check). The Linux runs with new and old pins are identical, so Pillow/pillow-heif/numpy/scipy drift is not the cause. **The cause is not established**: the likely candidate is a native difference (OpenCV build, BLAS) between the macOS venv and the Linux image, but I did not compare the exact OpenCV wheels, so that is an inference. The loader's `_getexif()` is a no-op for HEIC in both environments, so EXIF handling is ruled out.
+- Why the rotation shows at all: the check ran with AI orientation off. `ai_orient` then returns 0 degrees, and in `geometry/rotation.py` `_detect_small_rotation` is disabled and `_detect_orientation_error` always returns 0, so nothing corrects gross orientation. Output orientation is whatever the detected corner order produces (`_order_corners` in `photo_detection/detector.py`: top-left = smallest x+y, top-right = smallest y-x, and so on). A small change in the detected hull/minAreaRect can flip that choice and swap width and height (the 90 degree case). I found no simple mechanism for the in-place 180 degree case. With AI orientation on (production), `ai_orient` normally corrects gross rotation, which would mask this; not tested here.
+
+Limits: four photos, no pixel-level assertion against a known-good result, and the previous Lambda image from ECR could not be pulled (no AWS), so "old" means the older pins rather than the actually deployed image. `requirements-lambda.txt` would still benefit from pins or a constraints file; not started.
