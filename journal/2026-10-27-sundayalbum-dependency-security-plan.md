@@ -25,7 +25,7 @@ Step 7 detail:
 | Auto-closed by Dependabot (superseded): #74, #78, #80, #82, #83, #84, #86 | done | none |
 | Merged into dev: #67 constructs, #70 pytest 9.1.1, #71 aws-cdk-lib | done | none (no deploy path) |
 | #69 rawpy, #76 python-dotenv: merged into dev | done | dev Lambda deploys after each succeeded (runs 40537063888, 40538185202). Note: both only change `requirements.txt` / `requirements-runtime.txt` (the Mac app's runtime), not `requirements-lambda.txt`, so the Lambda image gained no new pins; its unpinned `>=` deps re-resolve on every rebuild |
-| #91 web minor/patch group: merged into dev | merged, deploy in progress | dev web deploy run 40539127593; then run Playwright on dev (expect 20 passed / 1 skipped) |
+| #91 web minor/patch group: merged into dev | done | dev web deploy succeeded (run 40539127593); Playwright on dev dispatched (run 40539943227), result pending (baseline 20 passed / 1 skipped) |
 | #64 GitHub Actions majors (SHAs verified against tags) | pending | merge last, so the dev deploys exercise the new actions |
 | #85 pytest 9.0.3 (security PR into `main`) | pending | close as superseded once #70 is on `main` |
 | Promote `dev` to `main` (merge commit, no squash) | pending, owner decides | after the above; deploys prod web (and Lambda if pipeline files changed) |
@@ -115,3 +115,13 @@ Step 6 done: PR #92 (dev to main, merge commit `b9ce386`) deployed prod web. Bef
 Dependabot's answer to the postcss alerts was PR #93, which bumps `next` 15.5.28 to **16.4.3** (a major) into `main`. Not taken. Instead `package.json` gets `"overrides": { "next": { "postcss": "^8.5.32" } }`, and the locked nested copy (8.4.31) is dropped so npm re-resolves it to the top-level 8.5.32. Verified: clean `npm ci`, `typecheck`, `lint`, `build`, `docker build` on `node:24-alpine`, container serves all routes, `/_next/image` 404, `npm audit` reports 0 vulnerabilities. Revisit when Next is upgraded again: remove the override if Next's own `postcss` pin moves past 8.5.23.
 
 Note for the next person: Dependabot reads `dependabot.yml` from `main`, and its security PRs target `main` regardless of `target-branch`, so merging one deploys prod. Handle them by applying the same change on a branch into `dev` and promoting.
+
+## 12. Local test of the rebuilt Lambda image on real HEIC photos (2026-10-27)
+The Lambda image installs `requirements-lambda.txt`, whose `>=` dependencies re-resolve on every rebuild (it has no pins). #69 and #76 do not touch that file (they change the Mac app's `requirements*.txt` only), but the two dev Lambda deploys rebuilt the image anyway.
+
+Check: built the root `Dockerfile` locally for `linux/arm64` (the platform the workflow deploys) and ran the pipeline inside it on four HEICs from `test-images/` (three-photo page, two-photo page, two single-photo pages), AI steps off, no network, no keys. Resolved versions: Pillow 13.0.0, pillow-heif 1.8.1, numpy 2.5.4, scipy 1.18.1, OpenCV 5.0.0.
+- All four images processed (ok): 3, 2, 1 and 1 photos, matching expectations and a local macOS venv.
+- Same image with the older versions pinned back (Pillow 12.3.0, pillow-heif 1.5.0, numpy 2.5.2, scipy 1.18.0): **7 of 7 output files byte-identical** (md5). The package drift changed nothing for these images.
+- The local macOS venv output differs from the Linux image by a few pixels of crop, and one photo is rotated 90 degrees. That is a platform difference (the same pins give identical files on Linux), not a dependency regression. The loader's `_getexif()` call is a no-op for HEIC in both environments (the attribute does not exist; the AttributeError is caught), so EXIF handling was ruled out.
+
+Limits: four photos, no pixel-level assertion against a known-good result, and the previous Lambda image from ECR could not be pulled (no AWS), so "old" means the older pins rather than the actually deployed image. `requirements-lambda.txt` would still benefit from pins or a constraints file; not started.
