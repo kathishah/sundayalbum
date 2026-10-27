@@ -2,7 +2,7 @@
 
 Repo `kathishah/sundayalbum` (local checkout `~/dev/sundayalbum`). Written after the October 2026 public-repo cleanup, which turned on Dependabot alerts and security updates. Everything needed is in this file and in `docs/OPERATIONS.md`. Execution started 2026-10-27; section 0 is the live tracker, sections 9-11 hold the results.
 
-## 0. Progress tracker (last updated 2026-10-27, mid step 7)
+## 0. Progress tracker (last updated 2026-10-27, after #95 dev deployment)
 Legend: done / in progress / pending / needs owner decision.
 
 | Step | Status | Where | Notes |
@@ -20,7 +20,7 @@ Step 7 detail:
 | Item | Status | Next action |
 |---|---|---|
 | #94 `dependabot.yml`: ignore majors | merged into dev (`72668a6`) | promote to `main` (takes effect from `main`; deploys nothing) |
-| #95 `overrides` for next's vendored postcss (clears 4 alerts; `npm audit` 0) | open, `Build Web` green | merge to dev; promote later (touches `apps/web`, so it deploys prod: owner decides) |
+| #95 `overrides` for next's vendored postcss (clears 4 alerts; `npm audit` 0) | merged into dev (`efee6c0`); dev web deploy succeeded (run 40551728284) | promote to `main` (touches `apps/web`, so it deploys prod: owner decides) |
 | Closed with comments: #93 (Next 16), #65, #77, #72, #81, #68, #79, #66, #75 | done | none |
 | Auto-closed by Dependabot (superseded): #74, #78, #80, #82, #83, #84, #86 | done | none |
 | Merged into dev: #67 constructs, #70 pytest 9.1.1, #71 aws-cdk-lib | done | none (no deploy path) |
@@ -32,7 +32,7 @@ Step 7 detail:
 | Promote `dev` to `main` (merge commit, no squash) | pending, owner decides | after the above; deploys prod web (and Lambda if pipeline files changed) |
 | Re-run alert query on `main` | pending | expect 0 open alerts once #95 and #70 are on `main` |
 
-Remaining order (each step needs the owner's explicit OK; approvals do not carry over between sessions): (1) re-run Playwright on dev; (2) merge #94 and #95 into dev (push the local journal commits to #95 first); (3) promote `dev` to `main` with a merge commit (deploys prod web and prod Lambdas); (4) close #85, re-run the alert query on `main` (expect 0); (5) update this tracker; (6) re-check the orientation difference in prod (not a blocker).
+Remaining order (each step needs the owner's explicit OK; approvals do not carry over between sessions): (1) re-run Playwright on dev — done, run 40547099640 (20 passed, 1 skipped); (2) merge #94 and #95 into dev, including the local journal commits — done; (3) promote `dev` to `main` with a merge commit (deploys prod web and prod Lambdas); (4) close #85, re-run the alert query on `main` (expect 0); (5) update this tracker; (6) re-check the orientation difference in prod (not a blocker).
 
 Gotchas: Dependabot reads `dependabot.yml` from `main` and evaluates alerts on `main`; its security PRs target `main` and must not be merged directly; Playwright tests the deployed dev site; GitHub shows mergeable `UNKNOWN` for a few seconds after a merge; `requirements-lambda.txt` is unpinned, so every Lambda rebuild re-resolves it.
 
