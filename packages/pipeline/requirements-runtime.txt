@@ -5,7 +5,7 @@
 # Dev-only tools (pytest, mypy, ruff, matplotlib, torch, diffusers) are intentionally excluded.
 
 # Core image processing
-opencv-python-headless>=4.10.0.84
+opencv-python-headless>=4.14.0.94
 numpy>=1.26.4,<3
 scipy>=1.13.1
 scikit-image>=0.24.0
@@ -20,5 +20,5 @@ click>=8.1.0
 python-dotenv>=1.2.4
 
 # AI APIs
-anthropic>=0.49.0
+anthropic>=0.125.0
 openai>=1.47.1

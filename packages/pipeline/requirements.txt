@@ -1,5 +1,5 @@
 # Core image processing
-opencv-python-headless>=4.10.0.84
+opencv-python-headless>=4.14.0.94
 numpy>=1.26.4,<3
 scipy>=1.13.1
 Pillow>=10.4.0
@@ -14,10 +14,10 @@ python-dotenv>=1.2.4
 matplotlib>=3.9.0
 
 # AI APIs
-anthropic>=0.49.0
+anthropic>=0.125.0
 openai>=1.47.1
 
 # Development dependencies
-pytest>=8.0.0
+pytest>=8.4.2
 mypy>=1.11.0
-ruff>=0.6.0
+ruff>=0.17.2
