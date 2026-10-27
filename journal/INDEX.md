@@ -42,3 +42,4 @@ Development log for Sunday Album. Entries fall into two categories:
 | 2026-04-13 | [step-function-routing](2026-04-13-step-function-routing.md) | Plan: move skip routing into Step Functions Choice states; handlers become position-agnostic |
 | 2026-08-15 | [monorepo-layout](2026-08-15-monorepo-layout.md) | Spec: rearrange repo into apps/ packages/ services/; keep `src` import names |
 | 2026-08-15 | [monorepo-implementation-plan](2026-08-15-monorepo-implementation-plan.md) | Plan: 5 commits (git-mv → pyproject/conftest → Docker/CDK/CI → macOS PYTHONPATH → docs) |
+| 2026-10-27 | [dependency-security-plan](2026-10-27-sundayalbum-dependency-security-plan.md) | Plan + decisions: Next 14.2.29 critical alerts, Next 15 / React 19 / Node 24 upgrade, web PR build check, Dependabot triage |
