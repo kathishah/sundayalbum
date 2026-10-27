@@ -2,7 +2,7 @@
 
 Repo `kathishah/sundayalbum` (local checkout `~/dev/sundayalbum`). Written after the October 2026 public-repo cleanup, which turned on Dependabot alerts and security updates. Everything needed is in this file and in `docs/OPERATIONS.md`. Execution started 2026-10-27; section 0 is the live tracker, sections 9-11 hold the results.
 
-## 0. Progress tracker (last updated 2026-10-27, after #95 dev deployment)
+## 0. Progress tracker (last updated 2026-10-27, after alert query on main)
 Legend: done / in progress / pending / needs owner decision.
 
 | Step | Status | Where | Notes |
@@ -12,15 +12,15 @@ Legend: done / in progress / pending / needs owner decision.
 | 3. Interim mitigation | done | #89 (merged) | `/_next/image` 404 on dev and prod |
 | 4. Upgrade (Next 15.5.28, React 19.3.1, Node 24, lockfile fixes) | done | #90 (merged) | local checks and Docker build on node:24-alpine passed |
 | 5. Verify on dev | done | dev deploy of #90 | 12 routes 200; Playwright 20 passed / 1 skipped, before and after the upgrade |
-| 6. Promote to prod | done | #92 (merge commit `b9ce386`) | prod routes 200; Dependabot: 0 critical, 0 `next` alerts |
-| 7. Dependabot tidy-up | **in progress** | see below | |
+| 6. Promote to prod | done | #92 (`b9ce386`), then #96 (`8662550`) | after #96, prod web deploy (run 40555227210) and Lambda deploy (run 40555227063) succeeded; `www` and `app` `/` and `/api/version` returned 200 |
+| 7. Dependabot tidy-up | done | see below | #94/#95 promoted; #85 closed; 0 open Dependabot alerts on `main` |
 
 Step 7 detail:
 
 | Item | Status | Next action |
 |---|---|---|
-| #94 `dependabot.yml`: ignore majors | merged into dev (`72668a6`) | promote to `main` (takes effect from `main`; deploys nothing) |
-| #95 `overrides` for next's vendored postcss (clears 4 alerts; `npm audit` 0) | merged into dev (`efee6c0`); dev web deploy succeeded (run 40551728284) | promote to `main` (touches `apps/web`, so it deploys prod: owner decides) |
+| #94 `dependabot.yml`: ignore majors | merged into dev (`72668a6`) and main via #96 | takes effect from `main`; deploys nothing |
+| #95 `overrides` for next's vendored postcss (clears 4 alerts; `npm audit` 0) | merged into dev (`efee6c0`) and main via #96; dev web deploy succeeded (run 40551728284) | prod web and Lambda deploys succeeded (runs 40555227210, 40555227063) |
 | Closed with comments: #93 (Next 16), #65, #77, #72, #81, #68, #79, #66, #75 | done | none |
 | Auto-closed by Dependabot (superseded): #74, #78, #80, #82, #83, #84, #86 | done | none |
 | Merged into dev: #67 constructs, #70 pytest 9.1.1, #71 aws-cdk-lib | done | none (no deploy path) |
@@ -28,17 +28,17 @@ Step 7 detail:
 | #91 web minor/patch group: merged into dev | done | dev web deploy succeeded (run 40539127593); Playwright run 40539943227: 19 passed, 1 flaky, 1 skipped |
 | #64 GitHub Actions majors (SHAs verified against tags): merged into dev | done | dev web and Lambda deploys both succeeded on the new actions (runs 40542254827, 40542254778) |
 | Playwright on dev after #69/#76/#91 (run 40539943227) | 19 passed, 1 flaky, 1 skipped | `T-sfn-smoke-02` timed out once (240s) and passed on retry; cause unproven (cold starts after the Lambda rebuilds is the likely one). Re-run on final dev state (run 40547099640): 20 passed, 1 skipped |
-| #85 pytest 9.0.3 (security PR into `main`) | pending | close as superseded once #70 is on `main` |
-| Promote `dev` to `main` (merge commit, no squash) | pending, owner decides | after the above; deploys prod web (and Lambda if pipeline files changed) |
-| Re-run alert query on `main` | pending | expect 0 open alerts once #95 and #70 are on `main` |
+| #85 pytest 9.0.3 (security PR into `main`) | closed as superseded | #70's pytest 9.1.1 is on `main` via #96 |
+| Promote `dev` to `main` (merge commit, no squash) | done, PR #96 merge commit `8662550` | prod web run 40555227210 and Lambda run 40555227063 succeeded; `www` and `app` `/` and `/api/version` returned 200 |
+| Re-run alert query on `main` | done: 0 open alerts | checked after #96 and closing #85 |
 
-Remaining order (each step needs the owner's explicit OK; approvals do not carry over between sessions): (1) re-run Playwright on dev — done, run 40547099640 (20 passed, 1 skipped); (2) merge #94 and #95 into dev, including the local journal commits — done; (3) promote `dev` to `main` with a merge commit (deploys prod web and prod Lambdas); (4) close #85, re-run the alert query on `main` (expect 0); (5) update this tracker; (6) re-check the orientation difference in prod (not a blocker).
+Remaining order (each step needs the owner's explicit OK; approvals do not carry over between sessions): (1) re-run Playwright on dev — done, run 40547099640 (20 passed, 1 skipped); (2) merge #94 and #95 into dev, including the local journal commits — done; (3) promote `dev` to `main` with a merge commit — done, PR #96 commit `8662550`; prod web and Lambda deploys succeeded; (4) close #85 and re-run the alert query on `main` — done, #85 closed and 0 open alerts; (5) update this tracker — done; (6) re-check the orientation difference in prod (non-blocking follow-up; deferred here because it requires production photo processing in AWS, which is outside the owner's no-AWS instruction).
 
 Gotchas: Dependabot reads `dependabot.yml` from `main` and evaluates alerts on `main`; its security PRs target `main` and must not be merged directly; Playwright tests the deployed dev site; GitHub shows mergeable `UNKNOWN` for a few seconds after a merge; `requirements-lambda.txt` is unpinned, so every Lambda rebuild re-resolves it.
 
-Open Dependabot alerts right now (on `main`): 4 `postcss` (fixed by #95) and 1 `pytest` (fixed by #70). Critical: 0.
+Open Dependabot alerts after #96 (on `main`): 0, including 0 critical.
 
-Follow-ups, none started: **photo orientation differs between the local macOS venv and the Linux Lambda image** (two_pics Photo01 rotated 90 degrees, three_pics Photo01 rotated 180 degrees, AI orientation off; cause unproven, see section 12). Re-check it in prod after this plan is fully executed (with AI orientation on); not a blocker for any step; pin `requirements-lambda.txt` (constraints file); drop the unused `matplotlib` and `scikit-image` requirements; Lambda Python 3.12 to 3.14 as its own task; `/api/version` `is_latest` is always false because it queries commit path `web` instead of `apps/web` (found while reading the route); items in section 7 (OIDC for `test-web.yml`, stale branches, `ADMIN_EMAILS`).
+Follow-ups, none started: **photo orientation differs between the local macOS venv and the Linux Lambda image** (two_pics Photo01 rotated 90 degrees, three_pics Photo01 rotated 180 degrees, AI orientation off; cause unproven, see section 12). Re-check it in prod with AI orientation on; deferred here because it requires production photo processing in AWS, which is outside the owner's no-AWS instruction; not a blocker for this plan. Other follow-ups: pin `requirements-lambda.txt` (constraints file); drop the unused `matplotlib` and `scikit-image` requirements; Lambda Python 3.12 to 3.14 as its own task; `/api/version` `is_latest` is always false because it queries commit path `web` instead of `apps/web` (found while reading the route); items in section 7 (OIDC for `test-web.yml`, stale branches, `ADMIN_EMAILS`).
 
 ## 1. State on 2026-10-27
 - `main` = `bfc66a0` (licence A merged). `dev` = `9600632` (a merge commit that took `main`'s tree as of `f9a8ef6`); `dev` does **not** yet contain the licence commit `bfc66a0`, and merging `main` into `dev` should be clean.
