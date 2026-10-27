@@ -23,9 +23,9 @@ Step 7 detail:
 | #95 `overrides` for next's vendored postcss (clears 4 alerts; `npm audit` 0) | open, `Build Web` green | merge to dev; promote later (touches `apps/web`, so it deploys prod: owner decides) |
 | Closed with comments: #93 (Next 16), #65, #77, #72, #81, #68, #79, #66, #75 | done | none |
 | Auto-closed by Dependabot (superseded): #74, #78, #80, #82, #83, #84, #86 | done | none |
-| Merged into dev: #67 constructs, #70 pytest 9.1.1, #71 aws-cdk-lib, #69 rawpy | done | dev Lambda deploy after #69 still being watched |
-| #76 python-dotenv (dev Lambda deploy) | pending | merge after the #69 deploy succeeds |
-| #91 web minor/patch group (dev web deploy) | pending | merge after #76, then run Playwright on dev |
+| Merged into dev: #67 constructs, #70 pytest 9.1.1, #71 aws-cdk-lib | done | none (no deploy path) |
+| #69 rawpy, #76 python-dotenv: merged into dev | done | dev Lambda deploys after each succeeded (runs 40537063888, 40538185202). Note: both only change `requirements.txt` / `requirements-runtime.txt` (the Mac app's runtime), not `requirements-lambda.txt`, so the Lambda image gained no new pins; its unpinned `>=` deps re-resolve on every rebuild |
+| #91 web minor/patch group: merged into dev | merged, deploy in progress | dev web deploy run 40539127593; then run Playwright on dev (expect 20 passed / 1 skipped) |
 | #64 GitHub Actions majors (SHAs verified against tags) | pending | merge last, so the dev deploys exercise the new actions |
 | #85 pytest 9.0.3 (security PR into `main`) | pending | close as superseded once #70 is on `main` |
 | Promote `dev` to `main` (merge commit, no squash) | pending, owner decides | after the above; deploys prod web (and Lambda if pipeline files changed) |
