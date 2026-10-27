@@ -1,14 +1,15 @@
 # syntax=docker/dockerfile:1
+# Node major must match apps/web/.nvmrc (used by CI).
 
 # ── Stage 1: deps ────────────────────────────────────────────────────────────
-FROM node:20-alpine AS deps
+FROM node:24-alpine AS deps
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
 RUN npm ci
 
 # ── Stage 2: builder ─────────────────────────────────────────────────────────
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
@@ -30,7 +31,7 @@ ENV NEXT_PUBLIC_BUILD_SHA=${NEXT_PUBLIC_BUILD_SHA}
 RUN npm run build
 
 # ── Stage 3: runner ──────────────────────────────────────────────────────────
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production

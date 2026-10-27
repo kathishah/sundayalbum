@@ -64,3 +64,14 @@ Findings that resolve or change section 8:
 - `main` is protected (PR required, admins enforced, no required status checks); `dev` is unprotected. Merging `main` into `dev` touched `apps/web/**`, so pushing `dev` deploys the dev web stage.
 - Baseline before any change (Next 14.2.29, Node 22 locally): `next build` passes; `tsc --noEmit` failed on one narrowing error in `tests/e2e/websocket.spec.ts`; `apps/web` had **no ESLint config**, so `next lint` stopped at an interactive setup prompt (it would hang or fail in CI). Fixed in the first PR: `.eslintrc.json` (`next/core-web-vitals`, with `react/no-unescaped-entities` off, which was the only rule failing, 5 times, in marketing copy), a `typecheck` script, the test-file type fix, and `apps/web/.nvmrc` (20 for now, 24 in the upgrade PR).
 - Playwright, Next 15 / React 19 build compatibility: still unknown, resolved in step 4.
+
+## 10. Step 4 results (upgrade branch `deps/security-2026-10`)
+Done: `next` 15.5.28 (exact pin), `eslint-config-next` 15.5.28, `react`/`react-dom` ^19.3.1, `@types/react*` ^19, `@types/node` ^24, Node 24 in `apps/web/Dockerfile` and `apps/web/.nvmrc` (`test-web.yml` now reads `.nvmrc` too), plus a non-breaking `npm audit fix` for the lockfile (js-yaml 4.3.2, postcss 8.5.32, source-map-js 1.2.2, brace-expansion, nanoid, postcss-selector-parser, browserslist and others: the content of Dependabot #82-#86).
+
+Code changes needed: only `jobs/[jobId]/page.tsx` (a client component; `params` is now a Promise, read with `use(params)`). `tsconfig.json` gains `"target": "ES2017"` (Next adds it itself). No middleware, Server Actions, `cookies()`/`headers()` or `next/image` in the app. `/api/version` (GET) stops being prerendered at build time, which matches its in-code 10-minute cache.
+
+Verified locally: `npm ci`, `typecheck`, `lint`, `build` pass; `docker build` of `apps/web` on `node:24-alpine` (runs Node v24.22.1) passes and the container serves all 13 routes (200, `/nope` 404, `/jobs/<id>` redirects to `/login` when signed out); `/_next/image` 404; no console errors; the home page renders the same as on Next 14.
+
+Remaining audit items: `npm audit` still lists the copy of `postcss` vendored inside `next` itself (the fix is Next 16, a major bump) and one moderate issue. These are build-time CSS-processing code paths, not request-time ones.
+
+Playwright note: the suite (`tests/e2e`) runs against the **deployed** dev site (`DEV_FRONTEND_URL`) and its global setup reads the DynamoDB sessions table with AWS keys. Dispatching `test-web.yml` on a branch therefore tests whatever is deployed on dev, not the branch. Run it after the upgrade has deployed to dev (and ideally once before, as the baseline).
