@@ -75,3 +75,10 @@ Verified locally: `npm ci`, `typecheck`, `lint`, `build` pass; `docker build` of
 Remaining audit items: `npm audit` still lists the copy of `postcss` vendored inside `next` itself (the fix is Next 16, a major bump) and one moderate issue. These are build-time CSS-processing code paths, not request-time ones.
 
 Playwright note: the suite (`tests/e2e`) runs against the **deployed** dev site (`DEV_FRONTEND_URL`) and its global setup reads the DynamoDB sessions table with AWS keys. Dispatching `test-web.yml` on a branch therefore tests whatever is deployed on dev, not the branch. Run it after the upgrade has deployed to dev (and ideally once before, as the baseline).
+
+## 11. Promotion to prod and the postcss override (2026-10-27)
+Step 6 done: PR #92 (dev to main, merge commit `b9ce386`) deployed prod web. Before/after: prod ran Next 14.2.29; after the deploy `www.` and `app.sundayalbum.com` return 200 on 9 routes and `/_next/image` is 404 on both; `/api/version` reports `b9ce386`. Playwright against dev: 20 passed / 1 skipped both before the upgrade (8.3 min) and after it (6.9 min). Dependabot alerts on `main` after the deploy: 0 critical, 0 `next`; left: 4 `postcss` (the copy vendored inside `next`) and 1 `pytest`.
+
+Dependabot's answer to the postcss alerts was PR #93, which bumps `next` 15.5.28 to **16.4.3** (a major) into `main`. Not taken. Instead `package.json` gets `"overrides": { "next": { "postcss": "^8.5.32" } }`, and the locked nested copy (8.4.31) is dropped so npm re-resolves it to the top-level 8.5.32. Verified: clean `npm ci`, `typecheck`, `lint`, `build`, `docker build` on `node:24-alpine`, container serves all routes, `/_next/image` 404, `npm audit` reports 0 vulnerabilities. Revisit when Next is upgraded again: remove the override if Next's own `postcss` pin moves past 8.5.23.
+
+Note for the next person: Dependabot reads `dependabot.yml` from `main`, and its security PRs target `main` regardless of `target-branch`, so merging one deploys prod. Handle them by applying the same change on a branch into `dev` and promoting.
