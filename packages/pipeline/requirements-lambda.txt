@@ -3,7 +3,7 @@
 #           click, python-dotenv, pytest, mypy, ruff
 
 # Core image processing
-opencv-python-headless>=4.10.0
+opencv-python-headless>=4.14.0.94
 numpy>=1.26.4
 scipy>=1.13.1
 Pillow>=10.4.0
