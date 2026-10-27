@@ -19,15 +19,15 @@ Step 7 detail:
 
 | Item | Status | Next action |
 |---|---|---|
-| #94 `dependabot.yml`: ignore majors | open, Build Web n/a | merge to dev, then promote (takes effect from `main`; deploys nothing) |
+| #94 `dependabot.yml`: ignore majors | merged into dev (`72668a6`) | promote to `main` (takes effect from `main`; deploys nothing) |
 | #95 `overrides` for next's vendored postcss (clears 4 alerts; `npm audit` 0) | open, `Build Web` green | merge to dev; promote later (touches `apps/web`, so it deploys prod: owner decides) |
 | Closed with comments: #93 (Next 16), #65, #77, #72, #81, #68, #79, #66, #75 | done | none |
 | Auto-closed by Dependabot (superseded): #74, #78, #80, #82, #83, #84, #86 | done | none |
 | Merged into dev: #67 constructs, #70 pytest 9.1.1, #71 aws-cdk-lib | done | none (no deploy path) |
 | #69 rawpy, #76 python-dotenv: merged into dev | done | dev Lambda deploys after each succeeded (runs 40537063888, 40538185202). Note: both only change `requirements.txt` / `requirements-runtime.txt` (the Mac app's runtime), not `requirements-lambda.txt`, so the Lambda image gained no new pins; its unpinned `>=` deps re-resolve on every rebuild |
-| #91 web minor/patch group: merged into dev | done | dev web deploy succeeded (run 40539127593); Playwright on dev dispatched (run 40539943227), result pending (baseline 20 passed / 1 skipped) |
+| #91 web minor/patch group: merged into dev | done | dev web deploy succeeded (run 40539127593); Playwright run 40539943227: 19 passed, 1 flaky, 1 skipped |
 | #64 GitHub Actions majors (SHAs verified against tags): merged into dev | done | dev web and Lambda deploys both succeeded on the new actions (runs 40542254827, 40542254778) |
-| Playwright on dev after #69/#76/#91 (run 40539943227) | 19 passed, 1 flaky, 1 skipped | `T-sfn-smoke-02` timed out once (240s) and passed on retry; cause unproven (cold starts after the Lambda rebuilds is the likely one). Re-run once on the final dev state: needs owner OK |
+| Playwright on dev after #69/#76/#91 (run 40539943227) | 19 passed, 1 flaky, 1 skipped | `T-sfn-smoke-02` timed out once (240s) and passed on retry; cause unproven (cold starts after the Lambda rebuilds is the likely one). Re-run on final dev state (run 40547099640): 20 passed, 1 skipped |
 | #85 pytest 9.0.3 (security PR into `main`) | pending | close as superseded once #70 is on `main` |
 | Promote `dev` to `main` (merge commit, no squash) | pending, owner decides | after the above; deploys prod web (and Lambda if pipeline files changed) |
 | Re-run alert query on `main` | pending | expect 0 open alerts once #95 and #70 are on `main` |
