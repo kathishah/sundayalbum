@@ -1,5 +1,5 @@
 # Core image processing
-opencv-python-headless>=4.10.0.84
+opencv-python-headless>=4.14.0.94
 numpy>=1.26.4,<3
 scipy>=1.13.1
 Pillow>=10.4.0

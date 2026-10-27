@@ -5,7 +5,7 @@
 # Dev-only tools (pytest, mypy, ruff, matplotlib, torch, diffusers) are intentionally excluded.
 
 # Core image processing
-opencv-python-headless>=4.10.0.84
+opencv-python-headless>=4.14.0.94
 numpy>=1.26.4,<3
 scipy>=1.13.1
 scikit-image>=0.24.0
