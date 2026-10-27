@@ -1,6 +1,39 @@
 # sundayalbum: web security and dependency plan (2026-10-27)
 
-Repo `kathishah/sundayalbum` (local checkout `~/dev/sundayalbum`). Written after the October 2026 public-repo cleanup, which turned on Dependabot alerts and security updates. Everything needed is in this file and in `docs/OPERATIONS.md`. Nothing in this plan has been started.
+Repo `kathishah/sundayalbum` (local checkout `~/dev/sundayalbum`). Written after the October 2026 public-repo cleanup, which turned on Dependabot alerts and security updates. Everything needed is in this file and in `docs/OPERATIONS.md`. Execution started 2026-10-27; section 0 is the live tracker, sections 9-11 hold the results.
+
+## 0. Progress tracker (last updated 2026-10-27, mid step 7)
+Legend: done / in progress / pending / needs owner decision.
+
+| Step | Status | Where | Notes |
+|---|---|---|---|
+| 1. Sync and branch | done | `dev` pushed with `main` merged | |
+| 2. PR check for the web app | done | #87 (merged) | `Build Web` passes; a deliberately broken commit (#88, closed) failed at Type-check |
+| 3. Interim mitigation | done | #89 (merged) | `/_next/image` 404 on dev and prod |
+| 4. Upgrade (Next 15.5.28, React 19.3.1, Node 24, lockfile fixes) | done | #90 (merged) | local checks and Docker build on node:24-alpine passed |
+| 5. Verify on dev | done | dev deploy of #90 | 12 routes 200; Playwright 20 passed / 1 skipped, before and after the upgrade |
+| 6. Promote to prod | done | #92 (merge commit `b9ce386`) | prod routes 200; Dependabot: 0 critical, 0 `next` alerts |
+| 7. Dependabot tidy-up | **in progress** | see below | |
+
+Step 7 detail:
+
+| Item | Status | Next action |
+|---|---|---|
+| #94 `dependabot.yml`: ignore majors | open, Build Web n/a | merge to dev, then promote (takes effect from `main`; deploys nothing) |
+| #95 `overrides` for next's vendored postcss (clears 4 alerts; `npm audit` 0) | open, `Build Web` green | merge to dev; promote later (touches `apps/web`, so it deploys prod: owner decides) |
+| Closed with comments: #93 (Next 16), #65, #77, #72, #81, #68, #79, #66, #75 | done | none |
+| Auto-closed by Dependabot (superseded): #74, #78, #80, #82, #83, #84, #86 | done | none |
+| Merged into dev: #67 constructs, #70 pytest 9.1.1, #71 aws-cdk-lib, #69 rawpy | done | dev Lambda deploy after #69 still being watched |
+| #76 python-dotenv (dev Lambda deploy) | pending | merge after the #69 deploy succeeds |
+| #91 web minor/patch group (dev web deploy) | pending | merge after #76, then run Playwright on dev |
+| #64 GitHub Actions majors (SHAs verified against tags) | pending | merge last, so the dev deploys exercise the new actions |
+| #85 pytest 9.0.3 (security PR into `main`) | pending | close as superseded once #70 is on `main` |
+| Promote `dev` to `main` (merge commit, no squash) | pending, owner decides | after the above; deploys prod web (and Lambda if pipeline files changed) |
+| Re-run alert query on `main` | pending | expect 0 open alerts once #95 and #70 are on `main` |
+
+Open Dependabot alerts right now (on `main`): 4 `postcss` (fixed by #95) and 1 `pytest` (fixed by #70). Critical: 0.
+
+Follow-ups, none started: drop the unused `matplotlib` and `scikit-image` requirements; Lambda Python 3.12 to 3.14 as its own task; `/api/version` `is_latest` is always false because it queries commit path `web` instead of `apps/web` (found while reading the route); items in section 7 (OIDC for `test-web.yml`, stale branches, `ADMIN_EMAILS`).
 
 ## 1. State on 2026-10-27
 - `main` = `bfc66a0` (licence A merged). `dev` = `9600632` (a merge commit that took `main`'s tree as of `f9a8ef6`); `dev` does **not** yet contain the licence commit `bfc66a0`, and merging `main` into `dev` should be clean.
