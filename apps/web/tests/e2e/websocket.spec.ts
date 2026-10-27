@@ -75,7 +75,7 @@ test('T46: WebSocket connection opened after job creation', async ({ page }) => 
 test('T47: WebSocket message received or connection closed cleanly', async ({ page }) => {
   await page.goto('/library')
 
-  let wsOpened = false
+  let wsOpened = false as boolean
   let wsMessageReceived = false
   let wsClosed = false
 
