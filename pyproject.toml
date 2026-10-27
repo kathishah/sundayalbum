@@ -7,11 +7,13 @@ name = "sundayalbum"
 version = "0.1.0"
 description = "Sunday Album - Free tool to digitize physical photo album pages into clean individual digital photos"
 readme = "CLAUDE.md"
+license = {file = "LICENSE"}
 requires-python = ">=3.11"
 authors = [
     {name = "Sunday Album Team"}
 ]
 classifiers = [
+    "License :: Other/Proprietary License",
     "Development Status :: 3 - Alpha",
     "Intended Audience :: End Users/Desktop",
     "Programming Language :: Python :: 3",

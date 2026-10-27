@@ -85,7 +85,7 @@ export default function AboutPage() {
         {/* Tech stack note */}
         <div className="mb-16">
           <h2 className="font-display text-xl font-bold text-sa-stone-900 dark:text-sa-stone-50 mb-4">
-            Open, inspectable stack
+            Inspectable stack
           </h2>
           <p className="text-sm text-sa-stone-500 dark:text-sa-stone-400 leading-relaxed mb-4">
             The processing engine is Python — OpenCV for computer vision, Pillow for image I/O,
