@@ -2,7 +2,7 @@
 
 Repo `kathishah/sundayalbum` (local checkout `~/dev/sundayalbum`). Written after the October 2026 public-repo cleanup, which turned on Dependabot alerts and security updates. Everything needed is in this file and in `docs/OPERATIONS.md`. Execution started 2026-10-27; section 0 is the live tracker, sections 9-11 hold the results.
 
-## 0. Progress tracker (last updated 2026-10-27, after second Dependabot batch)
+## 0. Progress tracker (last updated 2026-10-27, after #98 and #104 deployed to dev)
 Legend: done / in progress / pending / needs owner decision.
 
 | Step | Status | Where | Notes |
@@ -15,8 +15,8 @@ Legend: done / in progress / pending / needs owner decision.
 | 6. Promote to prod | done | #92 (`b9ce386`), then #96 (`8662550`) | after #96, prod web deploy (run 40555227210) and Lambda deploy (run 40555227063) succeeded; `www` and `app` `/` and `/api/version` returned 200 |
 | 7. Dependabot tidy-up | done | see below | #94/#95 promoted; #85 closed; 0 open Dependabot alerts on `main` |
 | 8. Second Dependabot batch (#97-#102) | done | section 13 | all six merged into `dev`; branch tests and dev deploys passed |
-| 9. Playwright browser selection | in progress | PR #104 | installed Chrome first with bundled Chromium fallback; Build Web passes; merge and dev deploy pending |
-| 10. Promote final batch to prod | approved, pending | PR from `dev` to `main` | owner approved after #98 and #104; wait for their dev checks/deploys |
+| 9. Playwright browser selection | done | #104 (`90f2953`) | Build Web passed; dev web deployment (run 40599639486) succeeded; prefer installed Chrome and fall back to Playwright Chromium |
+| 10. Promote final batch to prod | approved, pending | PR from `dev` to `main` | owner approved after #98 and #104; create promotion PR and watch prod deployments |
 
 Step 7 detail:
 
@@ -147,13 +147,13 @@ Six version-update PRs opened after this plan was written. All target `dev`; non
 | #99 | framer-motion 12.43.0 (web minor/patch group) | `apps/web/package-lock.json` | merged to `dev` (`1eda5ad`); Build Web passed; pytest: 112 passed, 6 skipped; dev web run 40592105277 succeeded; Playwright on dev: 20 passed, 1 skipped |
 | #102 | boto3 `>=1.43.118` | `requirements-lambda.txt` | merged to `dev` (`2db2278`); API/handler pytest: 40 passed; full pytest: 101 passed, 17 skipped; dev Lambda run 40596052749 succeeded |
 | #100 | anthropic `>=0.125.0` | all three requirements files | merged to `dev` (`c8acbd9`); API/handler pytest: 40 passed; full pytest: 101 passed, 17 skipped; dev Lambda run 40597000667 succeeded |
-| #98 | opencv-python-headless `>=4.14.0.94` | all three requirements files | merged to `dev` (`6d00d02`); section 12 comparison passed; dev Lambda run 40598800515 still running at this update |
+| #98 | opencv-python-headless `>=4.14.0.94` | all three requirements files | merged to `dev` (`6d00d02`); section 12 comparison and pytest passed; dev Lambda run 40598800515 succeeded |
 
 Order and results:
 1. #97 and #101: merged in the approved order. No PR CI checks were configured; PR-branch pytest passed (results above). Lambda deploys triggered by the broad workflow path filters and succeeded.
-2. #99: merged; Build Web passed, the dev web deploy succeeded, then Playwright on deployed dev passed (20 passed, 1 skipped). PR #104 updates `test-web.yml` to prefer installed Google Chrome and use Playwright Chromium only if Chrome is unavailable or its version check fails. It also keeps Playwright's global setup on the selected browser. Workflow YAML and shell syntax passed; both branches of the selection script were simulated successfully; `npm run typecheck` and pre-commit passed (40 API/handler tests; Playwright hook skipped without a saved dev session). Build Web on #104 passed. The prior E2E run with installed Chrome passed (20 passed, 1 skipped); no new E2E dispatch was run because it uses AWS-backed dev test data. PR #104 is open pending merge/deploy.
+2. #99: merged; Build Web passed, the dev web deploy succeeded, then Playwright on deployed dev passed (20 passed, 1 skipped). PR #104 (`14022d0`, merge commit `90f2953`) updates `test-web.yml` to prefer installed Google Chrome and use Playwright Chromium only if Chrome is unavailable or its version check fails. It also keeps Playwright's global setup on the selected browser. Workflow YAML and shell syntax passed; both branches of the selection script were simulated successfully; `npm run typecheck` and pre-commit passed (40 API/handler tests; Playwright hook skipped without a saved dev session). Build Web on #104 passed; dev web deployment 40599639486 succeeded. The prior E2E run with installed Chrome passed (20 passed, 1 skipped); no new E2E dispatch was run because it uses AWS-backed dev test data.
 3. #102, #100: merged in order; API/handler and full PR-branch pytest passed, and both dev Lambda deploys succeeded. `requirements-lambda.txt` remains unpinned, so a floor bump changes little in the image; the Mac app runtime (`requirements-runtime.txt`) is what moves for #100.
-4. #98: section 12 comparison passed against its PR head with the `.venv` and a fresh local Linux ARM64 container, AI orientation off, no runtime network or keys. Both resolved OpenCV to 5.0.0.93; outputs were 3/2/1/1 and all 14 native/container output files were byte-identical to the section 12 baseline (counts, dimensions and orientation unchanged; native/Linux comparison remains 0.108–1.605 MAE). API/handler pytest: 40 passed; full pytest: 101 passed, 17 skipped. Merged into `dev` as `6d00d02`; dev Lambda run 40598800515 was in progress at this update.
-5. The owner approved promotion to `main` on 2026-10-27 after #98 and #104. Wait for the #98 Lambda deploy and #104 merge/dev deploy; then promote `dev` with a merge commit, watch production web and Lambda deploys, and re-run the alert query. No PR was closed.
+4. #98: section 12 comparison passed against its PR head with the `.venv` and a fresh local Linux ARM64 container, AI orientation off, no runtime network or keys. Both resolved OpenCV to 5.0.0.93; outputs were 3/2/1/1 and all 14 native/container output files were byte-identical to the section 12 baseline (counts, dimensions and orientation unchanged; native/Linux comparison remains 0.108–1.605 MAE). API/handler pytest: 40 passed; full pytest: 101 passed, 17 skipped. Merged into `dev` as `6d00d02`; dev Lambda run 40598800515 succeeded.
+5. The owner approved promotion to `main` on 2026-10-27 after #98 and #104. Both dev deployments succeeded; next create a merge-commit promotion PR, watch production web and Lambda deployments, and re-run the alert query. No PR was closed.
 
 Check each PR: failing CI or pytest means close with a short comment, never merge to clear the list.
