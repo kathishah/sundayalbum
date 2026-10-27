@@ -14,7 +14,7 @@ python-dotenv>=1.2.4
 matplotlib>=3.9.0
 
 # AI APIs
-anthropic>=0.49.0
+anthropic>=0.125.0
 openai>=1.47.1
 
 # Development dependencies
