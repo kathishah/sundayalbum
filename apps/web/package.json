@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "clsx": "^2",
-    "framer-motion": "^12",
+    "framer-motion": "^14",
     "next": "15.5.28",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
