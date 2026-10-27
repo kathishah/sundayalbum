@@ -32,6 +32,10 @@ Step 7 detail:
 | Promote `dev` to `main` (merge commit, no squash) | pending, owner decides | after the above; deploys prod web (and Lambda if pipeline files changed) |
 | Re-run alert query on `main` | pending | expect 0 open alerts once #95 and #70 are on `main` |
 
+Remaining order (each step needs the owner's explicit OK; approvals do not carry over between sessions): (1) re-run Playwright on dev; (2) merge #94 and #95 into dev (push the local journal commits to #95 first); (3) promote `dev` to `main` with a merge commit (deploys prod web and prod Lambdas); (4) close #85, re-run the alert query on `main` (expect 0); (5) update this tracker; (6) re-check the orientation difference in prod (not a blocker).
+
+Gotchas: Dependabot reads `dependabot.yml` from `main` and evaluates alerts on `main`; its security PRs target `main` and must not be merged directly; Playwright tests the deployed dev site; GitHub shows mergeable `UNKNOWN` for a few seconds after a merge; `requirements-lambda.txt` is unpinned, so every Lambda rebuild re-resolves it.
+
 Open Dependabot alerts right now (on `main`): 4 `postcss` (fixed by #95) and 1 `pytest` (fixed by #70). Critical: 0.
 
 Follow-ups, none started: **photo orientation differs between the local macOS venv and the Linux Lambda image** (two_pics Photo01 rotated 90 degrees, three_pics Photo01 rotated 180 degrees, AI orientation off; cause unproven, see section 12). Re-check it in prod after this plan is fully executed (with AI orientation on); not a blocker for any step; pin `requirements-lambda.txt` (constraints file); drop the unused `matplotlib` and `scikit-image` requirements; Lambda Python 3.12 to 3.14 as its own task; `/api/version` `is_latest` is always false because it queries commit path `web` instead of `apps/web` (found while reading the route); items in section 7 (OIDC for `test-web.yml`, stale branches, `ADMIN_EMAILS`).
