@@ -41,6 +41,7 @@ export default defineConfig({
     baseURL: BASE_URL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    ...(process.env.PLAYWRIGHT_CHROMIUM_CHANNEL === 'chrome' ? { channel: 'chrome' as const } : {}),
   },
 
   globalSetup: './tests/e2e/global-setup.ts',

@@ -115,7 +115,9 @@ async function authenticate(): Promise<string> {
   if (!session_token) throw new Error('verify returned no session_token')
 
   // Persist to storageState so tests start authenticated
-  const browser = await chromium.launch()
+  const browser = await chromium.launch(
+    process.env.PLAYWRIGHT_CHROMIUM_CHANNEL === 'chrome' ? { channel: 'chrome' } : {},
+  )
   const ctx     = await browser.newContext()
   const page    = await ctx.newPage()
   await page.goto(FRONTEND)

@@ -28,8 +28,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
+      - name: Use installed Chrome or install Playwright Chromium
+        shell: bash
+        run: |
+          if command -v google-chrome >/dev/null 2>&1 && google-chrome --version; then
+            echo "PLAYWRIGHT_CHROMIUM_CHANNEL=chrome" >> "$GITHUB_ENV"
+          else
+            echo "Google Chrome is unavailable; installing Playwright Chromium"
+            npx playwright install chromium --with-deps
+          fi
 
       - name: Run E2E tests
         env:
