@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getJob, reprocessJob } from '@/lib/api'
@@ -534,7 +534,8 @@ function StepThumbnailStrip({
 
 // ── Main page ──────────────────────────────────────────────────────────────────
 
-export default function JobDetailPage({ params }: { params: { jobId: string } }) {
+export default function JobDetailPage({ params }: { params: Promise<{ jobId: string }> }) {
+  const { jobId } = use(params)
   const [job, setJob] = useState<Job | null>(null)
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -543,7 +544,7 @@ export default function JobDetailPage({ params }: { params: { jobId: string } })
   const [reprocessingPhotoIdx, setReprocessingPhotoIdx] = useState<number | null>(null)
 
   useEffect(() => {
-    getJob(params.jobId)
+    getJob(jobId)
       .then((j) => {
         setJob(j)
         // Auto-select first step that has a debug image
@@ -568,13 +569,13 @@ export default function JobDetailPage({ params }: { params: { jobId: string } })
       .catch(() => setFetchError('Could not load job'))
       .finally(() => setLoading(false))
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.jobId])
+  }, [jobId])
 
   // Poll while processing (initial run or reprocess)
   useEffect(() => {
     if (!job || job.status !== 'processing') return
     const id = setInterval(() => {
-      getJob(params.jobId)
+      getJob(jobId)
         .then((j) => {
           setJob(j)
           if (j.status !== 'processing') setReprocessingPhotoIdx(null)
@@ -583,7 +584,7 @@ export default function JobDetailPage({ params }: { params: { jobId: string } })
     }, POLLING_INTERVAL_MS)
     return () => clearInterval(id)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [job?.status, params.jobId])
+  }, [job?.status, jobId])
 
   if (loading) {
     return (
