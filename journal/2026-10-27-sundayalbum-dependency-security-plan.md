@@ -34,7 +34,7 @@ Step 7 detail:
 
 Open Dependabot alerts right now (on `main`): 4 `postcss` (fixed by #95) and 1 `pytest` (fixed by #70). Critical: 0.
 
-Follow-ups, none started: drop the unused `matplotlib` and `scikit-image` requirements; Lambda Python 3.12 to 3.14 as its own task; `/api/version` `is_latest` is always false because it queries commit path `web` instead of `apps/web` (found while reading the route); items in section 7 (OIDC for `test-web.yml`, stale branches, `ADMIN_EMAILS`).
+Follow-ups, none started: **photo orientation differs between the local macOS venv and the Linux Lambda image** (two_pics Photo01 rotated 90 degrees, three_pics Photo01 rotated 180 degrees, AI orientation off; cause unproven, see section 12; decide whether to investigate or whether `ai_orient` makes it moot); pin `requirements-lambda.txt` (constraints file); drop the unused `matplotlib` and `scikit-image` requirements; Lambda Python 3.12 to 3.14 as its own task; `/api/version` `is_latest` is always false because it queries commit path `web` instead of `apps/web` (found while reading the route); items in section 7 (OIDC for `test-web.yml`, stale branches, `ADMIN_EMAILS`).
 
 ## 1. State on 2026-10-27
 - `main` = `bfc66a0` (licence A merged). `dev` = `9600632` (a merge commit that took `main`'s tree as of `f9a8ef6`); `dev` does **not** yet contain the licence commit `bfc66a0`, and merging `main` into `dev` should be clean.
