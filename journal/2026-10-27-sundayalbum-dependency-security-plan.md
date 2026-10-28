@@ -1,8 +1,8 @@
 # sundayalbum: web security and dependency plan (2026-10-27)
 
-Repo `kathishah/sundayalbum` (local checkout `~/dev/sundayalbum`). Written after the October 2026 public-repo cleanup, which turned on Dependabot alerts and security updates. Everything needed is in this file and in `docs/OPERATIONS.md`. Execution started 2026-10-27; section 0 is the live tracker, sections 9-11 hold the results.
+Repo `kathishah/sundayalbum` (local checkout `~/dev/sundayalbum`). Written after the October 2026 public-repo cleanup, which turned on Dependabot alerts and security updates. Everything needed is in this file and in `docs/OPERATIONS.md`. Execution started 2026-10-27; section 0 is the live tracker, sections 9-15 hold the results.
 
-## 0. Progress tracker (last updated 2026-10-27, after #98 and #104 deployed to dev)
+## 0. Progress tracker (last updated 2026-10-27, after production orientation retest)
 Legend: done / in progress / pending / needs owner decision.
 
 | Step | Status | Where | Notes |
@@ -16,7 +16,8 @@ Legend: done / in progress / pending / needs owner decision.
 | 7. Dependabot tidy-up | done | see below | #94/#95 promoted; #85 closed; 0 open Dependabot alerts on `main` |
 | 8. Second Dependabot batch (#97-#102) | done | section 13 | all six merged into `dev`; branch tests and dev deploys passed |
 | 9. Playwright browser selection | done | #104 (`90f2953`) | Build Web passed; dev web deployment (run 40599639486) succeeded; prefer installed Chrome and fall back to Playwright Chromium |
-| 10. Promote final batch to prod | approved, pending | PR from `dev` to `main` | owner approved after #98 and #104; create promotion PR and watch prod deployments |
+| 10. Promote final batch to prod | done | PR #106 (`f8e0dd8`) | prod web run 40600510572 and Lambda run 40600510518 succeeded; both public hosts return 200 on `/` and `/api/version`; 0 open Dependabot alerts |
+| 11. Production orientation retest | done | section 14 | system Anthropic key was rejected; after the owner replaced it, the three-photo test received 180° high-confidence corrections and looked upright |
 
 Step 7 detail:
 
@@ -35,13 +36,13 @@ Step 7 detail:
 | Promote `dev` to `main` (merge commit, no squash) | done, PR #96 merge commit `8662550` | prod web run 40555227210 and Lambda run 40555227063 succeeded; `www` and `app` `/` and `/api/version` returned 200 |
 | Re-run alert query on `main` | done: 0 open alerts | checked after #96 and closing #85 |
 
-Remaining order (each step needs the owner's explicit OK; approvals do not carry over between sessions): (1) re-run Playwright on dev — done, run 40547099640 (20 passed, 1 skipped); (2) merge #94 and #95 into dev, including the local journal commits — done; (3) promote `dev` to `main` with a merge commit — done, PR #96 commit `8662550`; prod web and Lambda deploys succeeded; (4) close #85 and re-run the alert query on `main` — done, #85 closed and 0 open alerts; (5) update this tracker — done; (6) re-check the orientation difference in prod (non-blocking follow-up; deferred here because it requires production photo processing in AWS, which is outside the owner's no-AWS instruction).
+Remaining order (each step needs the owner's explicit OK; approvals do not carry over between sessions): (1) re-run Playwright on dev — done, run 40547099640 (20 passed, 1 skipped); (2) merge #94 and #95 into dev, including the local journal commits — done; (3) promote `dev` to `main` with a merge commit — done, PR #96 commit `8662550`; prod web and Lambda deploys succeeded; (4) close #85 and re-run the alert query on `main` — done, #85 closed and 0 open alerts; (5) update this tracker — done; (6) re-check orientation in prod — done, see section 14. The cause of the separate local macOS versus Linux orientation difference with AI disabled remains unproven.
 
 Gotchas: Dependabot reads `dependabot.yml` from `main` and evaluates alerts on `main`; its security PRs target `main` and must not be merged directly; Playwright tests the deployed dev site; GitHub shows mergeable `UNKNOWN` for a few seconds after a merge; `requirements-lambda.txt` is unpinned, so every Lambda rebuild re-resolves it.
 
-Open Dependabot alerts after #96 (on `main`): 0, including 0 critical.
+Open Dependabot alerts after #106 (on `main`): 0, including 0 critical.
 
-Follow-ups, none started: **photo orientation differs between the local macOS venv and the Linux Lambda image** (two_pics Photo01 rotated 90 degrees, three_pics Photo01 rotated 180 degrees, AI orientation off; cause unproven, see section 12). Re-check it in prod with AI orientation on; deferred here because it requires production photo processing in AWS, which is outside the owner's no-AWS instruction; not a blocker for this plan. Other follow-ups: pin `requirements-lambda.txt` (constraints file); drop the unused `matplotlib` and `scikit-image` requirements; Lambda Python 3.12 to 3.14 as its own task; `/api/version` `is_latest` is always false because it queries commit path `web` instead of `apps/web` (found while reading the route); items in section 7 (OIDC for `test-web.yml`, stale branches, `ADMIN_EMAILS`).
+Follow-ups: the local macOS versus Linux orientation difference with AI disabled remains unproven (section 12); surface non-fatal orientation-provider failures in the UI, since production auth errors currently pass through without an error indicator (section 14); fix `/api/version`'s false Outdated badges (section 15): it queries obsolete root paths (`web`, `api`, `src`) instead of `apps/web`, `services/api`, `services/handlers`, and `packages/pipeline/src`, and compares SHAs by equality even though the deployed merge commit contains the latest relevant commits. Other follow-ups: pin `requirements-lambda.txt` (constraints file); drop the unused `matplotlib` and `scikit-image` requirements; Lambda Python 3.12 to 3.14 as its own task; items in section 7 (OIDC for `test-web.yml`, stale branches, `ADMIN_EMAILS`).
 
 ## 1. State on 2026-10-27
 - `main` = `bfc66a0` (licence A merged). `dev` = `9600632` (a merge commit that took `main`'s tree as of `f9a8ef6`); `dev` does **not** yet contain the licence commit `bfc66a0`, and merging `main` into `dev` should be clean.
@@ -154,6 +155,16 @@ Order and results:
 2. #99: merged; Build Web passed, the dev web deploy succeeded, then Playwright on deployed dev passed (20 passed, 1 skipped). PR #104 (`14022d0`, merge commit `90f2953`) updates `test-web.yml` to prefer installed Google Chrome and use Playwright Chromium only if Chrome is unavailable or its version check fails. It also keeps Playwright's global setup on the selected browser. Workflow YAML and shell syntax passed; both branches of the selection script were simulated successfully; `npm run typecheck` and pre-commit passed (40 API/handler tests; Playwright hook skipped without a saved dev session). Build Web on #104 passed; dev web deployment 40599639486 succeeded. The prior E2E run with installed Chrome passed (20 passed, 1 skipped); no new E2E dispatch was run because it uses AWS-backed dev test data.
 3. #102, #100: merged in order; API/handler and full PR-branch pytest passed, and both dev Lambda deploys succeeded. `requirements-lambda.txt` remains unpinned, so a floor bump changes little in the image; the Mac app runtime (`requirements-runtime.txt`) is what moves for #100.
 4. #98: section 12 comparison passed against its PR head with the `.venv` and a fresh local Linux ARM64 container, AI orientation off, no runtime network or keys. Both resolved OpenCV to 5.0.0.93; outputs were 3/2/1/1 and all 14 native/container output files were byte-identical to the section 12 baseline (counts, dimensions and orientation unchanged; native/Linux comparison remains 0.108–1.605 MAE). API/handler pytest: 40 passed; full pytest: 101 passed, 17 skipped. Merged into `dev` as `6d00d02`; dev Lambda run 40598800515 succeeded.
-5. The owner approved promotion to `main` on 2026-10-27 after #98 and #104. Both dev deployments succeeded; next create a merge-commit promotion PR, watch production web and Lambda deployments, and re-run the alert query. No PR was closed.
+5. The owner approved promotion to `main` on 2026-10-27 after #98 and #104. PR #106 merged as `f8e0dd8`; production web run 40600510572 and Lambda run 40600510518 succeeded. `www` and `app` return 200 on `/` and `/api/version`; both version responses report `f8e0dd8`. The post-promotion Dependabot alert query returned 0 open alerts. No PR was closed.
 
 Check each PR: failing CI or pytest means close with a short comment, never merge to clear the list.
+
+## 14. Production orientation retest after system-key update (2026-10-27)
+The first production run of the four comparison HEICs extracted seven photos. CloudWatch showed all seven Anthropic orientation calls failing with HTTP 401 `invalid x-api-key`; each then logged 0° at low confidence and passed through unchanged. The OpenAI glare-removal step succeeded for all seven. The signed-in Settings screen showed no personal keys, so the run used the system keys. The orientation source does not log whether it selected a personal or system key; this attribution is based on the Settings key-presence state and the resolver's fallback logic.
+
+After the owner updated the production system Anthropic key, `IMG_three_pics_normal.HEIC` was re-uploaded through the production app in Vivaldi. The job completed in 82 seconds and extracted three photos. CloudWatch recorded 180° rotation at high confidence for all three photos; the output thumbnails appeared upright. This confirms the updated key is accepted and the orientation correction ran successfully.
+
+The failed orientation calls were treated as non-fatal: `claude_vision.py` logs the provider error and returns a low-confidence passthrough; the handler records 0° as an ordinary completed step, so the library showed a completed job without a warning. Surface this degraded outcome to the user in a follow-up UI/code change. No key material was recorded here.
+
+## 15. Settings version badges report false outdated status (2026-10-27)
+The production `/api/version` response reports both deployed SHAs as `f8e0dd8` and both `is_latest` values as false. The timestamp and deployed SHA are valid; the badge comparison is faulty. `route.ts` queries `web`, `api`, and `src` at the repository root, but the current code lives under `apps/web`, `services/api`, `services/handlers`, and `packages/pipeline/src`. GitHub consequently returns old monorepo-layout commits for those root paths. In addition, `isUpToDate()` checks exact SHA equality: the latest relevant commits (`9f86bed` for `apps/web` and `f9a8ef6` for `packages/pipeline/src`) are ancestors included in deployed merge commit `f8e0dd8`, but do not equal it. This makes the UI show Outdated even though the deployed merge commit contains those changes. Fix path selection and use ancestry/deployment coverage rather than equality.
