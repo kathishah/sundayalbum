@@ -65,6 +65,15 @@ Crop bytes from `test-images-2/` and `test-images-3/` must be approved for the e
 
 Optionally derive 90°, 180°, and 270° synthetic rotations from upright crops to enlarge orientation coverage. Report synthetic and real results separately; real crops remain decisive.
 
+Future orientation experiment proposed after the 2026-10-28 review: send four
+views of the same crop, rotated 0°, 90°, 180°, and 270°, in one model request.
+Ask the model to identify the most plausible upright view and provide a scene
+description for it; map the chosen view to the correction for the original
+crop. Evaluate this separately from the existing single-image prompt, with
+real and derived fixtures reported separately and repeatability, latency,
+token use, and cost recorded. This is a research idea, not part of the current
+harness or production defaults.
+
 ### 2. Sparse override configuration and capture
 
 The CLI takes one candidate config file. It is an overlay on the existing pipeline configuration, not a complete replacement. Its `steps` map contains only the steps being overridden. A step entry can specify provider/model, an optional prompt override, and request parameter overrides. An omitted step keeps its existing production setup. Within an included step, an omitted provider, prompt, or request parameter keeps its existing value; supplied fields override only those values. A prompt override may be inline or referenced from a local prompt file; the resolved full prompt is captured in the run record.

@@ -50,7 +50,33 @@ scored 3/6 on this focused set, and neither met the predeclared 100% rotated
 accuracy threshold. The dated combined cost estimate was $0.017690. A scan of
 run JSON and HTML found no full provider key.
 
-This focused result does not establish that Haiku 5.5 improves orientation
-over Haiku 4.5. The run's ignored local `review.html` awaits owner review;
-there is no acceptance or production promotion. Glare remains on hold until
-the owner lifts that hold.
+This focused result does not establish that Haiku 5.5 improves rotation
+accuracy over Haiku 4.5. The owner reviewed the report and observed that the
+Haiku 5.5 scene descriptions were substantially better, especially for the
+water-ride crop. In one repeat, the baseline described a bunker or
+fortification; the candidate recognized an inverted ride vehicle and people.
+
+## Owner decision and future orientation experiment
+
+The owner accepted Haiku 5.5 for consideration as the orientation model.
+The ignored local decision record for `orientation-object-180-20261028` is
+`accepted` and names `orientation-full-20261028` as supporting evidence. It
+explicitly records the missed 100% rotated-accuracy threshold, the wrong 270°
+answers for the water ride and car, the narrow derived-fixture set, and the
+four baseline parse failures in the earlier run. This is an owner judgment
+that values the improved scene descriptions despite those rotation errors.
+No production default has changed.
+
+The acceptance includes a documented waiver for downstream scene-description
+validation because the owner has explicitly held the glare evaluation. The
+effect of Haiku 5.5 descriptions on glare removal remains unknown and must be
+reviewed before any production promotion. No glare API calls have started.
+
+For a future orientation experiment, present the *same crop* to the model in
+four candidate rotations (0°, 90°, 180°, 270°). Ask it to choose which view
+has the most plausible upright scene and describe that chosen view. Map the
+chosen view back to the clockwise correction for the original crop. Compare
+this method with the current single-image prompt on the frozen labels, keeping
+real and derived cases separate and tracking errors, repeat agreement,
+latency, and token cost. This is a documented idea only; no four-view variant
+or production change was implemented in this phase.
