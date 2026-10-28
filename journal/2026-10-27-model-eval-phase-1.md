@@ -22,7 +22,9 @@ only; `--refresh` reports changed hashes without overwriting frozen bytes.
 the ten orientation crop hashes exactly. `prepare_review.py` constructs the
 glare-stage variants from approved rotation labels.
 
-The core crop release asset is `v0.0.4-evaldata/eval-crops.zip`. The fetcher
+The core crop release asset was published as
+[`v0.0.4-evaldata/eval-crops.zip`](https://github.com/kathishah/sundayalbum/releases/tag/v0.0.4-evaldata)
+from the feature branch. The fetcher
 checks each member against the manifest before installing it and refuses to
 overwrite a different local file. Local-only crops must be supplied separately.
 
@@ -38,5 +40,6 @@ two evaluations will run separately, orientation first.
 - `fixtures.py validate`: 20/20 crop files passed.
 - `build_fixtures.py --refresh`: 10/10 orientation hashes unchanged.
 - Python compilation and `git diff --check`: passed.
+- Downloaded the release asset and verified all 10 released crop files against the manifest.
 
 No provider API call was made in this phase.
