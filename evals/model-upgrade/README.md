@@ -1,8 +1,15 @@
 # Model upgrade evaluations
 
 The approved, frozen crop manifest is `fixtures.json`. Crop bytes are excluded from Git.
-`orientation/` contains the exact unrotated photo-split output; `glare/` contains
-separately prepared upright inputs. The runner must use these bytes directly.
+`orientation/` contains frozen photo-split outputs and explicitly derived
+orientation challenges; `glare/` contains separately prepared upright inputs.
+The runner must use these bytes directly.
+The v2 fixture set adds two owner-approved, local-only orientation challenges
+from `test-images-2/IMG_1247.HEIC`. Their inputs are explicitly derived by
+rotating the extracted city and water-ride crops 180°; both require a 180°
+correction. The manifest records the source crop hash and derivation. These
+orientation-only cases have no glare-stage input, and the runner selects cases
+by their task tags. The earlier v1 run remains a separate, immutable result.
 
 Validate all local crops:
 
@@ -80,9 +87,10 @@ Put only the applicable provider keys in the project-root `secrets.json`:
 
 This file and all run artifacts are ignored by Git. The runner reads neither
 AWS Secrets Manager nor user BYOK settings. It never uploads source HEICs; it
-sends only the selected exact crop bytes. The five cases from
-`test-images-2`/`test-images-3` remain local-only and must not be included in
-a public release or committed output.
+sends only the selected exact crop bytes. The seven orientation cases from
+`test-images-2`/`test-images-3` remain local-only. Five of those also have
+local-only glare-stage inputs. None of these bytes may be included in a public
+release or committed output.
 
 Run orientation first. The command below is an example budget for one case,
 three repeats, and at most one retry per arm. Check the dry-run count and

@@ -44,6 +44,7 @@ def offline_eval_environment(tmp_path: Path, monkeypatch) -> None:
             "expected_flip_horizontal": False,
             "ambiguous": ambiguous,
             "distribution": distribution,
+            "tags": ["orientation", "glare"],
             "scene_description": f"Synthetic scene {index}",
         }
         for task in ("orientation", "glare"):

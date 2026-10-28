@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "fixture_set": "approved-2026-10-27-v1",
+  "fixture_set": "approved-2026-10-28-v2",
   "cases": [
     {
       "case_id": "test-images-img_two_pics_vertical_horizontal_normal-01",
@@ -1005,6 +1005,194 @@
         "orientation-ambiguous"
       ],
       "notes": "Approved frozen crop; orientation label reviewed against exact extracted bytes."
+    },
+    {
+      "case_id": "test-images-2-img_1247-01-rot180",
+      "source_path": "test-images-2/IMG_1247.HEIC",
+      "source_sha256": "ac16c50d3eae9371f73cfcb71775f737af006956a3a9fbbc27c4f4fcd1eb5484",
+      "photo_index": 1,
+      "crop": {
+        "photo_quad": [
+          [
+            225.0,
+            2285.000244140625
+          ],
+          [
+            2664.999755859375,
+            2285.000244140625
+          ],
+          [
+            2664.999755859375,
+            3915.0
+          ],
+          [
+            225.0,
+            3915.0
+          ]
+        ]
+      },
+      "extraction_tool": "production load/normalize/page_detect/perspective/photo_detect/photo_split; Pillow 180-degree rotation, JPEG quality 95/subsampling 0",
+      "extraction_config": {
+        "max_working_resolution": 4000,
+        "prefer_heic_for_iteration": true,
+        "page_detect_min_area_ratio": 0.3,
+        "page_detect_grabcut_iterations": 5,
+        "page_detect_grabcut_max_dimension": 800,
+        "glare_intensity_threshold": 0.85,
+        "glare_saturation_threshold": 0.15,
+        "glare_min_area": 100,
+        "glare_inpaint_radius": 5,
+        "glare_feather_radius": 5,
+        "glare_type": "auto",
+        "photo_detect_method": "contour",
+        "photo_detect_min_area_ratio": 0.02,
+        "photo_detect_max_count": 8,
+        "keystone_max_angle": 40.0,
+        "rotation_auto_correct_max": 15.0,
+        "dewarp_detection_threshold": 0.02,
+        "use_dewarp": false,
+        "color_restore_wp_percentile": 99.0,
+        "color_restore_wp_target": 0.96,
+        "color_restore_shadow_lift_max": 0.15,
+        "color_restore_brightness_ceiling": 0.75,
+        "color_restore_vibrance_boost": 0.25,
+        "sharpen_radius": 1.5,
+        "sharpen_amount": 0.5,
+        "output_format": "jpeg",
+        "jpeg_quality": 92,
+        "use_ai_quality_check": false,
+        "use_ai_fallback_detection": false,
+        "anthropic_model": "claude-sonnet-4-5-20250929",
+        "forced_detections": null,
+        "use_ai_orientation": false,
+        "ai_orientation_model": "claude-haiku-4-5-20251001",
+        "ai_orientation_min_confidence": "medium",
+        "forced_rotation_degrees": null,
+        "use_openai_glare_removal": false,
+        "openai_model": "gpt-image-1.5",
+        "openai_glare_quality": "high",
+        "openai_glare_input_fidelity": "high",
+        "forced_scene_description": null
+      },
+      "pipeline_revision": "022804f1bdd573da4d9b4ffb104f93ad281a9317",
+      "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+      "architecture": "arm64",
+      "orientation_input": "test-cropped-images/orientation/test-images-2-img_1247-01-rot180.jpg",
+      "orientation_sha256": "64e934e488e486c9c7d78bf781332759850ab9b98ffeb062b9f0159c1cbc6050",
+      "orientation_derivation": {
+        "source_crop_sha256": "33aeb0f7763c22365e219a11662efa66a6813dc4e529c21ad0cbbd17c30b47a1",
+        "rotation_clockwise_degrees": 180,
+        "jpeg_quality": 95,
+        "jpeg_subsampling": 0
+      },
+      "review_status": "approved_2026-10-28",
+      "expected_rotation_degrees": 180,
+      "expected_flip_horizontal": false,
+      "ambiguous": false,
+      "scene_description": "Buildings near the water line",
+      "distribution": "local-only",
+      "photo_position": "bottom",
+      "tags": [
+        "orientation",
+        "album-page",
+        "synthetic-rotation",
+        "object-scene"
+      ],
+      "notes": "Owner approved exact pre-rotated bytes and 180-degree labels on 2026-10-28; orientation-only fixture."
+    },
+    {
+      "case_id": "test-images-2-img_1247-02-rot180",
+      "source_path": "test-images-2/IMG_1247.HEIC",
+      "source_sha256": "ac16c50d3eae9371f73cfcb71775f737af006956a3a9fbbc27c4f4fcd1eb5484",
+      "photo_index": 2,
+      "crop": {
+        "photo_quad": [
+          [
+            100.88386535644531,
+            126.38349914550781
+          ],
+          [
+            2558.51123046875,
+            57.15455627441406
+          ],
+          [
+            2606.3251953125,
+            1754.54052734375
+          ],
+          [
+            148.6975860595703,
+            1823.7694091796875
+          ]
+        ]
+      },
+      "extraction_tool": "production load/normalize/page_detect/perspective/photo_detect/photo_split; Pillow 180-degree rotation, JPEG quality 95/subsampling 0",
+      "extraction_config": {
+        "max_working_resolution": 4000,
+        "prefer_heic_for_iteration": true,
+        "page_detect_min_area_ratio": 0.3,
+        "page_detect_grabcut_iterations": 5,
+        "page_detect_grabcut_max_dimension": 800,
+        "glare_intensity_threshold": 0.85,
+        "glare_saturation_threshold": 0.15,
+        "glare_min_area": 100,
+        "glare_inpaint_radius": 5,
+        "glare_feather_radius": 5,
+        "glare_type": "auto",
+        "photo_detect_method": "contour",
+        "photo_detect_min_area_ratio": 0.02,
+        "photo_detect_max_count": 8,
+        "keystone_max_angle": 40.0,
+        "rotation_auto_correct_max": 15.0,
+        "dewarp_detection_threshold": 0.02,
+        "use_dewarp": false,
+        "color_restore_wp_percentile": 99.0,
+        "color_restore_wp_target": 0.96,
+        "color_restore_shadow_lift_max": 0.15,
+        "color_restore_brightness_ceiling": 0.75,
+        "color_restore_vibrance_boost": 0.25,
+        "sharpen_radius": 1.5,
+        "sharpen_amount": 0.5,
+        "output_format": "jpeg",
+        "jpeg_quality": 92,
+        "use_ai_quality_check": false,
+        "use_ai_fallback_detection": false,
+        "anthropic_model": "claude-sonnet-4-5-20250929",
+        "forced_detections": null,
+        "use_ai_orientation": false,
+        "ai_orientation_model": "claude-haiku-4-5-20251001",
+        "ai_orientation_min_confidence": "medium",
+        "forced_rotation_degrees": null,
+        "use_openai_glare_removal": false,
+        "openai_model": "gpt-image-1.5",
+        "openai_glare_quality": "high",
+        "openai_glare_input_fidelity": "high",
+        "forced_scene_description": null
+      },
+      "pipeline_revision": "022804f1bdd573da4d9b4ffb104f93ad281a9317",
+      "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+      "architecture": "arm64",
+      "orientation_input": "test-cropped-images/orientation/test-images-2-img_1247-02-rot180.jpg",
+      "orientation_sha256": "b01b4f64769496e9d2c8f20e67c9c9212fb11f02e4f3ac49cd9bf12355d03fbf",
+      "orientation_derivation": {
+        "source_crop_sha256": "aa95fff658d93653feb80aa4657e559aaa0970174a0614f9134eaf82f55aa094",
+        "rotation_clockwise_degrees": 180,
+        "jpeg_quality": 95,
+        "jpeg_subsampling": 0
+      },
+      "review_status": "approved_2026-10-28",
+      "expected_rotation_degrees": 180,
+      "expected_flip_horizontal": false,
+      "ambiguous": false,
+      "scene_description": "Water ride ending in water before a splash",
+      "distribution": "local-only",
+      "photo_position": "top",
+      "tags": [
+        "orientation",
+        "album-page",
+        "synthetic-rotation",
+        "water-ride"
+      ],
+      "notes": "Owner approved exact pre-rotated bytes and 180-degree labels on 2026-10-28; orientation-only fixture."
     }
   ]
 }

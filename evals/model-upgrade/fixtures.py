@@ -42,7 +42,10 @@ def load_manifest() -> dict:
             raise ValueError(f"Invalid rotation label: {case_id}")
         if row["ambiguous"] != (row["expected_rotation_degrees"] is None):
             raise ValueError(f"Ambiguity/label mismatch: {case_id}")
-        for task in ("orientation", "glare"):
+        tasks = set(row["tags"]) & {"orientation", "glare"}
+        if not tasks:
+            raise ValueError(f"Fixture has no supported task: {case_id}")
+        for task in sorted(tasks):
             relative = Path(row[f"{task}_input"])
             expected = Path("test-cropped-images") / task / f"{case_id}.jpg"
             if relative != expected or relative.is_absolute():
@@ -61,6 +64,8 @@ def validate(*, release_only: bool = False) -> int:
         if release_only and row["distribution"] == "local-only":
             continue
         for task in ("orientation", "glare"):
+            if task not in row["tags"]:
+                continue
             path = ROOT / row[f"{task}_input"]
             if not path.is_file():
                 raise FileNotFoundError(path)
@@ -81,6 +86,8 @@ def fetch() -> int:
             members = {entry.filename: entry for entry in bundle.infolist()}
             for row in released:
                 for task in ("orientation", "glare"):
+                    if task not in row["tags"]:
+                        continue
                     relative = row[f"{task}_input"]
                     if relative not in members:
                         raise ValueError(f"Release is missing {relative}")

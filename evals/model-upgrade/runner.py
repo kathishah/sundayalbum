@@ -151,7 +151,11 @@ def effective_config(task: str, override: dict, cases: list[dict]) -> tuple[dict
 def selected_cases(task: str, requested: list[str]) -> tuple[dict, list[dict]]:
     """Load only manifest crop bytes and verify hashes before any request."""
     manifest = load_manifest()
-    cases = [row for row in manifest["cases"] if not requested or row["case_id"] in requested]
+    cases = [
+        row
+        for row in manifest["cases"]
+        if task in row["tags"] and (not requested or row["case_id"] in requested)
+    ]
     if not cases or (requested and set(requested) != {row["case_id"] for row in cases}):
         raise ValueError("No matching fixtures or an unknown case ID was supplied")
     for row in cases:
