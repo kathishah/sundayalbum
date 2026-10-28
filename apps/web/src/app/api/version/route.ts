@@ -48,32 +48,40 @@ async function getLastSuccessfulRun(
   return { deployed_at: run.updated_at, sha: run.head_sha }
 }
 
-// Returns the SHA of the most recent commit touching any of the given paths.
-// Commits are stable once merged — no timing sensitivity here.
-async function latestRelevantSha(paths: string[]): Promise<string | null> {
-  const results = await Promise.allSettled(
-    paths.map((p) =>
-      ghFetch(
-        `/repos/${OWNER}/${REPO}/commits?sha=${branch}&path=${encodeURIComponent(p)}&per_page=1`
-      ).then((d) => {
-        const commits = d as { sha: string; commit: { committer: { date: string } } }[]
-        const c = commits[0]
-        return c ? { sha: c.sha, date: c.commit.committer.date } : null
-      })
-    )
-  )
-  const entries = results.flatMap((r) =>
-    r.status === 'fulfilled' && r.value !== null ? [r.value] : []
-  )
-  if (entries.length === 0) return null
-  // Pick the entry with the most recent commit date, return its SHA
-  return entries.sort((a, b) => (a.date < b.date ? 1 : -1))[0].sha
-}
+// Paths whose changes trigger each deploy workflow (keep in sync with the
+// `paths:` filters in .github/workflows/deploy-web.yml and deploy-lambda.yml).
+const WEB_PATHS = ['apps/web/', '.github/workflows/deploy-web.yml']
+const BACKEND_PATHS = [
+  'services/api/',
+  'services/handlers/',
+  'packages/pipeline/',
+  'Dockerfile',
+  '.github/workflows/deploy-lambda.yml',
+]
 
-// SHA comparison — deterministic, no timestamp race conditions.
-function isUpToDate(deployedSha: string | null, latestSha: string | null): boolean | null {
-  if (!deployedSha || !latestSha) return null
-  return deployedSha === latestSha
+// GitHub's compare endpoint returns at most 300 files per response.
+const COMPARE_FILE_LIMIT = 300
+
+// A component is up to date when no commit between the deployed SHA and the branch
+// tip changed any of its paths. Comparing ancestry (not SHA equality) is what makes
+// this correct: merge-commit promotions and docs-only merges move the branch tip
+// without redeploying, and the deployed SHA is rarely the last commit touching a path.
+// Returns null (badge hidden) when the answer is unknown.
+async function isUpToDate(deployedSha: string | null, paths: string[]): Promise<boolean | null> {
+  if (!deployedSha) return null
+  try {
+    const cmp = (await ghFetch(`/repos/${OWNER}/${REPO}/compare/${deployedSha}...${branch}`)) as {
+      files?: { filename: string }[]
+    }
+    const files = cmp.files
+    if (!files) return null
+    if (files.some((f) => paths.some((p) => f.filename.startsWith(p)))) return false
+    // No match, but the file list may be truncated: we cannot rule out a later match.
+    return files.length >= COMPARE_FILE_LIMIT ? null : true
+  } catch (err) {
+    console.error('Version compare failed:', err)
+    return null
+  }
 }
 
 export async function GET() {
@@ -82,12 +90,14 @@ export async function GET() {
   }
 
   try {
-    const [webRun, backendRun, latestWebSha, latestBackendSha] = await Promise.all([
+    const [webRun, backendRun] = await Promise.all([
       getLastSuccessfulRun('deploy-web.yml'),
       getLastSuccessfulRun('deploy-lambda.yml'),
-      latestRelevantSha(['web']),
-      // api + src cover the vast majority of meaningful backend changes
-      latestRelevantSha(['api', 'src']),
+    ])
+    const webSha = WEB_BUILD_SHA ?? webRun?.sha ?? null
+    const [webLatest, backendLatest] = await Promise.all([
+      isUpToDate(webSha, WEB_PATHS),
+      isUpToDate(backendRun?.sha ?? null, BACKEND_PATHS),
     ])
 
     const data = {
@@ -96,12 +106,12 @@ export async function GET() {
         // Prefer baked-in SHA (always accurate); fall back to workflow run SHA
         sha: (WEB_BUILD_SHA ?? webRun?.sha)?.slice(0, 7) ?? null,
         // WEB_BUILD_SHA is baked at image build time — never stale, no API lag
-        is_latest: isUpToDate(WEB_BUILD_SHA ?? webRun?.sha ?? null, latestWebSha),
+        is_latest: webLatest,
       },
       backend: {
         deployed_at: backendRun?.deployed_at ?? null,
         sha: backendRun?.sha.slice(0, 7) ?? null,
-        is_latest: isUpToDate(backendRun?.sha ?? null, latestBackendSha),
+        is_latest: backendLatest,
       },
     }
 
