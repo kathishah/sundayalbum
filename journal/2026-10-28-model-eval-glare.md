@@ -103,3 +103,16 @@ ten-crop dry run selects 20 calls with no retries and a dated $6.00 planning
 estimate. All 28 offline eval tests and Ruff checks passed. Next is a small
 Sunburst pilot on the one crop previously preferred under `gpt-image-1.5`,
 followed by a full-set comparison if the pilot succeeds.
+
+## Flare versus Sunburst pilot
+
+The baseline-override code and config were committed and pushed as `6386ce1`
+before the pilot. Run `glare-sunburst-pilot-20261028` compared Flare (working
+evaluation baseline) and Sunburst (candidate) only on
+`test-images-3-img_1270-01`, with one repeat, no retries, and a two-call cap.
+Both calls succeeded, returning valid 1536×1024 PNGs. There were no provider
+errors, missing cost estimates, or model-ID mismatches. The dated combined
+usage estimate was $0.106512; this is not a provider-reported bill. The local
+review page correctly labels the two model arms, and no full API key was
+found in JSON or HTML artifacts. This verifies the technical path, not image
+quality. Next is a separate full ten-crop Flare-versus-Sunburst comparison.
