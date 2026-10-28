@@ -44,3 +44,22 @@ SDK clients are constructed with explicit keys and official base URLs; the
 runner does not use environment fallbacks. Run artifacts go to ignored
 `eval-runs/<run-id>/`. A stopped run can resume with `--resume --run-id <id>`;
 recorded failures are kept unless `--retry-failed` is supplied.
+
+Orientation runs score raw and production confidence-gated rotation against
+reviewed labels. Ambiguous crops stay visible but do not enter accuracy
+denominators. The default predeclared orientation thresholds are 100% accuracy
+on real rotated crops and 80% on upright crops; override with a JSON map in
+`--thresholds` before execution.
+
+Glare runs produce `review.html` and a separate `blind-map.json`. The page
+shows the original crop and padded, equal-size left/right previews. It does
+not contain model identities, dimensions, latency, or cost. Rate every field
+and download `ratings.json`, then reveal with:
+
+```bash
+.venv/bin/python evals/model-upgrade/review.py reveal eval-runs/<run-id> \
+  --ratings /path/to/ratings.json
+```
+
+The reveal command validates pair coverage and rating values before joining
+the saved ratings to the private arm mapping.

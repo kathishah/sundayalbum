@@ -23,6 +23,7 @@ from src.glare.remover_openai import _build_prompt, _pick_api_size  # noqa: E402
 from src.pipeline import PipelineConfig  # noqa: E402
 
 from fixtures import load_manifest, sha256  # noqa: E402
+from evaluation import build_glare_review, glare_metrics, orientation_metrics  # noqa: E402
 from providers import call_glare, call_orientation, make_client, preflight, read_eval_keys  # noqa: E402
 from records import RunStore, canonical_hash  # noqa: E402
 
@@ -142,6 +143,11 @@ def run(args: argparse.Namespace) -> Path | None:
     repeats = args.repeats if args.repeats is not None else (3 if args.task == "orientation" else 1)
     if repeats < 1 or args.max_retries < 0:
         raise ValueError("Repeats must be positive and max-retries nonnegative")
+    thresholds = args.thresholds or ({"min_rotated_accuracy": 1.0, "min_upright_accuracy": 0.8}
+                                     if args.task == "orientation" else {})
+    if not isinstance(thresholds, dict) or any(not isinstance(value, (int, float)) or value < 0 or value > 1
+                                               for value in thresholds.values()):
+        raise ValueError("Thresholds must be a JSON map of values between 0 and 1")
     jobs = [(row, arm, repeat) for row in cases for arm in ("baseline", "candidate")
             for repeat in range(1, repeats + 1)]
     worst_case = len(jobs) * (args.max_retries + 1)
@@ -170,7 +176,7 @@ def run(args: argparse.Namespace) -> Path | None:
                "repeats": repeats, "max_retries": args.max_retries,
                "max_attempts": args.max_attempts, "max_estimated_usd": args.max_estimated_usd,
                "planning_price_date": PRICING_DATE, "planning_usd_per_attempt": PLANNING_USD_PER_ATTEMPT[args.task],
-               "thresholds": args.thresholds}
+               "thresholds": thresholds}
     if args.resume:
         store = RunStore.resume(root, run_id=run_id, task=args.task,
                                 fixture_set=manifest["fixture_set"], fixture_hashes=fixture_hashes,
@@ -198,7 +204,9 @@ def run(args: argparse.Namespace) -> Path | None:
         image_bytes = path.read_bytes()
         for _ in range(args.max_retries + 1):
             if used >= args.max_attempts:
-                store.save_result(key, {"status": "not_run", "reason": "attempt_cap"})
+                store.save_result(key, {"status": "not_run", "reason": "attempt_cap",
+                                        "case_id": row["case_id"], "arm": arm, "repeat": repeat,
+                                        "input_sha256": row[f"{args.task}_sha256"]})
                 break
             attempt = len(store.attempts(key)) + 1
             parameters = config.get("parameters_by_case", {}).get(row["case_id"], config["parameters"])
@@ -225,7 +233,10 @@ def run(args: argparse.Namespace) -> Path | None:
             if result["status"] == "success" or not result.get("retryable"):
                 break
             time.sleep(min(2**attempt, 10))
-    store.write_summary({"task": args.task, "coverage": len(cases),
+    metrics = orientation_metrics(store) if args.task == "orientation" else glare_metrics(store)
+    if args.task == "glare":
+        build_glare_review(store)
+    store.write_summary({"task": args.task, "coverage": len(cases), "metrics": metrics,
                          "attempts_used": used,
                          "results": {"success": sum(r["status"] == "success" for r in store.all_results()),
                                      "failed": sum(r["status"] == "failed" for r in store.all_results()),
