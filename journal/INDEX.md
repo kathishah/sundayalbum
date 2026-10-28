@@ -19,6 +19,7 @@ Development log for Sunday Album. Entries fall into two categories:
 | 2026-02-16 | [phase-7-geometry-correction](2026-02-16-phase-7-geometry-correction.md) | Keystone, rotation detection, dewarp implementation |
 | 2026-02-16 | [phase-8-color-restoration](2026-02-16-phase-8-color-restoration.md) | White balance, deyellowing, CLAHE-based fade restoration, sharpening |
 | 2026-02-16 | [phase-9-pipeline-integration](2026-02-16-phase-9-pipeline-integration.md) | End-to-end pipeline wiring, AI quality check, output naming |
+| 2026-10-27 | [model-eval-phase-1](2026-10-27-model-eval-phase-1.md) | Approved frozen crop pairs, hashes, fixture preparation and fetch support |
 
 ---
 

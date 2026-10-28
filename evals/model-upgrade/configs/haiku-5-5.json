@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "name": "haiku-5-5-orientation",
+  "steps": {
+    "ai_orientation": {
+      "model": "claude-haiku-5-5"
+    }
+  }
+}
