@@ -14,8 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = Path(__file__).with_name("fixtures.json")
 RELEASE_URL = (
-    "https://github.com/kathishah/sundayalbum/releases/download/"
-    "v0.0.4-evaldata/eval-crops.zip"
+    "https://github.com/kathishah/sundayalbum/releases/download/v0.0.4-evaldata/eval-crops.zip"
 )
 
 

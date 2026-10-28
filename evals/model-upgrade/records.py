@@ -7,7 +7,7 @@ import json
 import os
 import re
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +20,7 @@ _KEY_IN_TEXT = re.compile(r"\b(?:sk-(?:ant-)?[A-Za-z0-9_-]+)\b")
 
 def utc_now() -> str:
     """Return an ISO UTC timestamp."""
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def canonical_hash(value: Any) -> str:
@@ -48,7 +48,9 @@ def redact(value: Any) -> Any:
 def _atomic_json(path: Path, value: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     sanitized = redact(value)
-    with tempfile.NamedTemporaryFile("w", dir=path.parent, delete=False, encoding="utf-8") as stream:
+    with tempfile.NamedTemporaryFile(
+        "w", dir=path.parent, delete=False, encoding="utf-8"
+    ) as stream:
         json.dump(sanitized, stream, indent=2, ensure_ascii=False)
         stream.write("\n")
         temporary = Path(stream.name)
@@ -86,7 +88,7 @@ class RunStore:
         harness_revision: str,
         sdk_versions: dict[str, str],
         review_context: dict,
-    ) -> "RunStore":
+    ) -> RunStore:
         """Create an empty run with complete effective configuration metadata."""
         cls._check_id(run_id)
         directory = root / run_id
@@ -122,7 +124,8 @@ class RunStore:
         fixture_hashes: dict[str, str],
         baseline_config: dict,
         candidate_config: dict,
-    ) -> "RunStore":
+        review_context: dict | None = None,
+    ) -> RunStore:
         """Open a run only if fixtures and effective settings match exactly."""
         cls._check_id(run_id)
         store = cls(root / run_id)
@@ -138,6 +141,20 @@ class RunStore:
         for field, value in expected.items():
             if manifest.get(field) != value:
                 raise ValueError(f"Cannot resume: {field} differs from recorded run")
+        if review_context is not None:
+            immutable_context = (
+                "provider_account",
+                "retention_url",
+                "local_only_cases",
+                "repeats",
+                "max_retries",
+                "planning_price_date",
+                "thresholds",
+                "orientation_scene_source_run",
+            )
+            for field in immutable_context:
+                if manifest["review_context"].get(field) != review_context.get(field):
+                    raise ValueError(f"Cannot resume: review_context.{field} differs")
         return store
 
     def manifest(self) -> dict:
@@ -155,22 +172,41 @@ class RunStore:
         path = self.directory / "attempts" / job_id / f"{attempt:03d}.json"
         if path.exists():
             raise FileExistsError(path)
-        _atomic_json(path, {"schema_version": SCHEMA_VERSION, "job_id": job_id,
-                            "attempt": attempt, "recorded_at": utc_now(), **result})
+        _atomic_json(
+            path,
+            {
+                "schema_version": SCHEMA_VERSION,
+                "job_id": job_id,
+                "attempt": attempt,
+                "recorded_at": utc_now(),
+                **result,
+            },
+        )
         return path
 
     def attempts(self, job_id: str) -> list[dict]:
         """Read all recorded attempts for a fixture/configuration/repeat."""
         self._check_id(job_id)
         folder = self.directory / "attempts" / job_id
-        return [json.loads(path.read_text()) for path in sorted(folder.glob("*.json"))] if folder.exists() else []
+        return (
+            [json.loads(path.read_text()) for path in sorted(folder.glob("*.json"))]
+            if folder.exists()
+            else []
+        )
 
     def save_result(self, job_id: str, result: dict) -> Path:
         """Persist the current aggregate outcome for one fixture job."""
         self._check_id(job_id)
         path = self.directory / "results" / f"{job_id}.json"
-        _atomic_json(path, {"schema_version": SCHEMA_VERSION, "job_id": job_id,
-                            "recorded_at": utc_now(), **result})
+        _atomic_json(
+            path,
+            {
+                "schema_version": SCHEMA_VERSION,
+                "job_id": job_id,
+                "recorded_at": utc_now(),
+                **result,
+            },
+        )
         return path
 
     def result(self, job_id: str) -> dict | None:
@@ -182,25 +218,54 @@ class RunStore:
     def all_results(self) -> list[dict]:
         """Read all aggregate results, including failures and not-run entries."""
         folder = self.directory / "results"
-        return [json.loads(path.read_text()) for path in sorted(folder.glob("*.json"))] if folder.exists() else []
+        return (
+            [json.loads(path.read_text()) for path in sorted(folder.glob("*.json"))]
+            if folder.exists()
+            else []
+        )
 
     def write_summary(self, summary: dict) -> Path:
         """Write a machine-readable run summary."""
         path = self.directory / "summary.json"
-        _atomic_json(path, {"schema_version": SCHEMA_VERSION, "run_id": self.manifest()["run_id"],
-                            "updated_at": utc_now(), **summary})
+        _atomic_json(
+            path,
+            {
+                "schema_version": SCHEMA_VERSION,
+                "run_id": self.manifest()["run_id"],
+                "updated_at": utc_now(),
+                **summary,
+            },
+        )
         return path
 
-    def write_decision(self, *, reviewer: str, status: str, rationale: str,
-                       limitations: str, evidence: dict | None = None) -> Path:
+    def write_decision(
+        self,
+        *,
+        reviewer: str,
+        status: str,
+        rationale: str,
+        limitations: str,
+        evidence: dict | None = None,
+    ) -> Path:
         """Record a human decision without changing production settings."""
         if status not in {"accepted", "rejected", "inconclusive"}:
             raise ValueError("Invalid decision status")
         if not reviewer.strip() or not rationale.strip():
             raise ValueError("Reviewer and rationale are required")
         path = self.directory / "decision.json"
-        _atomic_json(path, {"schema_version": SCHEMA_VERSION,
-                            "run_id": self.manifest()["run_id"], "reviewer": reviewer,
-                            "date": utc_now(), "status": status, "rationale": rationale,
-                            "known_limitations": limitations, "evidence": evidence or {}})
+        if path.exists():
+            raise FileExistsError("Decision already recorded; preserve the audit trail")
+        _atomic_json(
+            path,
+            {
+                "schema_version": SCHEMA_VERSION,
+                "run_id": self.manifest()["run_id"],
+                "reviewer": reviewer,
+                "date": utc_now(),
+                "status": status,
+                "rationale": rationale,
+                "known_limitations": limitations,
+                "evidence": evidence or {},
+            },
+        )
         return path

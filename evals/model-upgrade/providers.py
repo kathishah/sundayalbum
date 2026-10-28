@@ -65,14 +65,22 @@ def _raw(response: Any) -> dict:
 def _error(exc: Exception, latency_ms: int) -> dict:
     name = type(exc).__name__
     status_code = getattr(exc, "status_code", None)
-    retryable = status_code in (408, 409, 429) or (isinstance(status_code, int) and status_code >= 500)
+    retryable = status_code in (408, 409, 429) or (
+        isinstance(status_code, int) and status_code >= 500
+    )
     if status_code is None and name in {"APIConnectionError", "APITimeoutError"}:
         retryable = True
     return {
-        "status": "failed", "error_class": "provider_error", "error_type": name,
-        "http_status": status_code, "retryable": retryable,
-        "error": str(exc)[:300], "latency_ms": latency_ms,
-        "raw_response": None, "parsed_output": None, "usage": None,
+        "status": "failed",
+        "error_class": "provider_error",
+        "error_type": name,
+        "http_status": status_code,
+        "retryable": retryable,
+        "error": str(exc)[:300],
+        "latency_ms": latency_ms,
+        "raw_response": None,
+        "parsed_output": None,
+        "usage": None,
     }
 
 
@@ -98,60 +106,106 @@ def parse_orientation(text: str) -> dict:
     return value
 
 
-def call_orientation(client: Any, *, image_bytes: bytes, model: str,
-                     prompt: str, parameters: dict) -> dict:
+def call_orientation(
+    client: Any, *, image_bytes: bytes, model: str, prompt: str, parameters: dict
+) -> dict:
     """Send one exact JPEG fixture to Anthropic and capture a structured result."""
     start = time.monotonic()
     try:
         response = client.messages.create(
-            model=model, max_tokens=parameters["max_tokens"],
-            messages=[{"role": "user", "content": [
-                {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg",
-                                              "data": base64.b64encode(image_bytes).decode("ascii")}},
-                {"type": "text", "text": prompt},
-            ]}],
+            model=model,
+            max_tokens=parameters["max_tokens"],
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/jpeg",
+                                "data": base64.b64encode(image_bytes).decode("ascii"),
+                            },
+                        },
+                        {"type": "text", "text": prompt},
+                    ],
+                }
+            ],
         )
         latency_ms = round((time.monotonic() - start) * 1000)
         raw = _raw(response)
-        common = {"raw_response": raw, "usage": _usage(response),
-                  "resolved_model": getattr(response, "model", None), "latency_ms": latency_ms,
-                  "stop_reason": getattr(response, "stop_reason", None)}
+        common = {
+            "raw_response": raw,
+            "usage": _usage(response),
+            "resolved_model": getattr(response, "model", None),
+            "latency_ms": latency_ms,
+            "stop_reason": getattr(response, "stop_reason", None),
+        }
         if common["stop_reason"] == "max_tokens":
-            return {"status": "failed", "error_class": "truncated", "retryable": False,
-                    "parsed_output": None, **common}
+            return {
+                "status": "failed",
+                "error_class": "truncated",
+                "retryable": False,
+                "parsed_output": None,
+                **common,
+            }
         try:
             parsed = parse_orientation(response.content[0].text)
         except (IndexError, AttributeError, ValueError, json.JSONDecodeError) as exc:
-            return {"status": "failed", "error_class": "parse_failure", "error": str(exc),
-                    "retryable": False, "parsed_output": None, **common}
+            return {
+                "status": "failed",
+                "error_class": "parse_failure",
+                "error": str(exc),
+                "retryable": False,
+                "parsed_output": None,
+                **common,
+            }
         return {"status": "success", "parsed_output": parsed, "retryable": False, **common}
     except Exception as exc:
         return _error(exc, round((time.monotonic() - start) * 1000))
 
 
-def call_glare(client: Any, *, image_bytes: bytes, model: str, prompt: str,
-               parameters: dict) -> dict:
+def call_glare(
+    client: Any, *, image_bytes: bytes, model: str, prompt: str, parameters: dict
+) -> dict:
     """Send one exact JPEG fixture to OpenAI images.edit and capture its PNG."""
     start = time.monotonic()
     try:
         response = client.images.edit(
-            model=model, image=("fixture.jpg", image_bytes, "image/jpeg"), prompt=prompt,
-            n=parameters.get("n", 1), size=parameters["size"], quality=parameters["quality"],
-            input_fidelity=parameters["input_fidelity"], output_format="png",
+            model=model,
+            image=("fixture.jpg", image_bytes, "image/jpeg"),
+            prompt=prompt,
+            n=parameters.get("n", 1),
+            size=parameters["size"],
+            quality=parameters["quality"],
+            input_fidelity=parameters["input_fidelity"],
+            output_format="png",
         )
         latency_ms = round((time.monotonic() - start) * 1000)
         raw = _raw(response)
         output_b64 = response.data[0].b64_json
         if not output_b64:
-            return {"status": "failed", "error_class": "missing_image", "retryable": False,
-                    "raw_response": {**raw, "data": "[omitted]"}, "usage": _usage(response),
-                    "parsed_output": None, "latency_ms": latency_ms}
+            return {
+                "status": "failed",
+                "error_class": "missing_image",
+                "retryable": False,
+                "raw_response": {**raw, "data": "[omitted]"},
+                "usage": _usage(response),
+                "parsed_output": None,
+                "latency_ms": latency_ms,
+            }
         output = base64.b64decode(output_b64, validate=True)
         # Store the provider's decoded PNG unchanged; omit duplicated base64 from JSON.
         raw["data"] = [{"b64_json": "[saved as raw-output.png]"}]
-        return {"status": "success", "raw_response": raw, "usage": _usage(response),
-                "resolved_model": getattr(response, "model", None),
-                "parsed_output": {"output_sha256": __import__("hashlib").sha256(output).hexdigest()},
-                "output_bytes": output, "latency_ms": latency_ms, "retryable": False}
+        return {
+            "status": "success",
+            "raw_response": raw,
+            "usage": _usage(response),
+            "resolved_model": getattr(response, "model", None),
+            "parsed_output": {"output_sha256": __import__("hashlib").sha256(output).hexdigest()},
+            "output_bytes": output,
+            "latency_ms": latency_ms,
+            "retryable": False,
+        }
     except Exception as exc:
         return _error(exc, round((time.monotonic() - start) * 1000))

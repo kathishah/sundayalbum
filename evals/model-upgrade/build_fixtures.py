@@ -21,7 +21,14 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "packages/pipeline"))
 
 from src.pipeline import PipelineConfig  # noqa: E402
-from src.steps import load, normalize, page_detect, perspective, photo_detect, photo_split  # noqa: E402
+from src.steps import (  # noqa: E402
+    load,
+    normalize,
+    page_detect,
+    perspective,
+    photo_detect,
+    photo_split,
+)
 from src.storage.local import LocalStorage  # noqa: E402
 
 SOURCES = (
@@ -71,24 +78,37 @@ def prepare(source_name: str, config: PipelineConfig, output: Path) -> list[dict
             crop = (
                 detection["detections"][index - 1]
                 if not detection["multi_blob"] and index <= len(detection["detections"])
-                else {"photo_quad": storage.read_json(f"debug/{stem}_03_page_detection.json")
-                      .get("photo_quads", [])[index - 1] if detection["multi_blob"] else None}
+                else {
+                    "photo_quad": storage.read_json(f"debug/{stem}_03_page_detection.json").get(
+                        "photo_quads", []
+                    )[index - 1]
+                    if detection["multi_blob"]
+                    else None
+                }
             )
-            rows.append({
-                "case_id": case_id,
-                "source_path": source_name,
-                "source_sha256": sha256(source),
-                "photo_index": index,
-                "crop": crop,
-                "orientation_input": f"test-cropped-images/drafts/orientation/{case_id}.jpg",
-                "orientation_sha256": sha256(draft),
-                "extraction_tool": "production load/normalize/page_detect/perspective/photo_detect/photo_split",
-                "extraction_config": asdict(config),
-                "pipeline_revision": revision(),
-                "platform": platform.platform(),
-                "architecture": platform.machine(),
-                "review_status": "draft",
-            })
+            rows.append(
+                {
+                    "case_id": case_id,
+                    "source_path": source_name,
+                    "source_sha256": sha256(source),
+                    "photo_index": index,
+                    "crop": crop,
+                    "orientation_input": f"test-cropped-images/drafts/orientation/{case_id}.jpg",
+                    "orientation_sha256": sha256(draft),
+                    "extraction_tool": (
+                        "production load/normalize/page_detect/perspective/photo_detect/photo_split"
+                    ),
+                    "extraction_config": {
+                        key: value
+                        for key, value in asdict(config).items()
+                        if not key.endswith("_api_key")
+                    },
+                    "pipeline_revision": revision(),
+                    "platform": platform.platform(),
+                    "architecture": platform.machine(),
+                    "review_status": "draft",
+                }
+            )
         return rows
 
 
@@ -97,7 +117,9 @@ def main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--refresh", action="store_true", help="Report hash changes without overwriting drafts")
+    parser.add_argument(
+        "--refresh", action="store_true", help="Report hash changes without overwriting drafts"
+    )
     args = parser.parse_args()
     if not args.refresh and DRAFT_ROOT.exists():
         parser.error(f"Draft directory already exists: {DRAFT_ROOT}; use --refresh")
@@ -110,7 +132,8 @@ def main() -> None:
                 path = DRAFT_ROOT / "orientation" / f"{row['case_id']}.jpg"
                 before = sha256(path) if path.exists() else "MISSING"
                 after = row["orientation_sha256"]
-                print(f"{row['case_id']}: {'same' if before == after else 'CHANGED'} {before} -> {after}")
+                status = "same" if before == after else "CHANGED"
+                print(f"{row['case_id']}: {status} {before} -> {after}")
         else:
             (DRAFT_ROOT / "draft-manifest.json").write_text(
                 json.dumps({"schema_version": 1, "cases": rows}, indent=2) + "\n"

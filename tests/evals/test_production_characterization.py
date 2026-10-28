@@ -3,7 +3,6 @@
 from types import SimpleNamespace
 
 import numpy as np
-
 from src.ai import claude_vision
 from src.glare import remover_openai
 
@@ -13,7 +12,9 @@ def test_orientation_api_error_passes_through(monkeypatch) -> None:
         def __init__(self, **kwargs):
             pass
 
-        messages = SimpleNamespace(create=lambda **kwargs: (_ for _ in ()).throw(RuntimeError("offline")))
+        messages = SimpleNamespace(
+            create=lambda **kwargs: (_ for _ in ()).throw(RuntimeError("offline"))
+        )
 
     monkeypatch.setattr(claude_vision, "Anthropic", BrokenAnthropic)
     image = np.zeros((4, 6, 3), dtype=np.float32)
@@ -33,20 +34,27 @@ def test_openai_error_classification(monkeypatch) -> None:
     class ApiError(Exception):
         pass
 
-    class RateLimit(ApiError):
+    class RateLimitError(ApiError):
         pass
 
-    class Auth(ApiError):
+    class AuthError(ApiError):
         pass
 
-    class Server(ApiError):
+    class ServerError(ApiError):
         pass
 
-    fake = SimpleNamespace(RateLimitError=RateLimit, InternalServerError=Server,
-                           APIConnectionError=Server, APITimeoutError=Server,
-                           AuthenticationError=Auth, PermissionDeniedError=Auth,
-                           BadRequestError=Auth, NotFoundError=Auth, OpenAIError=ApiError)
+    fake = SimpleNamespace(
+        RateLimitError=RateLimitError,
+        InternalServerError=ServerError,
+        APIConnectionError=ServerError,
+        APITimeoutError=ServerError,
+        AuthenticationError=AuthError,
+        PermissionDeniedError=AuthError,
+        BadRequestError=AuthError,
+        NotFoundError=AuthError,
+        OpenAIError=ApiError,
+    )
     monkeypatch.setitem(__import__("sys").modules, "openai", fake)
-    assert remover_openai._classify_openai_error(RateLimit("x")) == (5, 10)
-    assert remover_openai._classify_openai_error(Auth("x")) is None
-    assert remover_openai._classify_openai_error(Server("x")) is not None
+    assert remover_openai._classify_openai_error(RateLimitError("x")) == (5, 10)
+    assert remover_openai._classify_openai_error(AuthError("x")) is None
+    assert remover_openai._classify_openai_error(ServerError("x")) is not None

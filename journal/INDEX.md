@@ -24,6 +24,7 @@ Development log for Sunday Album. Entries fall into two categories:
 | 2026-10-27 | [model-eval-phase-3](2026-10-27-model-eval-phase-3.md) | Local dry-run runner, explicit provider adapters, call caps and resume |
 | 2026-10-27 | [model-eval-phase-4](2026-10-27-model-eval-phase-4.md) | Orientation metrics and blinded glare review with ratings reveal |
 | 2026-10-27 | [model-eval-phase-5](2026-10-27-model-eval-phase-5.md) | Full summaries, dated cost estimates, decisions and developer workflow |
+| 2026-10-27 | [model-eval-phase-6](2026-10-27-model-eval-phase-6.md) | Offline CI gate complete; small paid pilot and human review pending |
 
 ---
 

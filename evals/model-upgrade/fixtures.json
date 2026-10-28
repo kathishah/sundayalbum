@@ -79,9 +79,7 @@
         "openai_model": "gpt-image-1.5",
         "openai_glare_quality": "high",
         "openai_glare_input_fidelity": "high",
-        "forced_scene_description": null,
-        "anthropic_api_key": "",
-        "openai_api_key": ""
+        "forced_scene_description": null
       },
       "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
       "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
@@ -183,9 +181,7 @@
         "openai_model": "gpt-image-1.5",
         "openai_glare_quality": "high",
         "openai_glare_input_fidelity": "high",
-        "forced_scene_description": null,
-        "anthropic_api_key": "",
-        "openai_api_key": ""
+        "forced_scene_description": null
       },
       "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
       "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
@@ -287,9 +283,7 @@
         "openai_model": "gpt-image-1.5",
         "openai_glare_quality": "high",
         "openai_glare_input_fidelity": "high",
-        "forced_scene_description": null,
-        "anthropic_api_key": "",
-        "openai_api_key": ""
+        "forced_scene_description": null
       },
       "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
       "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
@@ -391,9 +385,7 @@
         "openai_model": "gpt-image-1.5",
         "openai_glare_quality": "high",
         "openai_glare_input_fidelity": "high",
-        "forced_scene_description": null,
-        "anthropic_api_key": "",
-        "openai_api_key": ""
+        "forced_scene_description": null
       },
       "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
       "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
@@ -495,9 +487,7 @@
         "openai_model": "gpt-image-1.5",
         "openai_glare_quality": "high",
         "openai_glare_input_fidelity": "high",
-        "forced_scene_description": null,
-        "anthropic_api_key": "",
-        "openai_api_key": ""
+        "forced_scene_description": null
       },
       "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
       "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
@@ -590,9 +580,7 @@
         "openai_model": "gpt-image-1.5",
         "openai_glare_quality": "high",
         "openai_glare_input_fidelity": "high",
-        "forced_scene_description": null,
-        "anthropic_api_key": "",
-        "openai_api_key": ""
+        "forced_scene_description": null
       },
       "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
       "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
@@ -685,9 +673,7 @@
         "openai_model": "gpt-image-1.5",
         "openai_glare_quality": "high",
         "openai_glare_input_fidelity": "high",
-        "forced_scene_description": null,
-        "anthropic_api_key": "",
-        "openai_api_key": ""
+        "forced_scene_description": null
       },
       "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
       "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
@@ -790,9 +776,7 @@
         "openai_model": "gpt-image-1.5",
         "openai_glare_quality": "high",
         "openai_glare_input_fidelity": "high",
-        "forced_scene_description": null,
-        "anthropic_api_key": "",
-        "openai_api_key": ""
+        "forced_scene_description": null
       },
       "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
       "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
@@ -894,9 +878,7 @@
         "openai_model": "gpt-image-1.5",
         "openai_glare_quality": "high",
         "openai_glare_input_fidelity": "high",
-        "forced_scene_description": null,
-        "anthropic_api_key": "",
-        "openai_api_key": ""
+        "forced_scene_description": null
       },
       "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
       "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
@@ -998,9 +980,7 @@
         "openai_model": "gpt-image-1.5",
         "openai_glare_quality": "high",
         "openai_glare_input_fidelity": "high",
-        "forced_scene_description": null,
-        "anthropic_api_key": "",
-        "openai_api_key": ""
+        "forced_scene_description": null
       },
       "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
       "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
