@@ -39,6 +39,9 @@ and requests schema-constrained JSON: the first pilot exhausted the inherited
 request overrides were required for a production-compatible parsed result.
 The image 2.5 Flare config is for a
 later, separate glare evaluation; the two tasks must never share a live run.
+Flare omits the production `input_fidelity=high` setting because its edits API
+rejects that parameter for this model. The baseline keeps its production
+setting; the candidate override records `null` to request omission.
 
 The runner is a dry run by default. It reads the manifest's stored crop bytes
 and does not execute any upstream pipeline step:

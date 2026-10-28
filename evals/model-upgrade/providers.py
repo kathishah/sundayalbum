@@ -178,16 +178,18 @@ def call_glare(
     """Send one exact JPEG fixture to OpenAI images.edit and capture its PNG."""
     start = time.monotonic()
     try:
-        response = client.images.edit(
+        request = dict(
             model=model,
             image=("fixture.jpg", image_bytes, "image/jpeg"),
             prompt=prompt,
             n=parameters.get("n", 1),
             size=parameters["size"],
             quality=parameters["quality"],
-            input_fidelity=parameters["input_fidelity"],
             output_format="png",
         )
+        if parameters.get("input_fidelity") is not None:
+            request["input_fidelity"] = parameters["input_fidelity"]
+        response = client.images.edit(**request)
         latency_ms = round((time.monotonic() - start) * 1000)
         raw = _raw(response)
         output_b64 = response.data[0].b64_json

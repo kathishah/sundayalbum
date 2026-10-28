@@ -111,13 +111,37 @@ def test_glare_sends_exact_jpeg_and_preserves_decoded_output() -> None:
     result = providers.call_glare(
         SimpleNamespace(images=SimpleNamespace(edit=edit)),
         image_bytes=b"original jpeg",
-        model="gpt-image-2.5-flare",
+        model="gpt-image-1.5",
         prompt="prompt",
         parameters={"size": "1024x1024", "quality": "high", "input_fidelity": "high"},
     )
     assert sent["image"] == ("fixture.jpg", b"original jpeg", "image/jpeg")
+    assert sent["input_fidelity"] == "high"
     assert result["output_bytes"] == output
     assert result["raw_response"]["data"][0]["b64_json"] == "[saved as raw-output.png]"
+
+
+def test_glare_omits_disabled_input_fidelity_for_image_25() -> None:
+    sent = {}
+
+    def edit(**kwargs):
+        sent.update(kwargs)
+        return SimpleNamespace(
+            data=[SimpleNamespace(b64_json=base64.b64encode(b"png").decode())],
+            usage=None,
+            model=None,
+            model_dump=lambda **kw: {"data": [{"b64_json": "base64"}]},
+        )
+
+    result = providers.call_glare(
+        SimpleNamespace(images=SimpleNamespace(edit=edit)),
+        image_bytes=b"fixture bytes",
+        model="gpt-image-2.5-flare",
+        prompt="prompt",
+        parameters={"size": "1024x1024", "quality": "high", "input_fidelity": None},
+    )
+    assert result["status"] == "success"
+    assert "input_fidelity" not in sent
 
 
 def test_clients_receive_explicit_base_urls(monkeypatch) -> None:
