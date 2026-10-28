@@ -35,6 +35,22 @@ This keeps the new cases out of the later glare evaluation.
 Validation found 22 matching local crop files: 12 orientation inputs and the
 existing 10 glare inputs. All 26 offline eval tests and Ruff checks passed.
 Dry runs selected 12 orientation cases and 10 glare cases without contacting
-providers. No new paid run has started. Next, run a separate orientation-only
-comparison on the two new fixtures, review its results, and revisit the
-Haiku 5.5 decision. Glare remains on hold until the owner lifts that hold.
+providers. The fixture/schema phase was committed and pushed as `dabf405`
+before starting the next paid run.
+
+## Focused orientation run
+
+Run `orientation-object-180-20261028` compared Haiku 4.5 and Haiku 5.5 on
+only the two new approved inputs, with three repeats per arm and no retries.
+All 12 responses parsed, and there was no model-ID drift. Both models returned
+180° with high confidence for the upside-down city crop in all three repeats.
+Both returned 270° with high confidence for the upside-down water-ride crop in
+all three repeats, missing its approved 180° label. Each model therefore
+scored 3/6 on this focused set, and neither met the predeclared 100% rotated
+accuracy threshold. The dated combined cost estimate was $0.017690. A scan of
+run JSON and HTML found no full provider key.
+
+This focused result does not establish that Haiku 5.5 improves orientation
+over Haiku 4.5. The run's ignored local `review.html` awaits owner review;
+there is no acceptance or production promotion. Glare remains on hold until
+the owner lifts that hold.
