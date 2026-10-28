@@ -154,3 +154,15 @@ change production. A final Sunburst-versus-Flare decision remains open:
 Sunburst had three preferred outputs and no losses in this one-repeat set,
 while its median call latency was about 32 seconds versus 19 seconds for
 Flare. Their dated token-cost estimates were equal in this run.
+
+## Owner Sunburst decision
+
+The owner accepted `gpt-image-2.5-sunburst` over the working Flare evaluation
+baseline. The local decision record for
+`glare-flare-vs-sunburst-full-20261028` is `accepted` and cites the 3–0–7
+preference tally, equal dated cost estimates, and the approximately 13-second
+longer median Sunburst call. Its limitations include one repeat per crop,
+labelled rather than blinded preferences, and no returned model ID in the
+OpenAI image-edit responses. This is an evaluation decision only. Production
+still uses `gpt-image-1.5`; promotion requires a separate production change
+and review on the feature branch. No merge or deployment occurred.
