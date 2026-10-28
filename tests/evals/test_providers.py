@@ -38,7 +38,11 @@ def test_orientation_records_parse_failure_and_truncation() -> None:
         image_bytes=b"exact bytes",
         model="claude-haiku-5-5",
         prompt="prompt",
-        parameters={"max_tokens": 256},
+        parameters={
+            "max_tokens": 256,
+            "thinking": {"type": "disabled"},
+            "output_config": {"format": {"type": "json_schema", "schema": {"type": "object"}}},
+        },
     )
     assert result["error_class"] == "parse_failure"
     assert result["usage"]["input_tokens"] == 10
@@ -78,10 +82,16 @@ def test_orientation_sends_exact_bytes() -> None:
         image_bytes=b"immutable jpeg bytes",
         model="claude-haiku-5-5",
         prompt="prompt",
-        parameters={"max_tokens": 256},
+        parameters={
+            "max_tokens": 256,
+            "thinking": {"type": "disabled"},
+            "output_config": {"format": {"type": "json_schema", "schema": {"type": "object"}}},
+        },
     )
     source = sent["messages"][0]["content"][0]["source"]
     assert base64.b64decode(source["data"]) == b"immutable jpeg bytes"
+    assert sent["thinking"] == {"type": "disabled"}
+    assert sent["output_config"]["format"]["type"] == "json_schema"
     assert result["parsed_output"]["rotation_degrees"] == 180
 
 

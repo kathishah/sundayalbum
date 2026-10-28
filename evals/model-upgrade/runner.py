@@ -106,7 +106,9 @@ def effective_config(task: str, override: dict, cases: list[dict]) -> tuple[dict
     if selected.get("provider", provider) != provider:
         raise ValueError(f"Unsupported {task} provider: {selected['provider']}")
     allowed_params = (
-        {"max_tokens"} if task == "orientation" else {"quality", "input_fidelity", "n", "size"}
+        {"max_tokens", "thinking", "output_config"}
+        if task == "orientation"
+        else {"quality", "input_fidelity", "n", "size"}
     )
     if set(selected.get("parameters", {})) - allowed_params:
         raise ValueError("Unsupported request parameter override")
@@ -230,8 +232,8 @@ def run(args: argparse.Namespace) -> Path | None:
         raise ValueError("--execute requires a positive --max-attempts cap")
     if args.max_estimated_usd is None or args.max_estimated_usd < estimate:
         raise ValueError(f"--max-estimated-usd must cover worst-case estimate ${estimate:.2f}")
-    if not args.provider_account or not args.retention_url:
-        raise ValueError("--provider-account and --retention-url are required for paid calls")
+    if not args.retention_url:
+        raise ValueError("--retention-url is required for paid calls")
     # Validate every selected credential before constructing any SDK client.
     keys = read_eval_keys(ROOT / "secrets.json", {provider})
     fixture_hashes = {row["case_id"]: row[f"{args.task}_sha256"] for row in cases}
@@ -240,7 +242,7 @@ def run(args: argparse.Namespace) -> Path | None:
     )
     root = args.output_dir
     context = {
-        "provider_account": args.provider_account,
+        "provider_key_suffix": keys[provider][-8:],
         "retention_url": args.retention_url,
         "local_only_cases": [
             row["case_id"] for row in cases if row["distribution"] == "local-only"
@@ -374,7 +376,6 @@ def main() -> None:
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--max-attempts", type=int)
     parser.add_argument("--max-estimated-usd", type=float)
-    parser.add_argument("--provider-account")
     parser.add_argument("--retention-url")
     parser.add_argument(
         "--scene-descriptions-from",

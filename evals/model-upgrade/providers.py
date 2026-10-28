@@ -114,7 +114,7 @@ def call_orientation(
     try:
         response = client.messages.create(
             model=model,
-            max_tokens=parameters["max_tokens"],
+            **parameters,
             messages=[
                 {
                     "role": "user",
@@ -150,7 +150,14 @@ def call_orientation(
                 **common,
             }
         try:
-            parsed = parse_orientation(response.content[0].text)
+            text_blocks = [
+                block.text
+                for block in response.content
+                if getattr(block, "type", "text") == "text" and hasattr(block, "text")
+            ]
+            if not text_blocks:
+                raise ValueError("No text content block in orientation response")
+            parsed = parse_orientation("\n".join(text_blocks))
         except (IndexError, AttributeError, ValueError, json.JSONDecodeError) as exc:
             return {
                 "status": "failed",

@@ -81,7 +81,7 @@ def summarize(store: RunStore) -> dict:
             "baseline": run["baseline_config_hash"],
             "candidate": run["candidate_config_hash"],
         },
-        "provider_account": run["review_context"].get("provider_account"),
+        "provider_key_suffix": run["review_context"].get("provider_key_suffix"),
         "retention_url": run["review_context"].get("retention_url"),
         "local_only_cases": run["review_context"].get("local_only_cases", []),
         "thresholds": run["review_context"].get("thresholds", {}),

@@ -31,7 +31,7 @@ def create_store(tmp_path: Path) -> RunStore:
         harness_revision="b" * 40,
         sdk_versions={"anthropic": "1.0"},
         review_context={
-            "provider_account": "personal Anthropic account",
+            "provider_key_suffix": "12345678",
             "retention_url": "https://example.org/terms",
         },
     )
@@ -81,8 +81,8 @@ def test_resume_rejects_config_or_fixture_changes(tmp_path: Path) -> None:
         RunStore.resume(**{**matching, "candidate_config": {"model": "changed"}})
     with pytest.raises(ValueError, match="fixture_hashes"):
         RunStore.resume(**{**matching, "fixture_hashes": {"case-1": "b" * 64}})
-    with pytest.raises(ValueError, match="review_context.provider_account"):
-        RunStore.resume(**{**matching, "review_context": {"provider_account": "different"}})
+    with pytest.raises(ValueError, match="review_context.provider_key_suffix"):
+        RunStore.resume(**{**matching, "review_context": {"provider_key_suffix": "different"}})
 
 
 def test_redacts_credentials_and_signed_urls(tmp_path: Path) -> None:

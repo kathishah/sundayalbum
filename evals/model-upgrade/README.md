@@ -26,7 +26,11 @@ label before freezing a new manifest revision. Never run either script during
 an evaluation.
 
 Candidate configs in `configs/` are sparse overlays on production settings.
-The Haiku 5.5 config is for orientation. The image 2.5 Flare config is for a
+The Haiku 5.5 config is for orientation. It disables default adaptive thinking
+and requests schema-constrained JSON: the first pilot exhausted the inherited
+256-token limit on thinking, and the second emitted prose before JSON. These
+request overrides were required for a production-compatible parsed result.
+The image 2.5 Flare config is for a
 later, separate glare evaluation; the two tasks must never share a live run.
 
 The runner is a dry run by default. It reads the manifest's stored crop bytes
@@ -37,8 +41,10 @@ and does not execute any upstream pipeline step:
   --candidate evals/model-upgrade/configs/haiku-5-5.json
 ```
 
-A paid run requires `--execute`, a call cap, an estimated spend limit, the
-provider account label, and a link to that provider's data-retention terms.
+A paid run requires `--execute`, a call cap, an estimated spend limit, and a
+link to that provider's data-retention terms. The run records the last eight
+characters of the selected API key as its billing identifier; it never stores
+the full key.
 The only credential source is the project-root gitignored `secrets.json`.
 SDK clients are constructed with explicit keys and official base URLs; the
 runner does not use environment fallbacks. Run artifacts go to ignored
@@ -91,7 +97,6 @@ estimate immediately before execution; adjust caps to your chosen scope.
   --candidate evals/model-upgrade/configs/haiku-5-5.json \
   --cases test-images-img_two_pics_vertical_horizontal_normal-01 \
   --execute --max-attempts 12 --max-estimated-usd 0.24 \
-  --provider-account 'Your Anthropic account label' \
   --retention-url https://platform.claude.com/docs/en/manage-claude/api-and-data-retention
 ```
 
@@ -106,7 +111,7 @@ normalized previews, `summary.json`, and `review.html` live in
   --candidate evals/model-upgrade/configs/haiku-5-5.json \
   --cases test-images-img_two_pics_vertical_horizontal_normal-01 \
   --run-id <run-id> --resume --execute --max-attempts 12 \
-  --max-estimated-usd 0.24 --provider-account 'Your Anthropic account label' \
+  --max-estimated-usd 0.24 \
   --retention-url https://platform.claude.com/docs/en/manage-claude/api-and-data-retention
 ```
 
@@ -124,7 +129,7 @@ Only after orientation review, run glare as a separate evaluation:
 
 The current OpenAI [pricing guide](https://developers.openai.com/api/docs/guides/image-generation)
 lists equal token rates for 2.5 Flare and Sunburst; Flare is the tie-break
-candidate. Record the actual OpenAI account label and the applicable
+candidate. Record the selected key suffix and the applicable
 [data-control terms](https://developers.openai.com/api/docs/guides/your-data)
 on any paid glare run. The default dry run shows its separate attempt count
 and planning estimate. After rating all blind pairs, download ratings JSON,

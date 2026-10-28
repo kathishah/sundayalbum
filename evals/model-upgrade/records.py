@@ -143,7 +143,7 @@ class RunStore:
                 raise ValueError(f"Cannot resume: {field} differs from recorded run")
         if review_context is not None:
             immutable_context = (
-                "provider_account",
+                "provider_key_suffix",
                 "retention_url",
                 "local_only_cases",
                 "repeats",

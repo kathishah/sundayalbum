@@ -38,7 +38,7 @@ def test_summary_keeps_failed_attempt_and_local_only_context(tmp_path: Path) -> 
         harness_revision="b" * 40,
         sdk_versions={},
         review_context={
-            "provider_account": "test",
+            "provider_key_suffix": "12345678",
             "retention_url": "https://example.org",
             "local_only_cases": [case],
             "thresholds": {"min_upright_accuracy": 0.8},

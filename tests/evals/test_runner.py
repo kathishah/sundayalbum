@@ -28,7 +28,6 @@ def arguments(tmp_path: Path, **changes) -> argparse.Namespace:
         execute=False,
         max_attempts=None,
         max_estimated_usd=None,
-        provider_account=None,
         retention_url=None,
         scene_descriptions_from=None,
         thresholds={},
@@ -59,7 +58,6 @@ def test_missing_key_fails_before_client(tmp_path: Path, monkeypatch) -> None:
                 execute=True,
                 max_attempts=2,
                 max_estimated_usd=0.04,
-                provider_account="test",
                 retention_url="https://example.org",
             )
         )
@@ -77,7 +75,6 @@ def test_budget_guard_precedes_credentials(tmp_path: Path, monkeypatch) -> None:
                 execute=True,
                 max_attempts=1,
                 max_estimated_usd=0.01,
-                provider_account="test",
                 retention_url="https://example.org",
             )
         )
@@ -126,6 +123,16 @@ def test_sparse_overlay_inherits_prompt_and_parameters(tmp_path: Path) -> None:
         runner.effective_config("orientation", runner.load_override(config), cases)
 
 
+def test_real_haiku_candidate_captures_json_schema_and_thinking_override() -> None:
+    config = Path(__file__).resolve().parents[2] / "evals/model-upgrade/configs/haiku-5-5.json"
+    _, cases = runner.selected_cases(
+        "orientation", ["test-images-img_two_pics_vertical_horizontal_normal-01"]
+    )
+    _, candidate = runner.effective_config("orientation", runner.load_override(config), cases)
+    assert candidate["parameters"]["thinking"] == {"type": "disabled"}
+    assert candidate["parameters"]["output_config"]["format"]["type"] == "json_schema"
+
+
 def test_mocked_execution_uses_exact_crop_and_honors_cap(tmp_path: Path, monkeypatch) -> None:
     inputs = []
     monkeypatch.setattr(runner, "read_eval_keys", lambda *args: {"anthropic": "test-key"})
@@ -156,7 +163,6 @@ def test_mocked_execution_uses_exact_crop_and_honors_cap(tmp_path: Path, monkeyp
         execute=True,
         max_attempts=1,
         max_estimated_usd=0.04,
-        provider_account="test",
         retention_url="https://example.org",
     )
     folder = runner.run(args)
@@ -224,7 +230,6 @@ def test_failures_stay_recorded_until_retry_failed(tmp_path: Path, monkeypatch) 
         execute=True,
         max_attempts=3,
         max_estimated_usd=0.04,
-        provider_account="test",
         retention_url="https://example.org",
     )
     folder = runner.run(args)
