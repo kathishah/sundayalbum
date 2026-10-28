@@ -70,5 +70,17 @@ interpret the labelled page.
 The existing `glare-full-20261028/review.html` was regenerated from saved
 outputs without new provider calls. Its review ID and `blind-map.json` hash
 were unchanged. The page has ten original/baseline/candidate triplets and ten
-preference dropdowns. The owner's choices are pending; no glare decision has
-been recorded.
+preference dropdowns. The simplified review code and journal were committed
+and pushed as `af1dd3d`.
+
+## Owner preferences
+
+The owner saved preferences for all ten pairs, then changed one choice before
+the glare decision. The current `ratings.json` has SHA-256
+`d586994a8b509a0f193c1f12d2c564a3a1d27afe16aac8d607312c6672921e29`.
+The `reveal` validator confirmed complete coverage and produced the following
+current tally: nine choices for candidate `gpt-image-2.5-flare`, one for
+baseline `gpt-image-1.5`, and no ties. The baseline choice is
+`test-images-3-img_1270-01__1` (the shallow-water reflection crop). This
+supersedes the initial all-candidate file. No glare decision has been recorded
+yet; the owner will confirm the final disposition.
