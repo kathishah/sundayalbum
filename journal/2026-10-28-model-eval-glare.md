@@ -133,6 +133,24 @@ provider bill. Median call latency was 19,348 ms for Flare and 32,037 ms for
 Sunburst. No provider errors or missing usage were recorded. OpenAI's image
 edit responses did not include a resolved model ID, so model identity is
 supported by the requested IDs and authenticated preflight rather than a
-returned-model comparison. The owner must review the images and save ten
-preferences before any Sunburst-versus-Flare decision is recorded. Production
-glare settings remain unchanged.
+returned-model comparison. Production glare settings remain unchanged.
+
+## Reviewed Flare and Sunburst preferences
+
+The owner supplied complete version 2 preferences for
+`glare-flare-vs-sunburst-full-20261028`. The saved `ratings.json` SHA-256 is
+`79d4ebdb4927cf6f56ea9450834e0859e30197125ffd6abaff29599075804ba6`.
+The validator found three preferences for candidate Sunburst, zero for
+baseline Flare, and seven ties. Sunburst was preferred on
+`test-images-img_two_pics_vertical_horizontal_normal-02`,
+`test-images-2-img_1251-01`, and `test-images-3-img_1270-01`. The last of
+these was the crop where production `gpt-image-1.5` had been preferred over
+Flare in the earlier comparison. The preference record is local-only.
+
+The owner's earlier direction to make Flare the working evaluation baseline
+is now recorded as an `accepted` decision for `glare-full-20261028`, backed by
+its 9–1 review against production `gpt-image-1.5`. That acceptance did not
+change production. A final Sunburst-versus-Flare decision remains open:
+Sunburst had three preferred outputs and no losses in this one-repeat set,
+while its median call latency was about 32 seconds versus 19 seconds for
+Flare. Their dated token-cost estimates were equal in this run.
