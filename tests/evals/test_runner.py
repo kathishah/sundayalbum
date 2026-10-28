@@ -10,6 +10,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "evals/model-upgrade"))
 import runner  # noqa: E402
 from providers import read_eval_keys  # noqa: E402
+from records import RunStore  # noqa: E402
 
 
 def arguments(tmp_path: Path, **changes) -> argparse.Namespace:
@@ -18,7 +19,8 @@ def arguments(tmp_path: Path, **changes) -> argparse.Namespace:
                   cases=["test-images-img_two_pics_vertical_horizontal_normal-01"], repeats=1,
                   max_retries=0, output_dir=tmp_path, run_id="offline-test", resume=False,
                   retry_failed=False, execute=False, max_attempts=None, max_estimated_usd=None,
-                  provider_account=None, retention_url=None, thresholds={})
+                  provider_account=None, retention_url=None, scene_descriptions_from=None,
+                  thresholds={})
     values.update(changes)
     return argparse.Namespace(**values)
 
@@ -84,3 +86,7 @@ def test_mocked_execution_uses_exact_crop_and_honors_cap(tmp_path: Path, monkeyp
     results = [json.loads(path.read_text()) for path in (folder / "results").glob("*.json")]
     assert all(result["status"] == "success" for result in results)
     assert len(inputs) == 2
+    assert (folder / "review.html").exists()
+    RunStore(folder).write_decision(reviewer="Offline reviewer", status="inconclusive",
+                                    rationale="Mocked outputs only", limitations="No live calls")
+    assert (folder / "decision.json").exists()

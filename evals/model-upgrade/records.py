@@ -192,7 +192,7 @@ class RunStore:
         return path
 
     def write_decision(self, *, reviewer: str, status: str, rationale: str,
-                       limitations: str) -> Path:
+                       limitations: str, evidence: dict | None = None) -> Path:
         """Record a human decision without changing production settings."""
         if status not in {"accepted", "rejected", "inconclusive"}:
             raise ValueError("Invalid decision status")
@@ -202,5 +202,5 @@ class RunStore:
         _atomic_json(path, {"schema_version": SCHEMA_VERSION,
                             "run_id": self.manifest()["run_id"], "reviewer": reviewer,
                             "date": utc_now(), "status": status, "rationale": rationale,
-                            "known_limitations": limitations})
+                            "known_limitations": limitations, "evidence": evidence or {}})
         return path

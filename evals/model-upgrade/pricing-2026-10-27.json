@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-10-27",
+  "currency": "USD",
+  "unit": "per_million_tokens",
+  "models": {
+    "claude-haiku-4-5-20251001": {
+      "input": 1.0,
+      "output": 5.0,
+      "source": "https://platform.claude.com/docs/en/models/haiku-4-5/overview"
+    },
+    "claude-haiku-5-5": {
+      "input": 0.1,
+      "output": 0.5,
+      "source": "https://platform.claude.com/docs/en/models/haiku-5-5/overview",
+      "condition": "prompt <=100000 tokens"
+    },
+    "gpt-image-1.5": {
+      "image_input": 8.0,
+      "text_input": 5.0,
+      "image_output": 32.0,
+      "source": "https://developers.openai.com/api/docs/models/gpt-image-1.5"
+    },
+    "gpt-image-2.5-flare": {
+      "image_input": 8.0,
+      "text_input": 5.0,
+      "image_output": 30.0,
+      "source": "https://developers.openai.com/api/docs/guides/image-generation"
+    },
+    "gpt-image-2.5-sunburst": {
+      "image_input": 8.0,
+      "text_input": 5.0,
+      "image_output": 30.0,
+      "source": "https://developers.openai.com/api/docs/guides/image-generation"
+    }
+  }
+}

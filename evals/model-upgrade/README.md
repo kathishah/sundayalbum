@@ -63,3 +63,86 @@ and download `ratings.json`, then reveal with:
 
 The reveal command validates pair coverage and rating values before joining
 the saved ratings to the private arm mapping.
+
+## Paid execution and review
+
+Put only the applicable provider keys in the project-root `secrets.json`:
+
+```json
+{"ANTHROPIC_API_KEY": "...", "OPENAI_API_KEY": "..."}
+```
+
+This file and all run artifacts are ignored by Git. The runner reads neither
+AWS Secrets Manager nor user BYOK settings. It never uploads source HEICs; it
+sends only the selected exact crop bytes. The five cases from
+`test-images-2`/`test-images-3` remain local-only and must not be included in
+a public release or committed output.
+
+Run orientation first. The command below is an example budget for one case,
+three repeats, and at most one retry per arm. Check the dry-run count and
+estimate immediately before execution; adjust caps to your chosen scope.
+
+```bash
+.venv/bin/python evals/model-upgrade/runner.py orientation \
+  --candidate evals/model-upgrade/configs/haiku-5-5.json \
+  --cases test-images-img_two_pics_vertical_horizontal_normal-01
+
+.venv/bin/python evals/model-upgrade/runner.py orientation \
+  --candidate evals/model-upgrade/configs/haiku-5-5.json \
+  --cases test-images-img_two_pics_vertical_horizontal_normal-01 \
+  --execute --max-attempts 12 --max-estimated-usd 0.24 \
+  --provider-account 'Your Anthropic account label' \
+  --retention-url https://platform.claude.com/docs/en/manage-claude/api-and-data-retention
+```
+
+The spend value is a **dated planning estimate**, not a billing limit enforced
+by the provider. The attempt cap is enforced by the runner, including retries.
+The CLI prints the generated run ID. Results, attempts, raw outputs,
+normalized previews, `summary.json`, and `review.html` live in
+`eval-runs/<run-id>/`. A resume requires the same candidate and fixture set:
+
+```bash
+.venv/bin/python evals/model-upgrade/runner.py orientation \
+  --candidate evals/model-upgrade/configs/haiku-5-5.json \
+  --cases test-images-img_two_pics_vertical_horizontal_normal-01 \
+  --run-id <run-id> --resume --execute --max-attempts 12 \
+  --max-estimated-usd 0.24 --provider-account 'Your Anthropic account label' \
+  --retention-url https://platform.claude.com/docs/en/manage-claude/api-and-data-retention
+```
+
+After reviewing orientation output, a separate glare run can validate its
+candidate scene descriptions against the baseline glare model. Use an empty
+candidate `steps` map and `--scene-descriptions-from eval-runs/<orientation-run-id>`.
+An accepted orientation decision requires that run or a documented waiver.
+
+Only after orientation review, run glare as a separate evaluation:
+
+```bash
+.venv/bin/python evals/model-upgrade/runner.py glare \
+  --candidate evals/model-upgrade/configs/image-2.5-flare.json
+```
+
+The current OpenAI [pricing guide](https://developers.openai.com/api/docs/guides/image-generation)
+lists equal token rates for 2.5 Flare and Sunburst; Flare is the tie-break
+candidate. Record the actual OpenAI account label and the applicable
+[data-control terms](https://developers.openai.com/api/docs/guides/your-data)
+on any paid glare run. The default dry run shows its separate attempt count
+and planning estimate. After rating all blind pairs, download ratings JSON,
+run `review.py reveal`, and inspect `revealed-ratings.json`.
+
+Record a decision with reviewer, rationale, and limitations:
+
+```bash
+.venv/bin/python evals/model-upgrade/decision.py eval-runs/<run-id> inconclusive \
+  --reviewer 'Your name' --rationale 'More examples are needed'
+```
+
+For an accepted orientation decision, supply `--glare-validation-run` or a
+reason in `--scene-description-waiver`. For accepted glare, saved and revealed
+ratings are required. A decision does not change pipeline defaults. Promotion
+requires a separate production-code change and review.
+
+Review checklist: verify all intended fixtures and hashes; inspect failures,
+confidence gating, per-case agreement, and model-ID drift; review the blind
+glare pairs before reveal; compare estimated cost and latency; record any
+privacy or corpus limits; then decide accepted, rejected, or inconclusive.

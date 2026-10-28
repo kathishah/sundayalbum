@@ -74,6 +74,42 @@ def orientation_metrics(store: RunStore) -> dict:
     return report
 
 
+def build_orientation_review(store: RunStore) -> Path:
+    """Create a local visual report with crop context and per-repeat labels."""
+    run = store.manifest()
+    if run["task"] != "orientation":
+        raise ValueError("Orientation report requires an orientation run")
+    cases = {row["case_id"]: row for row in load_manifest()["cases"]}
+    by_case: dict[str, list[dict]] = defaultdict(list)
+    for result in store.all_results():
+        by_case[result.get("case_id", "unknown")].append(result)
+    cards = []
+    for case_id in run["fixture_hashes"]:
+        case = cases[case_id]
+        preview = store.directory / "previews" / f"{case_id}.jpg"
+        _preview(ROOT / case["orientation_input"], preview)
+        rows = []
+        for result in sorted(by_case[case_id], key=lambda item: (item.get("arm", ""), item.get("repeat", 0))):
+            output = result.get("parsed_output") or {}
+            cells = (result.get("arm", ""), result.get("repeat", ""), result["status"],
+                     output.get("rotation_degrees", ""), output.get("flip_horizontal", ""),
+                     output.get("confidence", ""), output.get("scene_description", ""))
+            rows.append("<tr>" + "".join(f"<td>{html.escape(str(cell))}</td>" for cell in cells) + "</tr>")
+        expected = "ambiguous" if case["ambiguous"] else str(case["expected_rotation_degrees"])
+        cards.append(f'<section><h2>{html.escape(case_id)}</h2><p>Expected clockwise rotation: {expected}</p>'
+                     f'<img src="{preview.relative_to(store.directory)}" width="400">'
+                     '<table><tr><th>Arm</th><th>Repeat</th><th>Status</th><th>Rotation</th>'
+                     '<th>Flip</th><th>Confidence</th><th>Scene description</th></tr>'
+                     + "".join(rows) + "</table></section>")
+    target = store.directory / "review.html"
+    target.write_text('<!doctype html><html lang="en"><meta charset="utf-8">'
+                      '<title>Orientation evaluation</title><style>body{font:16px system-ui;margin:2rem}'
+                      'section{border-bottom:1px solid #aaa;padding:1rem 0}'
+                      'table{border-collapse:collapse}td,th{border:1px solid #aaa;padding:.4rem}</style>'
+                      '<h1>Orientation evaluation</h1>' + "".join(cards) + "</html>")
+    return target
+
+
 def _preview(source: Path, target: Path) -> None:
     """Normalize an image to a fixed square without leaking native dimensions."""
     target.parent.mkdir(parents=True, exist_ok=True)

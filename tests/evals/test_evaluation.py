@@ -7,7 +7,7 @@ import sys
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "evals/model-upgrade"))
-from evaluation import build_glare_review, glare_metrics, orientation_metrics, reveal_ratings  # noqa: E402
+from evaluation import build_glare_review, build_orientation_review, glare_metrics, orientation_metrics, reveal_ratings  # noqa: E402
 from records import RunStore  # noqa: E402
 
 
@@ -43,6 +43,9 @@ def test_orientation_raw_effective_and_ambiguity(tmp_path: Path) -> None:
     assert scores["false_flip_rate"] == 0
     assert scores["low_confidence_passthrough_rate"] == 1 / 3
     assert scores["ambiguous_cases"] == [ambiguous]
+    page = build_orientation_review(run)
+    assert rotated in page.read_text()
+    assert (run.directory / "previews" / f"{rotated}.jpg").exists()
 
 
 def test_blind_report_and_reveal(tmp_path: Path) -> None:

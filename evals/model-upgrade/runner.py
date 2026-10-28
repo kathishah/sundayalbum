@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import importlib.metadata
-import io
 import json
 import sys
 import time
@@ -23,9 +22,10 @@ from src.glare.remover_openai import _build_prompt, _pick_api_size  # noqa: E402
 from src.pipeline import PipelineConfig  # noqa: E402
 
 from fixtures import load_manifest, sha256  # noqa: E402
-from evaluation import build_glare_review, glare_metrics, orientation_metrics  # noqa: E402
+from evaluation import build_glare_review, build_orientation_review  # noqa: E402
 from providers import call_glare, call_orientation, make_client, preflight, read_eval_keys  # noqa: E402
-from records import RunStore, canonical_hash  # noqa: E402
+from records import RunStore  # noqa: E402
+from summary import summarize  # noqa: E402
 
 SUPPORT = {"orientation": ("ai_orientation", "anthropic"),
            "glare": ("glare_remove", "openai")}
@@ -129,6 +129,25 @@ def selected_cases(task: str, requested: list[str]) -> tuple[dict, list[dict]]:
     return manifest, cases
 
 
+def use_candidate_scenes(cases: list[dict], source_dir: Path) -> str:
+    """Use successful candidate orientation descriptions in a later glare run."""
+    source = RunStore(source_dir)
+    manifest = source.manifest()
+    if manifest["task"] != "orientation":
+        raise ValueError("Scene description source must be an orientation run")
+    results = sorted(source.all_results(), key=lambda row: (row.get("case_id", ""), row.get("repeat", 0)))
+    descriptions = {}
+    for row in results:
+        if row.get("arm") == "candidate" and row["status"] == "success":
+            descriptions.setdefault(row["case_id"], row["parsed_output"]["scene_description"])
+    for case in cases:
+        description = descriptions.get(case["case_id"])
+        if not description:
+            raise ValueError(f"No candidate scene description for {case['case_id']}")
+        case["scene_description"] = description
+    return manifest["run_id"]
+
+
 def job_id(case_id: str, arm: str, repeat: int) -> str:
     """Build a stable result ID."""
     return f"{case_id}__{arm}__{repeat}"
@@ -137,6 +156,11 @@ def job_id(case_id: str, arm: str, repeat: int) -> str:
 def run(args: argparse.Namespace) -> Path | None:
     """Dry-run or execute one task, persisting every provider attempt."""
     manifest, cases = selected_cases(args.task, args.cases)
+    scene_source = None
+    if args.scene_descriptions_from:
+        if args.task != "glare":
+            raise ValueError("Candidate scene descriptions can only be used for glare")
+        scene_source = use_candidate_scenes(cases, args.scene_descriptions_from)
     override = load_override(args.candidate)
     baseline, candidate = effective_config(args.task, override, cases)
     provider = SUPPORT[args.task][1]
@@ -177,6 +201,8 @@ def run(args: argparse.Namespace) -> Path | None:
                "max_attempts": args.max_attempts, "max_estimated_usd": args.max_estimated_usd,
                "planning_price_date": PRICING_DATE, "planning_usd_per_attempt": PLANNING_USD_PER_ATTEMPT[args.task],
                "thresholds": thresholds}
+    if scene_source:
+        context["orientation_scene_source_run"] = scene_source
     if args.resume:
         store = RunStore.resume(root, run_id=run_id, task=args.task,
                                 fixture_set=manifest["fixture_set"], fixture_hashes=fixture_hashes,
@@ -233,14 +259,11 @@ def run(args: argparse.Namespace) -> Path | None:
             if result["status"] == "success" or not result.get("retryable"):
                 break
             time.sleep(min(2**attempt, 10))
-    metrics = orientation_metrics(store) if args.task == "orientation" else glare_metrics(store)
     if args.task == "glare":
         build_glare_review(store)
-    store.write_summary({"task": args.task, "coverage": len(cases), "metrics": metrics,
-                         "attempts_used": used,
-                         "results": {"success": sum(r["status"] == "success" for r in store.all_results()),
-                                     "failed": sum(r["status"] == "failed" for r in store.all_results()),
-                                     "not_run": sum(r["status"] == "not_run" for r in store.all_results())}})
+    else:
+        build_orientation_review(store)
+    store.write_summary({**summarize(store), "attempts_used": used})
     print(f"Run saved: {store.directory}")
     return store.directory
 
@@ -262,6 +285,8 @@ def main() -> None:
     parser.add_argument("--max-estimated-usd", type=float)
     parser.add_argument("--provider-account")
     parser.add_argument("--retention-url")
+    parser.add_argument("--scene-descriptions-from", type=Path,
+                        help="Use successful candidate descriptions from an earlier orientation run")
     parser.add_argument("--thresholds", type=json.loads, default={})
     run(parser.parse_args())
 
