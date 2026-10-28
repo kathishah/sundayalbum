@@ -21,7 +21,7 @@ The harness format is provider-neutral, but its initial support matrix is narrow
 The harness is a developer tool. A typical evaluation should:
 
 1. Select a named fixture set and pipeline task; the fixture set points directly to immutable, pre-created crop files.
-2. Select the current pipeline setup as the baseline and provide one sparse override config for the candidate. The config only needs entries for steps being changed.
+2. Use the current pipeline setup as the default baseline and provide a sparse override config for the candidate. An optional baseline overlay supports direct comparisons between previously evaluated models. Each config only needs entries for steps being changed.
 3. Run the same fixtures through the baseline and candidate, resolving omitted step settings from the existing pipeline setup.
 4. Save raw outputs, metadata, and task-specific measurements in a uniquely named run directory.
 5. Produce a side-by-side HTML or image report for human review, plus a machine-readable summary.
@@ -76,7 +76,17 @@ harness or production defaults.
 
 ### 2. Sparse override configuration and capture
 
-The CLI takes one candidate config file. It is an overlay on the existing pipeline configuration, not a complete replacement. Its `steps` map contains only the steps being overridden. A step entry can specify provider/model, an optional prompt override, and request parameter overrides. An omitted step keeps its existing production setup. Within an included step, an omitted provider, prompt, or request parameter keeps its existing value; supplied fields override only those values. A prompt override may be inline or referenced from a local prompt file; the resolved full prompt is captured in the run record.
+The CLI takes a candidate config file and optionally a baseline config file.
+Each is a sparse overlay on the existing pipeline configuration, not a
+complete replacement. Its `steps` map contains only the steps being
+overridden. A step entry can specify provider/model, an optional prompt
+override, and request parameter overrides. An omitted step keeps its existing
+production setup. Within an included step, an omitted provider, prompt, or
+request parameter keeps its existing value; supplied fields override only
+those values. A prompt override may be inline or referenced from a local
+prompt file; the resolved full prompt is captured in the run record. The
+optional baseline overlay was added on 2026-10-28 for direct Flare versus
+Sunburst evaluation; it does not change the production default.
 
 Example: this candidate changes only the `ai_orientation` model. It keeps the current prompt and request parameters. Other pipeline steps remain unchanged.
 
@@ -95,7 +105,10 @@ Example: this candidate changes only the `ai_orientation` model. It keeps the cu
 
 To change the prompt, add a `prompt` string or prompt-file reference to that step entry. To change request settings, add only the keys to override under `parameters`. The provider field is needed when changing providers; otherwise the existing provider is inherited. A config may contain more than one step entry, but every omitted step continues to use the current pipeline setup.
 
-The baseline is the current pipeline setup at the recorded pipeline revision. For every run, resolve and capture the effective configuration for both baseline and candidate, including:
+The baseline defaults to the current pipeline setup at the recorded pipeline
+revision. When supplied, `--baseline` overlays that setup independently of
+the candidate. For every run, resolve and capture the effective configuration
+for both arms, including:
 
 - Step name, provider, requested and provider-resolved model ID. Use an accepted-ID policy or record the resolved ID (for Anthropic, `response.model`) and flag drift; do not reject a baseline solely because its published ID is an alias without a dated snapshot.
 - Full resolved prompt text and content hash, whether it came from the existing prompt builder or an override, plus all effective request parameters.
@@ -215,7 +228,7 @@ Implementation should be delivered in small commits on a feature branch. Keep th
 
 ### Phase 3 — Provider adapters and safe runner
 
-- Put the harness outside `packages/pipeline/src` (for example top-level `evals/model-upgrade/`) so it is not copied into the Lambda image or bundled macOS runtime. Add a local CLI with explicit task, fixture set, one candidate override config path, output directory, and run ID options. The baseline is automatically resolved from the existing pipeline setup at the recorded revision; the candidate is that baseline plus the sparse overrides in the file.
+- Put the harness outside `packages/pipeline/src` (for example top-level `evals/model-upgrade/`) so it is not copied into the Lambda image or bundled macOS runtime. Add a local CLI with explicit task, fixture set, candidate override config path, optional baseline override config path, output directory, and run ID options. Each arm resolves independently from the existing pipeline setup at the recorded revision.
 - Before provider refactors, add characterization tests for current passthrough-on-error, retry classification, and confidence gating. Refactor each provider boundary into a lower-level structured result containing status, raw response/bytes, parsed output, usage, attempts, latency, and error class. Keep production wrappers and their passthrough behavior unchanged. The harness consumes structured results and records API errors, parse failures, and truncation as failures, with truncation a distinct class. Merging changes under `packages/pipeline/src` triggers the configured Lambda deploy.
 - Add offline isolation tests with sentinel production key/base-URL environment variables, proving they never reach clients, and prove missing eval keys fail before client construction. Build provider clients with explicit keys and base URLs; never import `src.cli`.
 - Before the first paid request, make a cheap authenticated preflight for each selected provider and abort on authentication/permission errors.

@@ -17,6 +17,7 @@ def arguments(tmp_path: Path, **changes) -> argparse.Namespace:
     """Build one-case orientation arguments with conservative caps."""
     values = dict(
         task="orientation",
+        baseline=None,
         candidate=runner.ROOT / "evals/model-upgrade/configs/haiku-5-5.json",
         cases=["test-images-img_two_pics_vertical_horizontal_normal-01"],
         repeats=1,
@@ -131,6 +132,37 @@ def test_real_haiku_candidate_captures_json_schema_and_thinking_override() -> No
     _, candidate = runner.effective_config("orientation", runner.load_override(config), cases)
     assert candidate["parameters"]["thinking"] == {"type": "disabled"}
     assert candidate["parameters"]["output_config"]["format"]["type"] == "json_schema"
+
+
+def test_glare_arms_can_overlay_production_independently(tmp_path: Path) -> None:
+    configs = Path(__file__).resolve().parents[2] / "evals/model-upgrade/configs"
+    case_id = "test-images-img_two_pics_vertical_horizontal_normal-01"
+    _, cases = runner.selected_cases("glare", [case_id])
+    baseline, candidate = runner.effective_config(
+        "glare",
+        runner.load_override(configs / "image-2.5-sunburst.json"),
+        cases,
+        runner.load_override(configs / "image-2.5-flare.json"),
+    )
+    assert baseline["requested_model"] == "gpt-image-2.5-flare"
+    assert candidate["requested_model"] == "gpt-image-2.5-sunburst"
+    assert baseline["prompts"] == candidate["prompts"]
+    assert baseline["parameters_by_case"][case_id] == candidate["parameters_by_case"][case_id]
+    assert baseline["parameters_by_case"][case_id]["input_fidelity"] is None
+    assert baseline["sources"]["model"] == "override"
+    assert candidate["sources"]["model"] == "override"
+    assert (
+        runner.run(
+            arguments(
+                tmp_path,
+                task="glare",
+                baseline=configs / "image-2.5-flare.json",
+                candidate=configs / "image-2.5-sunburst.json",
+                cases=[case_id],
+            )
+        )
+        is None
+    )
 
 
 def test_mocked_execution_uses_exact_crop_and_honors_cap(tmp_path: Path, monkeypatch) -> None:

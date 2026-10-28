@@ -84,3 +84,22 @@ baseline `gpt-image-1.5`, and no ties. The baseline choice is
 `test-images-3-img_1270-01__1` (the shallow-water reflection crop). This
 supersedes the initial all-candidate file. No glare decision has been recorded
 yet; the owner will confirm the final disposition.
+
+## Sunburst comparison setup
+
+After reviewing the 9–1 result, the owner chose Flare as the **working
+evaluation baseline** for a direct comparison with GPT Image 2.5 Sunburst.
+This does not change the deployed glare model or rewrite the earlier run.
+OpenAI's published standard token rates for Flare and Sunburst are equal;
+actual per-run usage may differ.
+
+The runner now accepts an optional sparse `--baseline` overlay. Baseline and
+candidate are resolved independently from production settings, so the new
+comparison captures Flare and Sunburst with the same canonical crop, prompt,
+quality, size, and omitted `input_fidelity` setting. A new Sunburst config
+records its model choice. The existing run manifest hashes both effective
+arm configurations, and resume continues to reject changed settings. The
+ten-crop dry run selects 20 calls with no retries and a dated $6.00 planning
+estimate. All 28 offline eval tests and Ruff checks passed. Next is a small
+Sunburst pilot on the one crop previously preferred under `gpt-image-1.5`,
+followed by a full-set comparison if the pilot succeeds.

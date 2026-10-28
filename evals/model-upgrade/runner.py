@@ -46,10 +46,10 @@ def revision() -> str:
 
 
 def load_override(path: Path) -> dict:
-    """Validate a sparse candidate overlay and resolve local prompt files."""
+    """Validate a sparse arm overlay and resolve local prompt files."""
     data = json.loads(path.read_text())
     if data.get("schema_version") != 1 or not isinstance(data.get("steps"), dict):
-        raise ValueError("Candidate config must have schema_version 1 and a steps map")
+        raise ValueError("Arm config must have schema_version 1 and a steps map")
     for name, step in data["steps"].items():
         if name not in {pair[0] for pair in SUPPORT.values()} or not isinstance(step, dict):
             raise ValueError(f"Unsupported step: {name}")
@@ -68,8 +68,10 @@ def load_override(path: Path) -> dict:
     return data
 
 
-def effective_config(task: str, override: dict, cases: list[dict]) -> tuple[dict, dict]:
-    """Resolve current pipeline values and a sparse candidate overlay."""
+def effective_config(
+    task: str, override: dict, cases: list[dict], baseline_override: dict | None = None
+) -> tuple[dict, dict]:
+    """Resolve both arms as independent overlays on production settings."""
     if task not in SUPPORT:
         raise ValueError(f"Unsupported task: {task}")
     step_name, provider = SUPPORT[task]
@@ -86,7 +88,7 @@ def effective_config(task: str, override: dict, cases: list[dict]) -> tuple[dict
             "n": 1,
         }
         prompts = {row["case_id"]: _build_prompt(row["scene_description"]) for row in cases}
-    baseline = {
+    production_config = {
         "step": step_name,
         "provider": provider,
         "requested_model": model,
@@ -102,44 +104,50 @@ def effective_config(task: str, override: dict, cases: list[dict]) -> tuple[dict
             "parameters": "production",
         },
     }
-    selected = override["steps"].get(step_name, {})
-    if selected.get("provider", provider) != provider:
-        raise ValueError(f"Unsupported {task} provider: {selected['provider']}")
     allowed_params = (
         {"max_tokens", "thinking", "output_config"}
         if task == "orientation"
         else {"quality", "input_fidelity", "n", "size"}
     )
-    if set(selected.get("parameters", {})) - allowed_params:
-        raise ValueError("Unsupported request parameter override")
-    candidate = json.loads(json.dumps(baseline))
-    candidate["requested_model"] = selected.get("model", model)
-    candidate["parameters"].update(selected.get("parameters", {}))
-    if "prompt" in selected:
-        candidate["prompts"] = {row["case_id"]: selected["prompt"] for row in cases}
-        candidate["prompt_hashes"] = {
-            key: hashlib.sha256(value.encode()).hexdigest()
-            for key, value in candidate["prompts"].items()
+
+    def apply_overlay(arm_override: dict) -> dict:
+        selected = arm_override["steps"].get(step_name, {})
+        if selected.get("provider", provider) != provider:
+            raise ValueError(f"Unsupported {task} provider: {selected['provider']}")
+        if set(selected.get("parameters", {})) - allowed_params:
+            raise ValueError("Unsupported request parameter override")
+        config = json.loads(json.dumps(production_config))
+        config["requested_model"] = selected.get("model", model)
+        config["parameters"].update(selected.get("parameters", {}))
+        if "prompt" in selected:
+            config["prompts"] = {row["case_id"]: selected["prompt"] for row in cases}
+            config["prompt_hashes"] = {
+                key: hashlib.sha256(value.encode()).hexdigest()
+                for key, value in config["prompts"].items()
+            }
+        config["sources"] = {
+            "provider": "override" if "provider" in selected else "production",
+            "model": "override" if "model" in selected else "production",
+            "prompt": selected.get("prompt_source", "override")
+            if "prompt" in selected
+            else "production",
+            "parameters": {
+                key: "override" if key in selected.get("parameters", {}) else "production"
+                for key in config["parameters"]
+            },
         }
-    candidate["sources"] = {
-        "provider": "override" if "provider" in selected else "production",
-        "model": "override" if "model" in selected else "production",
-        "prompt": selected.get("prompt_source", "override")
-        if "prompt" in selected
-        else "production",
-        "parameters": {
-            key: "override" if key in selected.get("parameters", {}) else "production"
-            for key in candidate["parameters"]
-        },
-    }
+        return config
+
+    baseline = apply_overlay(baseline_override) if baseline_override else production_config
+    candidate = apply_overlay(override)
     if task == "glare":
         for row in cases:
             with Image.open(ROOT / row["glare_input"]) as image:
                 width, height = image.size
             size = _pick_api_size(width, height)
             baseline.setdefault("parameters_by_case", {})[row["case_id"]] = {
-                **parameters,
-                "size": size,
+                **baseline["parameters"],
+                "size": baseline["parameters"].get("size", size),
             }
             candidate.setdefault("parameters_by_case", {})[row["case_id"]] = {
                 **candidate["parameters"],
@@ -200,7 +208,8 @@ def run(args: argparse.Namespace) -> Path | None:
             raise ValueError("Candidate scene descriptions can only be used for glare")
         scene_source = use_candidate_scenes(cases, args.scene_descriptions_from)
     override = load_override(args.candidate)
-    baseline, candidate = effective_config(args.task, override, cases)
+    baseline_override = load_override(args.baseline) if args.baseline else None
+    baseline, candidate = effective_config(args.task, override, cases, baseline_override)
     provider = SUPPORT[args.task][1]
     repeats = args.repeats if args.repeats is not None else (3 if args.task == "orientation" else 1)
     if repeats < 1 or args.max_retries < 0:
@@ -369,6 +378,7 @@ def main() -> None:
     """Parse CLI arguments and run one model stage."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("task", choices=tuple(SUPPORT))
+    parser.add_argument("--baseline", type=Path, help="Optional evaluated baseline overlay")
     parser.add_argument("--candidate", type=Path, required=True)
     parser.add_argument("--cases", nargs="*", default=[])
     parser.add_argument("--repeats", type=int)

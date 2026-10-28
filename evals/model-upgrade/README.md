@@ -33,6 +33,10 @@ label before freezing a new manifest revision. Never run either script during
 an evaluation.
 
 Candidate configs in `configs/` are sparse overlays on production settings.
+An optional `--baseline` config is also a sparse overlay on production
+settings. This lets a reviewed model serve as the **evaluation baseline**
+without changing the deployed pipeline default. Each arm resolves
+independently, and the run records both effective configurations and hashes.
 The Haiku 5.5 config is for orientation. It disables default adaptive thinking
 and requests schema-constrained JSON: the first pilot exhausted the inherited
 256-token limit on thinking, and the second emitted prose before JSON. These
@@ -140,6 +144,19 @@ Only after orientation review, run glare as a separate evaluation:
 .venv/bin/python evals/model-upgrade/runner.py glare \
   --candidate evals/model-upgrade/configs/image-2.5-flare.json
 ```
+
+To compare the two GPT Image 2.5 variants directly, use Flare as the
+evaluation baseline and Sunburst as candidate:
+
+```bash
+.venv/bin/python evals/model-upgrade/runner.py glare \
+  --baseline evals/model-upgrade/configs/image-2.5-flare.json \
+  --candidate evals/model-upgrade/configs/image-2.5-sunburst.json
+```
+
+Both configs omit the unsupported `input_fidelity` parameter. This command is
+a dry run until the usual `--execute`, call cap, estimated spend limit, and
+retention URL are supplied.
 
 The current OpenAI [pricing guide](https://developers.openai.com/api/docs/guides/image-generation)
 lists equal token rates for 2.5 Flare and Sunburst; Flare is the tie-break
