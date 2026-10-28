@@ -15,6 +15,7 @@ SCHEMA_VERSION = 1
 _SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
 _SECRET_KEY = re.compile(r"(^|_)(api_key|secret|password|access_token|authorization)(_|$)", re.I)
 _SIGNED_URL = re.compile(r"[?&](X-Amz-Signature|Signature|sig|token|api_key)=", re.I)
+_KEY_IN_TEXT = re.compile(r"\b(?:sk-(?:ant-)?[A-Za-z0-9_-]+)\b")
 
 
 def utc_now() -> str:
@@ -37,8 +38,10 @@ def redact(value: Any) -> Any:
         }
     if isinstance(value, list):
         return [redact(item) for item in value]
-    if isinstance(value, str) and (_SIGNED_URL.search(value) or value.startswith("sk-")):
-        return "[REDACTED]"
+    if isinstance(value, str):
+        if _SIGNED_URL.search(value):
+            return "[REDACTED]"
+        return _KEY_IN_TEXT.sub("[REDACTED]", value)
     return value
 
 

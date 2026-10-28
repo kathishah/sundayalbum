@@ -28,3 +28,19 @@ an evaluation.
 Candidate configs in `configs/` are sparse overlays on production settings.
 The Haiku 5.5 config is for orientation. The image 2.5 Flare config is for a
 later, separate glare evaluation; the two tasks must never share a live run.
+
+The runner is a dry run by default. It reads the manifest's stored crop bytes
+and does not execute any upstream pipeline step:
+
+```bash
+.venv/bin/python evals/model-upgrade/runner.py orientation \
+  --candidate evals/model-upgrade/configs/haiku-5-5.json
+```
+
+A paid run requires `--execute`, a call cap, an estimated spend limit, the
+provider account label, and a link to that provider's data-retention terms.
+The only credential source is the project-root gitignored `secrets.json`.
+SDK clients are constructed with explicit keys and official base URLs; the
+runner does not use environment fallbacks. Run artifacts go to ignored
+`eval-runs/<run-id>/`. A stopped run can resume with `--resume --run-id <id>`;
+recorded failures are kept unless `--retry-failed` is supplied.
