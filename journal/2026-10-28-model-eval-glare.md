@@ -116,3 +116,23 @@ usage estimate was $0.106512; this is not a provider-reported bill. The local
 review page correctly labels the two model arms, and no full API key was
 found in JSON or HTML artifacts. This verifies the technical path, not image
 quality. Next is a separate full ten-crop Flare-versus-Sunburst comparison.
+
+## Full Flare versus Sunburst comparison
+
+Run `glare-flare-vs-sunburst-full-20261028` used the ten approved glare-stage
+crops, one repeat per arm, no retries, and a 20-call cap. Flare was the
+working evaluation baseline and Sunburst the candidate. All 20 jobs
+succeeded and returned valid PNGs; each pair has distinct output bytes.
+Five inputs remained local-only. The labelled review page has ten
+original/baseline/candidate triplets and one preference selector per crop.
+A scan of run JSON and HTML found no full provider key.
+
+The dated combined cost estimate from provider usage was $1.069884:
+$0.534942 for Flare and $0.534942 for Sunburst. This is an estimate, not a
+provider bill. Median call latency was 19,348 ms for Flare and 32,037 ms for
+Sunburst. No provider errors or missing usage were recorded. OpenAI's image
+edit responses did not include a resolved model ID, so model identity is
+supported by the requested IDs and authenticated preflight rather than a
+returned-model comparison. The owner must review the images and save ten
+preferences before any Sunburst-versus-Flare decision is recorded. Production
+glare settings remain unchanged.
