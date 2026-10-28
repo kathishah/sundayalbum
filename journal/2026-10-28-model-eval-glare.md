@@ -38,3 +38,21 @@ model names and keeps its arm map separate. A scan of JSON and HTML found no
 full API key. This establishes that the current request configuration and
 review artifacts work for both models; image quality still needs blind human
 ratings. The next phase is the full ten-crop glare run.
+
+## Full glare comparison
+
+Run `glare-full-20261028` evaluated all 10 approved glare-stage crops (five
+released core cases and five local-only cases), one repeat per arm, no
+retries, and a 20-attempt cap. All 20 jobs succeeded and yielded valid PNGs.
+There were no provider errors, not-run jobs, missing cost estimates, or
+requested/returned model-ID mismatches. The run's dated combined estimate
+from provider usage was $3.050472, below the $6.00 planning cap; this is not
+a provider-reported bill. Median per-attempt latency was 30,637.5 ms.
+
+The local `review.html` contains ten blinded pairs and a separate private
+arm map. Model names are absent from the page. A scan of run JSON and HTML
+found no full provider key. These checks establish complete, reviewable
+artifacts; they do not establish which model removes glare better or preserves
+details. The owner must rate every pair and export `ratings.json` before the
+model mapping is revealed and a glare decision can be recorded. No production
+glare model has changed.
