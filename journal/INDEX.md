@@ -43,3 +43,4 @@ Development log for Sunday Album. Entries fall into two categories:
 | 2026-08-15 | [monorepo-layout](2026-08-15-monorepo-layout.md) | Spec: rearrange repo into apps/ packages/ services/; keep `src` import names |
 | 2026-08-15 | [monorepo-implementation-plan](2026-08-15-monorepo-implementation-plan.md) | Plan: 5 commits (git-mv → pyproject/conftest → Docker/CDK/CI → macOS PYTHONPATH → docs) |
 | 2026-10-27 | [dependency-security-plan](2026-10-27-sundayalbum-dependency-security-plan.md) | Plan + decisions: Next 14.2.29 critical alerts, Next 15 / React 19 / Node 24 upgrade, web PR build check, Dependabot triage |
+| 2026-10-27 | [model-upgrade-evaluation-harness](2026-10-27-model-upgrade-evaluation-harness.md) | Spec: reusable, human-reviewed eval runs for model and prompt changes across pipeline tasks |
