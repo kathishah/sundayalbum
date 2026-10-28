@@ -49,10 +49,26 @@ requested/returned model-ID mismatches. The run's dated combined estimate
 from provider usage was $3.050472, below the $6.00 planning cap; this is not
 a provider-reported bill. Median per-attempt latency was 30,637.5 ms.
 
-The local `review.html` contains ten blinded pairs and a separate private
-arm map. Model names are absent from the page. A scan of run JSON and HTML
-found no full provider key. These checks establish complete, reviewable
-artifacts; they do not establish which model removes glare better or preserves
-details. The owner must rate every pair and export `ratings.json` before the
-model mapping is revealed and a glare decision can be recorded. No production
-glare model has changed.
+The initial local `review.html` contained ten blinded pairs and a separate
+private arm map. Model names were absent from that first page. A scan of run
+JSON and HTML found no full provider key. These checks established complete
+artifacts; they did not establish which model removes glare better or preserves
+details. No production glare model has changed.
+
+## Review simplification after owner feedback
+
+The owner found the two sets of 1–5 criteria difficult to use and requested
+direct Baseline/Candidate labels and a single preference per crop. The page
+builder now shows the model names over equal-size previews beside the
+original, with only Baseline, Candidate, or Tie as choices. The download uses
+ratings schema version 2. The existing `reveal` CLI validates complete pair
+coverage and preference values, then records model IDs and preference counts;
+it still accepts legacy version 1 ratings for earlier reports. The private
+randomization map remains in the run for audit but is no longer needed to
+interpret the labelled page.
+
+The existing `glare-full-20261028/review.html` was regenerated from saved
+outputs without new provider calls. Its review ID and `blind-map.json` hash
+were unchanged. The page has ten original/baseline/candidate triplets and ten
+preference dropdowns. The owner's choices are pending; no glare decision has
+been recorded.

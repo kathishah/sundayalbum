@@ -1,9 +1,10 @@
-"""Known-label orientation scoring and blinded glare artifact tests."""
+"""Known-label orientation scoring and glare review artifact tests."""
 
 import json
 import sys
 from pathlib import Path
 
+import pytest
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "evals/model-upgrade"))
@@ -71,7 +72,7 @@ def test_orientation_raw_effective_and_ambiguity(tmp_path: Path) -> None:
     assert (run.directory / "previews" / f"{rotated}.jpg").exists()
 
 
-def test_blind_report_and_reveal(tmp_path: Path) -> None:
+def test_labelled_report_and_preference_export(tmp_path: Path) -> None:
     case_id = "test-images-img_two_pics_vertical_horizontal_normal-01"
     run = store(tmp_path, "glare", [case_id])
     for arm, color in (("baseline", "red"), ("candidate", "blue")):
@@ -90,39 +91,47 @@ def test_blind_report_and_reveal(tmp_path: Path) -> None:
         )
     page = build_glare_review(run, seed=42)
     source = page.read_text()
-    assert "baseline-model" not in source and "candidate-model" not in source
-    assert "baseline" not in source and "candidate" not in source
-    assert source.count("data-field=") == 9
+    assert "Baseline — baseline-model" in source
+    assert "Candidate — candidate-model" in source
+    assert source.count("<select data-preference>") == 1
+    assert "Glare Reduction — left" not in source
     assert len(list((run.directory / "previews").glob("*.jpg"))) == 3
     native = glare_metrics(run)
     assert all(row["output_size"] == [100, 150] for row in native.values())
     mapping = json.loads((run.directory / "blind-map.json").read_text())
     assert "seed:42" not in source and str(mapping["seed"]) not in source
     pair_id = mapping["pairs"][0]["pair_id"]
+    baseline_side = "left" if mapping["pairs"][0]["left"] == "baseline" else "right"
+    assert (
+        f'<h3>Baseline — baseline-model</h3><img src="previews/{pair_id}-{baseline_side}.jpg">'
+        in source
+    )
     ratings = run.directory / "ratings.json"
-    fields = {
-        f"{criterion}_{side}": "5"
-        for criterion in (
-            "glare_reduction",
-            "detail_preservation",
-            "changed_content",
-            "color_shift",
-        )
-        for side in ("left", "right")
-    }
     ratings.write_text(
         json.dumps(
             {
-                "schema_version": 1,
+                "schema_version": 2,
                 "review_id": mapping["review_id"],
-                "ratings": [
-                    {"pair_id": pair_id, "ratings": {**fields, "overall_preference": "left"}}
-                ],
+                "ratings": [{"pair_id": pair_id, "preference": "candidate"}],
             }
         )
     )
     revealed = reveal_ratings(run, ratings)
-    assert json.loads(revealed.read_text())["ratings"][0]["mapping"]["left"] in (
-        "baseline",
-        "candidate",
+    revealed_data = json.loads(revealed.read_text())
+    assert revealed_data["ratings"] == [{"pair_id": pair_id, "preference": "candidate"}]
+    assert revealed_data["preference_counts"] == {"baseline": 0, "candidate": 1, "tie": 0}
+    assert revealed_data["models"] == {
+        "baseline": "baseline-model",
+        "candidate": "candidate-model",
+    }
+    ratings.write_text(
+        json.dumps(
+            {
+                "schema_version": 2,
+                "review_id": mapping["review_id"],
+                "ratings": [{"pair_id": pair_id, "preference": "neither"}],
+            }
+        )
     )
+    with pytest.raises(ValueError, match="Invalid or incomplete preference"):
+        reveal_ratings(run, ratings)

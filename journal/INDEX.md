@@ -26,7 +26,7 @@ Development log for Sunday Album. Entries fall into two categories:
 | 2026-10-27 | [model-eval-phase-5](2026-10-27-model-eval-phase-5.md) | Full summaries, dated cost estimates, decisions and developer workflow |
 | 2026-10-27 | [model-eval-phase-6](2026-10-27-model-eval-phase-6.md) | Offline CI gate, orientation pilot, and full-set evaluation |
 | 2026-10-28 | [model-eval-orientation-fixture-expansion](2026-10-28-model-eval-orientation-fixture-expansion.md) | Owner-approved 180° city and water-ride crops; local-only orientation fixture v2 |
-| 2026-10-28 | [model-eval-glare](2026-10-28-model-eval-glare.md) | Separate glare pilot, model-specific request fix, and blind comparison |
+| 2026-10-28 | [model-eval-glare](2026-10-28-model-eval-glare.md) | Glare pilot and full run; simplified labelled preference review |
 
 ---
 

@@ -176,10 +176,10 @@ def glare_metrics(store: RunStore) -> dict:
 
 
 def build_glare_review(store: RunStore, *, seed: int | None = None) -> Path:
-    """Create blinded side-by-side HTML and keep its arm mapping separate."""
+    """Create a labelled side-by-side review from the saved run outputs."""
     manifest = store.manifest()
     if manifest["task"] != "glare":
-        raise ValueError("Blind image review is only for glare runs")
+        raise ValueError("Image review is only for glare runs")
     mapping_path = store.directory / "blind-map.json"
     if mapping_path.exists():
         mapping = json.loads(mapping_path.read_text())
@@ -191,6 +191,7 @@ def build_glare_review(store: RunStore, *, seed: int | None = None) -> Path:
         seed = secrets.randbits(64) if seed is None else seed
         review_id = secrets.token_hex(16)
     rng = random.Random(seed)
+    saved_pairs = {row["pair_id"]: row for row in mapping["pairs"]} if mapping_path.exists() else {}
     results = {row["job_id"]: row for row in store.all_results()}
     cases = {row["case_id"]: row for row in load_manifest()["cases"]}
     repeats = manifest["review_context"]["repeats"]
@@ -198,10 +199,13 @@ def build_glare_review(store: RunStore, *, seed: int | None = None) -> Path:
     private_pairs = []
     for case_id in manifest["fixture_hashes"]:
         for repeat in range(1, repeats + 1):
-            left_arm, right_arm = (
-                ("baseline", "candidate") if rng.getrandbits(1) else ("candidate", "baseline")
-            )
             pair_id = f"{case_id}__{repeat}"
+            if pair_id in saved_pairs:
+                left_arm, right_arm = saved_pairs[pair_id]["left"], saved_pairs[pair_id]["right"]
+            else:
+                left_arm, right_arm = (
+                    ("baseline", "candidate") if rng.getrandbits(1) else ("candidate", "baseline")
+                )
             pair = {"pair_id": pair_id, "left": left_arm, "right": right_arm}
             private_pairs.append(pair)
             source = ROOT / cases[case_id]["glare_input"]
@@ -216,7 +220,8 @@ def build_glare_review(store: RunStore, *, seed: int | None = None) -> Path:
                     arms[side] = str(preview.relative_to(store.directory))
                 else:
                     arms[side] = None
-            cards.append((pair_id, str(context.relative_to(store.directory)), arms))
+            arm_previews = {left_arm: arms["left"], right_arm: arms["right"]}
+            cards.append((pair_id, str(context.relative_to(store.directory)), arm_previews))
     if not mapping_path.exists():
         mapping_path.write_text(
             json.dumps(
@@ -225,72 +230,59 @@ def build_glare_review(store: RunStore, *, seed: int | None = None) -> Path:
             )
             + "\n"
         )
-    page = _review_html(cards, review_id)
+    page = _review_html(
+        cards,
+        review_id,
+        manifest["baseline_config"]["requested_model"],
+        manifest["candidate_config"]["requested_model"],
+    )
     target = store.directory / "review.html"
     target.write_text(page)
     return target
 
 
-def _review_html(cards: list[tuple[str, str, dict]], review_id: str) -> str:
-    """Build a stand-alone page without model names or arm mapping."""
+def _review_html(
+    cards: list[tuple[str, str, dict]], review_id: str, baseline_model: str, candidate_model: str
+) -> str:
+    """Build a stand-alone page with one direct preference per crop."""
     body = []
-    criteria = ("glare reduction", "detail preservation", "changed content", "color shift")
     for pair_id, context, arms in cards:
         safe_id = html.escape(pair_id, quote=True)
         images = [f'<div><h3>Original</h3><img src="{html.escape(context, quote=True)}"></div>']
-        for side in ("left", "right"):
-            source = arms[side]
+        for arm, model in (("baseline", baseline_model), ("candidate", candidate_model)):
+            image_path = arms[arm]
             inner = (
-                f'<img src="{html.escape(source, quote=True)}">'
-                if source
+                f'<img src="{html.escape(image_path, quote=True)}">'
+                if image_path
                 else "<p>Output unavailable</p>"
             )
-            images.append(f"<div><h3>{side.title()}</h3>{inner}</div>")
-        fields = []
-        for criterion in criteria:
-            key = criterion.replace(" ", "_")
-            fields.append(
-                f'<label>{criterion.title()} — left <select data-field="{key}_left">'
-                + '<option value="">Select</option>'
-                + "".join(f'<option value="{n}">{n}</option>' for n in range(1, 6))
-                + "</select></label>"
-            )
-            fields.append(
-                f'<label>{criterion.title()} — right <select data-field="{key}_right">'
-                + '<option value="">Select</option>'
-                + "".join(f'<option value="{n}">{n}</option>' for n in range(1, 6))
-                + "</select></label>"
-            )
-        fields.append(
-            '<label>Overall preference <select data-field="overall_preference">'
-            '<option value="">Select</option><option value="left">Left</option>'
-            '<option value="right">Right</option><option value="tie">Tie</option>'
-            "</select></label>"
-        )
+            images.append(f"<div><h3>{arm.title()} — {html.escape(model)}</h3>{inner}</div>")
         body.append(
             f'<section class="pair" data-pair="{safe_id}"><h2>{safe_id}</h2>'
             f'<div class="images">{"".join(images)}</div>'
-            f'<div class="ratings">{"".join(fields)}</div></section>'
+            "<label>Which result do you prefer? <select data-preference>"
+            '<option value="">Select one</option><option value="baseline">Baseline</option>'
+            '<option value="candidate">Candidate</option><option value="tie">Tie</option>'
+            "</select></label></section>"
         )
     return f"""<!doctype html><html lang="en"><meta charset="utf-8">
-<title>Blinded glare review</title>
+<title>Glare comparison review</title>
 <style>body{{font:16px system-ui;margin:2rem;background:#f8f6f2;color:#222}}
 .pair{{background:white;padding:1rem;margin:1.5rem 0;border:1px solid #ccc}}
 .images{{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}}
 .images img{{width:100%;max-width:512px;aspect-ratio:1;object-fit:contain;background:#e8e5df}}
-.ratings{{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;margin-top:1rem}}
-label{{display:flex;justify-content:space-between;gap:1rem}}select{{min-width:5rem}}</style>
-<h1>Blinded glare review</h1><p>Rate each side from 1 (poor) to 5 (good). For changed content
-and color shift, 5 means no unwanted change. Save ratings before revealing model identities.</p>
+label{{display:flex;align-items:center;gap:1rem;margin-top:1rem}}select{{min-width:10rem}}</style>
+<h1>Glare comparison</h1><p>For each crop, compare the two edits with the original.
+Choose the result you would keep, or choose Tie. Then download your choices.</p>
 {"".join(body)}<button id="download">Download ratings JSON</button>
 <script>document.getElementById('download').onclick=()=>{{
 const ratings=[...document.querySelectorAll('.pair')].map(p=>({{
-pair_id:p.dataset.pair,ratings:Object.fromEntries([...p.querySelectorAll('[data-field]')].map(x=>[x.dataset.field,x.value]))
+pair_id:p.dataset.pair,preference:p.querySelector('[data-preference]').value
 }}));
-if(ratings.some(x=>Object.values(x.ratings).some(v=>!v))){{
-  alert('Rate every field before saving.');return;
+if(ratings.some(x=>!x.preference)){{
+  alert('Choose a preference for every crop before saving.');return;
 }}
-const data={{schema_version:1,review_id:'{review_id}',ratings}};
+const data={{schema_version:2,review_id:'{review_id}',ratings}};
 const a=document.createElement('a');
 a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{{type:'application/json'}}));
 a.download='ratings.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
@@ -298,7 +290,7 @@ a.download='ratings.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1
 
 
 def reveal_ratings(store: RunStore, ratings_path: Path) -> Path:
-    """Join downloaded ratings to the private mapping after review."""
+    """Validate downloaded choices and write a decision-ready record."""
     mapping = json.loads((store.directory / "blind-map.json").read_text())
     ratings = json.loads(ratings_path.read_text())
     if ratings.get("review_id") != mapping["review_id"]:
@@ -308,25 +300,47 @@ def reveal_ratings(store: RunStore, ratings_path: Path) -> Path:
         raise ValueError("Ratings do not cover exactly the mapped pairs")
     if len(ratings["ratings"]) != len(by_pair):
         raise ValueError("Ratings contain duplicate pairs")
-    fields = {
-        f"{criterion}_{side}"
-        for criterion in (
-            "glare_reduction",
-            "detail_preservation",
-            "changed_content",
-            "color_shift",
-        )
-        for side in ("left", "right")
-    }
-    for row in ratings["ratings"]:
-        values = row["ratings"]
-        if set(values) != fields | {"overall_preference"}:
-            raise ValueError("Ratings fields are incomplete")
-        if values["overall_preference"] not in ("left", "right", "tie"):
-            raise ValueError("Invalid overall preference")
-        if any(str(values[field]) not in {"1", "2", "3", "4", "5"} for field in fields):
-            raise ValueError("Ratings must be 1–5")
-    joined = [{**row, "mapping": by_pair[row["pair_id"]]} for row in ratings["ratings"]]
+    if ratings.get("schema_version") == 2:
+        for row in ratings["ratings"]:
+            if set(row) != {"pair_id", "preference"} or row["preference"] not in (
+                "baseline",
+                "candidate",
+                "tie",
+            ):
+                raise ValueError("Invalid or incomplete preference")
+        joined = ratings["ratings"]
+    elif ratings.get("schema_version") == 1:
+        fields = {
+            f"{criterion}_{side}"
+            for criterion in (
+                "glare_reduction",
+                "detail_preservation",
+                "changed_content",
+                "color_shift",
+            )
+            for side in ("left", "right")
+        }
+        for row in ratings["ratings"]:
+            values = row["ratings"]
+            if set(values) != fields | {"overall_preference"}:
+                raise ValueError("Ratings fields are incomplete")
+            if values["overall_preference"] not in ("left", "right", "tie"):
+                raise ValueError("Invalid overall preference")
+            if any(str(values[field]) not in {"1", "2", "3", "4", "5"} for field in fields):
+                raise ValueError("Ratings must be 1–5")
+        joined = [{**row, "mapping": by_pair[row["pair_id"]]} for row in ratings["ratings"]]
+    else:
+        raise ValueError("Unsupported ratings schema")
+    record = {"schema_version": ratings["schema_version"], "ratings": joined}
+    if ratings["schema_version"] == 2:
+        run = store.manifest()
+        record["models"] = {
+            arm: run[f"{arm}_config"]["requested_model"] for arm in ("baseline", "candidate")
+        }
+        counts = Counter(row["preference"] for row in joined)
+        record["preference_counts"] = {
+            choice: counts[choice] for choice in ("baseline", "candidate", "tie")
+        }
     target = store.directory / "revealed-ratings.json"
-    target.write_text(json.dumps({"schema_version": 1, "ratings": joined}, indent=2) + "\n")
+    target.write_text(json.dumps(record, indent=2) + "\n")
     return target

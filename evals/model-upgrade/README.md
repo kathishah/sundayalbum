@@ -67,18 +67,21 @@ denominators. The default predeclared orientation thresholds are 100% accuracy
 on real rotated crops and 80% on upright crops; override with a JSON map in
 `--thresholds` before execution.
 
-Glare runs produce `review.html` and a separate `blind-map.json`. The page
-shows the original crop and padded, equal-size left/right previews. It does
-not contain model identities, dimensions, latency, or cost. Rate every field
-and download `ratings.json`, then reveal with:
+Glare runs produce `review.html` and a separate historical `blind-map.json`.
+The page shows the original crop and equal-size previews labelled Baseline and
+Candidate with their model names. For each crop, choose Baseline, Candidate,
+or Tie; there are no 1–5 ratings. Download `ratings.json`, then validate and
+summarize the choices with:
 
 ```bash
 .venv/bin/python evals/model-upgrade/review.py reveal eval-runs/<run-id> \
   --ratings /path/to/ratings.json
 ```
 
-The reveal command validates pair coverage and rating values before joining
-the saved ratings to the private arm mapping.
+The `reveal` command retains its existing name for compatibility. It validates
+complete pair coverage and preference values, then writes model names and
+preference counts to `revealed-ratings.json`. Legacy blind ratings remain
+readable, but new review pages export the simpler version 2 format.
 
 ## Paid execution and review
 
@@ -143,8 +146,8 @@ lists equal token rates for 2.5 Flare and Sunburst; Flare is the tie-break
 candidate. Record the selected key suffix and the applicable
 [data-control terms](https://developers.openai.com/api/docs/guides/your-data)
 on any paid glare run. The default dry run shows its separate attempt count
-and planning estimate. After rating all blind pairs, download ratings JSON,
-run `review.py reveal`, and inspect `revealed-ratings.json`.
+and planning estimate. After choosing a preference for every pair, download
+ratings JSON, run `review.py reveal`, and inspect `revealed-ratings.json`.
 
 Record a decision with reviewer, rationale, and limitations:
 
@@ -159,6 +162,6 @@ ratings are required. A decision does not change pipeline defaults. Promotion
 requires a separate production-code change and review.
 
 Review checklist: verify all intended fixtures and hashes; inspect failures,
-confidence gating, per-case agreement, and model-ID drift; review the blind
-glare pairs before reveal; compare estimated cost and latency; record any
+confidence gating, per-case agreement, and model-ID drift; review the labelled
+glare pairs and saved preferences; compare estimated cost and latency; record any
 privacy or corpus limits; then decide accepted, rejected, or inconclusive.

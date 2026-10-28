@@ -1,4 +1,4 @@
-"""Offline glare review helpers; reveal ratings only after they are saved."""
+"""Offline glare review helpers; validate saved preference choices."""
 
 import argparse
 from pathlib import Path
@@ -8,7 +8,7 @@ from records import RunStore
 
 
 def main() -> None:
-    """Build a blind page or reveal a downloaded ratings file."""
+    """Build a labelled page or validate a downloaded ratings file."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("build", "reveal"))
     parser.add_argument("run_dir", type=Path)

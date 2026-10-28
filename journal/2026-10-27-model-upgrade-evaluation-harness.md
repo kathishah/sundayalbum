@@ -130,8 +130,8 @@ The first implementation should support orientation and glare removal: Anthropic
 **Glare removal**
 
 - Use the stored upright glare-stage crop directly as the shared input. Keep its hash fixed across baseline/candidate calls and exclude orientation inference from this comparison.
-- Generate blinded, randomized side-by-side comparisons for baseline and candidate outputs. Normalize preview display size and hide dimensions, latency, and cost until ratings are saved. Keep the model-to-label mapping out of the review page; export ratings JSON and use a separate CLI `reveal` command to join ratings to the mapping. Record the randomization seed.
-- Allow reviewers to rate glare reduction, detail preservation, hallucinated/changed content, color shifts, and overall preference.
+- Show the baseline and candidate outputs with their model names. Normalize preview display size and keep dimensions, latency, and cost out of the review page. Export one preference per crop as JSON; use the existing `reveal` CLI to validate coverage and summarize the choices. Preserve earlier randomization maps for audit.
+- Allow reviewers to choose Baseline, Candidate, or Tie for each crop.
 - Include the original image and, when available, glare mask/overlay as context.
 - Report resolution/dimension changes, latency, errors, and provider usage alongside preference results; any dollar cost is an explicitly dated estimate.
 - Do not treat generic pixel similarity or an LLM judge score as the sole quality measure for generative edits.
@@ -147,10 +147,15 @@ An accepted evaluation records a recommendation; it does not change production b
 Each run should produce:
 
 - A machine-readable JSON summary with configurations, fixture coverage, metrics, errors, timing, and usage/cost.
-- A local visual report with blinded comparisons and reviewer inputs.
+- A local visual report with labelled baseline/candidate comparisons and one
+  preference choice per crop.
 - A final decision record: accepted, rejected, or inconclusive, including reviewer, date, rationale, and known limitations.
 
-Keep model/config mapping out of the blind-review page, then reveal it only after ratings are saved; preserve the mapping separately in run metadata for later audit. Ratings export must work without `file://` write access (download JSON or use a small local server).
+The owner simplified the glare review on 2026-10-28: show baseline and
+candidate names directly, and ask only which result is preferable (or Tie).
+This supersedes the earlier blind, multi-criterion rating design. Preserve
+the historical mapping for audit. Preference export must work without
+`file://` write access (download JSON or use a small local server).
 
 ## Non-functional requirements
 
@@ -167,7 +172,8 @@ Keep model/config mapping out of the blind-review page, then reveal it only afte
 1. A developer can run the same fixture set against baseline and candidate configurations with one command and without editing pipeline source; the runner sends the manifest's stored crop bytes unchanged as model-stage inputs.
 2. Every fixture/configuration combination has a recorded success or failure, the exact crop hash used, and complete non-secret configuration metadata.
 3. Orientation results are scored against manifest labels, with ambiguous cases excluded from accuracy denominators and called out.
-4. Glare outputs are available in a blinded side-by-side report with reviewer ratings and the original image for context.
+4. Glare outputs are available in a labelled side-by-side report with one
+   baseline/candidate/tie preference per crop and the original image for context.
 5. The summary includes latency and provider usage when supplied by the provider; dollar costs are dated estimates clearly labelled as estimates, and missing usage/cost is marked.
 6. No live provider calls occur in CI or standard unit tests.
 7. A model/prompt upgrade decision can be recorded with its supporting run ID and rationale.
@@ -175,7 +181,7 @@ Keep model/config mapping out of the blind-review page, then reveal it only afte
 9. Orientation and glare fixtures are separately identified when their stage-appropriate inputs differ; glare inputs are already upright before any candidate glare call.
 10. Frozen crops are fetched from the eval-data release and hash-verified; no image bytes are committed to Git. The manifest records crop provenance, labels rechecked against exact crop bytes, and local-only status where applicable.
 11. The dry run reports worst-case attempts (fixtures × configurations × repeats × max attempts). The cap counts every attempt, including retries; reaching it stops the run, marks remaining combinations `not_run`, and leaves the run resumable.
-12. Runs support repeats and predeclared thresholds, raw/effective orientation metrics, false-flip rate, blinded ratings export/reveal, and resolved-model drift reporting.
+12. Runs support repeats and predeclared thresholds, raw/effective orientation metrics, false-flip rate, preference export/validation, and resolved-model drift reporting.
 
 ## Implementation plan
 
@@ -201,7 +207,7 @@ Implementation should be delivered in small commits on a feature branch. Keep th
 ### Phase 2 — Run record and artifact layout
 
 - Define provider-neutral run, sparse override configuration, fixture-result, usage, and decision records. Version the schema from the first run.
-- Use top-level `eval-runs/<run-id>/` with a run manifest, per-attempt results, crop fixture IDs/hashes, raw provider result/parsed output, generated images, summary, exported reviewer ratings, and decision record. Do not recopy source HEICs into run directories.
+- Use top-level `eval-runs/<run-id>/` with a run manifest, per-attempt results, crop fixture IDs/hashes, raw provider result/parsed output, generated images, summary, exported reviewer preferences, and decision record. Do not recopy source HEICs into run directories.
 - Record baseline and candidate effective settings, requested and resolved model IDs, provider, full resolved prompt and prompt hash, effective parameters, which values were inherited or overridden, input hashes, pipeline/harness Git revisions, SDK versions, timestamps, per-attempt latency, response status, errors, and usage when returned. Store dated cost estimates separately and label them. Redact credentials and signed URLs.
 - On resume, verify schema, fixture hashes, and configuration hashes. Never append results from a changed configuration. Keep recorded failures by default; retry only with `--retry-failed`.
 
@@ -225,16 +231,16 @@ Implementation should be delivered in small commits on a feature branch. Keep th
 ### Phase 4 — Task evaluators
 
 - **Orientation:** compute raw and confidence-gated effective rotation accuracy from non-ambiguous labels; report denominator, confidence distribution, low-confidence/pass-through rate, structured-output failures, repeat agreement, and false-flip rate. Keep ambiguous cases visible but outside accuracy calculations. Store candidate scene descriptions; acceptance requires a baseline glare run with candidate descriptions or a recorded waiver.
-- **Glare removal:** compute dimensions/resolution changes and provide a blinded comparison for baseline and candidates against the same canonical, upright glare-stage crop. Include that crop and an optional precomputed glare overlay. Collect ratings for glare reduction, detail preservation, changed/hallucinated content, color shifts, and overall preference.
-- Randomize left/right using a recorded seed and neutral candidate labels. Normalize preview size, hide dimensions/latency/cost until ratings are saved, keep model mapping out of the review page, and export ratings JSON for a separate `reveal` CLI. Reference the exact glare crop.
+- **Glare removal:** compute dimensions/resolution changes and provide a labelled comparison for baseline and candidate against the same canonical, upright glare-stage crop. Include that crop and an optional precomputed glare overlay. Collect one baseline/candidate/tie preference per crop.
+- Normalize preview size, show the model names, keep dimensions/latency/cost out of the review page, and export preference JSON for the existing `reveal` CLI to validate and summarize. Reference the exact glare crop. Preserve prior blind maps for audit of earlier reports.
 - Do not use SSIM, pixel difference, or an LLM judge as the sole glare quality score. Show these only as optional diagnostics if later evidence supports them.
 
-**Exit check:** known orientation labels produce expected aggregate metrics; a reviewer can rate all glare pairs without seeing model IDs, then reveal and export ratings.
+**Exit check:** known orientation labels produce expected aggregate metrics; a reviewer can choose a preference for every labelled glare pair and export those choices.
 
 ### Phase 5 — Summary, decision, and docs
 
 - Write a machine-readable summary with coverage, metrics, failures, per-attempt latency, available provider usage, and cost estimates from a dated/versioned pricing table clearly labelled as estimates. Include local-only fixture use and provider account/data-retention reference.
-- Generate a local HTML review page with normalized previews, canonical glare-crop context, randomized comparisons, and downloadable ratings JSON (or a small local server). Do not embed model mapping or reveal dimensions/latency/cost before ratings are saved. A separate `reveal` CLI joins ratings with the mapping.
+- Generate a local HTML review page with normalized previews, canonical glare-crop context, explicit baseline/candidate labels, and downloadable preference JSON (or a small local server). Keep dimensions/latency/cost out of the page. The existing `reveal` CLI validates saved choices and summarizes them by model.
 - Add a decision record with run ID, reviewer, date, accepted/rejected/inconclusive status, rationale, and known limitations. The harness reports evidence; it never updates production defaults.
 - Document fixture preparation, project-root `secrets.json` setup, dry-run and execution commands, spend limits, run artifact locations, privacy rules, and the model-upgrade review checklist.
 
@@ -242,7 +248,7 @@ Implementation should be delivered in small commits on a feature branch. Keep th
 
 ### Phase 6 — Offline tests and first pilot
 
-- Add characterization tests before provider refactors for production passthrough-on-error, retry classification, and confidence gating. Add offline tests for manifest/provenance/hash validation, schemas, redaction, prompt/config hashing, orientation and repeat metrics, resume and retry-failed, randomized blind labels/seed, ratings export/reveal, report generation, cap behavior, model-ID drift, and client isolation. Mock provider SDK responses; tests must not contact providers.
+- Add characterization tests before provider refactors for production passthrough-on-error, retry classification, and confidence gating. Add offline tests for manifest/provenance/hash validation, schemas, redaction, prompt/config hashing, orientation and repeat metrics, resume and retry-failed, labelled preference export/validation, report generation, cap behavior, model-ID drift, and client isolation. Mock provider SDK responses; tests must not contact providers.
 - Add an autouse eval-test fixture that blocks network and SDK client construction unless mocked; include the offline eval tests in CI and update workflow path filters. No live API evaluation runs in CI.
 - Before comparing a full fixture set, manually run a deliberately small, approved fixture subset using explicitly configured eval keys and a conservative budget. Review outputs and artifact redaction, then document the pilot run ID and any spec changes.
 
