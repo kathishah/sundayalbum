@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import io
 import time
-import uuid
 from datetime import datetime, timezone
 
 import boto3
@@ -25,7 +24,7 @@ def make_base_event(user_hash: str, job_id: str, stem: str = "test") -> dict:
         "user_hash": user_hash,
         "job_id": job_id,
         "stem": stem,
-        "upload_key": f"{user_hash}/uploads/{stem}.heic",
+        "upload_key": f"{user_hash}/jobs/{job_id}/uploads/{stem}.HEIF",
         "start_time": time.time(),
         "config": {},
         "user_keys": {},
@@ -45,7 +44,7 @@ def create_job_record(user_hash: str, job_id: str, stem: str = "test") -> None:
             "step_detail": "",
             "input_filename": f"{stem}.heic",
             "input_stem": stem,
-            "upload_key": f"{user_hash}/uploads/{stem}.heic",
+            "upload_key": f"{user_hash}/jobs/{job_id}/uploads/{stem}.HEIF",
             "photo_count": 0,
             "output_keys": [],
             "debug_keys": {},

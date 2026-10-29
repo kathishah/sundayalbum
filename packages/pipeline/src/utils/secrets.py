@@ -9,7 +9,7 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-_SECRETS_FILE = Path(__file__).parent.parent.parent / "secrets.json"
+_SECRETS_FILE = Path(__file__).resolve().parents[4] / "secrets.json"
 
 
 @dataclass

@@ -5,12 +5,10 @@ from __future__ import annotations
 import hashlib
 import time
 
+import auth as auth_module
 import boto3
 import pytest
-
 from helpers import REGION, SESSIONS_TABLE, make_event, make_session
-
-import auth as auth_module
 
 
 def _hash(email: str) -> str:
@@ -20,8 +18,9 @@ def _hash(email: str) -> str:
 # ── 1. send_code valid email ──────────────────────────────────────────────────
 
 
-def test_send_code_valid_email():
+def test_send_code_valid_email(monkeypatch: pytest.MonkeyPatch) -> None:
     """POST /auth/send-code with a valid email returns 200 and stores a code."""
+    monkeypatch.setattr(auth_module.secrets, "randbelow", lambda upper: 0)
     event = make_event("POST /auth/send-code", body={"email": "user@example.com"})
     resp = auth_module.handler(event, None)
 
@@ -31,7 +30,7 @@ def test_send_code_valid_email():
     ddb = boto3.resource("dynamodb", region_name=REGION)
     item = ddb.Table(SESSIONS_TABLE).get_item(Key={"email": "user@example.com"}).get("Item")
     assert item is not None
-    assert len(item.get("code", "")) == 6
+    assert item.get("code") == "100000"
     assert item["code_expires_at"] > int(time.time())
     assert item["user_hash"] == _hash("user@example.com")
 
@@ -118,6 +117,54 @@ def test_verify_code_expired():
     event = make_event("POST /auth/verify", body={"email": email, "code": "123456"})
     resp = auth_module.handler(event, None)
     assert resp["statusCode"] == 401
+
+
+def test_verify_attempt_limit_is_atomic_and_bounded() -> None:
+    email = "attempts@example.com"
+    ddb = boto3.resource("dynamodb", region_name=REGION)
+    ddb.Table(SESSIONS_TABLE).put_item(
+        Item={
+            "email": email,
+            "user_hash": _hash(email),
+            "code": "123456",
+            "code_expires_at": int(time.time()) + 600,
+            "verify_attempts": auth_module.MAX_VERIFY_ATTEMPTS - 1,
+        }
+    )
+
+    event = make_event("POST /auth/verify", body={"email": email, "code": "000000"})
+    first = auth_module.handler(event, None)
+    second = auth_module.handler(event, None)
+
+    assert first["statusCode"] == 401
+    assert second["statusCode"] == 429
+    item = ddb.Table(SESSIONS_TABLE).get_item(Key={"email": email})["Item"]
+    assert item["verify_attempts"] == auth_module.MAX_VERIFY_ATTEMPTS
+
+
+def test_verify_attempt_storage_error_fails_closed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    email = "storage-error@example.com"
+    ddb = boto3.resource("dynamodb", region_name=REGION)
+    ddb.Table(SESSIONS_TABLE).put_item(
+        Item={
+            "email": email,
+            "user_hash": _hash(email),
+            "code": "123456",
+            "code_expires_at": int(time.time()) + 600,
+            "verify_attempts": 0,
+        }
+    )
+
+    def fail_update(**_kwargs):
+        raise RuntimeError("DynamoDB unavailable")
+
+    monkeypatch.setattr(auth_module.sessions_table, "update_item", fail_update)
+    event = make_event("POST /auth/verify", body={"email": email, "code": "000000"})
+    response = auth_module.handler(event, None)
+
+    assert response["statusCode"] == 500
 
 
 # ── 6. logout invalidates token ───────────────────────────────────────────────

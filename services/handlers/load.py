@@ -13,14 +13,23 @@ from pathlib import Path
 from typing import Any
 
 from handlers.common import (
-    S3_BUCKET, REGION, fail_job, make_config, make_storage,
-    update_step, write_thumbnail,
+    fail_job,
+    make_config,
+    make_storage,
+    update_step,
+    write_thumbnail,
 )
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-_UPLOAD_EXTS = [".heic", ".HEIC", ".jpg", ".jpeg", ".JPG", ".JPEG", ".png", ".PNG"]
+_UPLOAD_EXTS = {
+    ext.strip().lower()
+    for ext in os.environ.get(
+        "UPLOAD_EXTENSIONS", ".heic,.heif,.jpg,.jpeg,.png"
+    ).split(",")
+    if ext.strip()
+}
 
 
 def handler(event: dict, context: Any) -> dict:
@@ -35,11 +44,19 @@ def handler(event: dict, context: Any) -> dict:
 
     # Locate the uploaded source file
     source_key: str | None = None
-    for ext in _UPLOAD_EXTS:
-        candidate = f"uploads/{stem}{ext}"
-        if storage.exists(candidate):
-            source_key = candidate
-            break
+    requested_key = event.get("upload_key", "")
+    if requested_key:
+        prefix = f"{user_hash}/"
+        storage_key = requested_key.removeprefix(prefix)
+        if Path(storage_key).suffix.lower() in _UPLOAD_EXTS and storage.exists(storage_key):
+            source_key = storage_key
+    else:
+        # Compatibility for older executions that predate upload_key propagation.
+        for ext in sorted(_UPLOAD_EXTS):
+            candidate = f"uploads/{stem}{ext}"
+            if storage.exists(candidate):
+                source_key = candidate
+                break
 
     if source_key is None:
         err = f"No uploaded file found for stem {stem!r}"

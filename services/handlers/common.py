@@ -21,12 +21,14 @@ logger.setLevel(logging.INFO)
 # ── Environment ───────────────────────────────────────────────────────────────
 S3_BUCKET = os.environ["S3_BUCKET"]
 JOBS_TABLE = os.environ["JOBS_TABLE"]
+USER_SETTINGS_TABLE = os.environ["USER_SETTINGS_TABLE"]
 SECRET_ARN = os.environ["SECRET_ARN"]
 REGION = os.environ.get("AWS_DEPLOY_REGION", "us-west-2")
 
 # ── AWS clients ───────────────────────────────────────────────────────────────
 _dynamodb = boto3.resource("dynamodb", region_name=REGION)
 jobs_table = _dynamodb.Table(JOBS_TABLE)
+user_settings_table = _dynamodb.Table(USER_SETTINGS_TABLE)
 _secrets_client = boto3.client("secretsmanager", region_name=REGION)
 
 
@@ -71,7 +73,7 @@ def make_storage(user_hash: str):
 
 # ── Pipeline config ───────────────────────────────────────────────────────────
 
-def make_config(overrides: dict | None = None, user_keys: dict | None = None):
+def make_config(overrides: dict | None = None, user_hash: str | None = None):
     """Return a PipelineConfig with API keys and optional overrides.
 
     API keys are resolved here — user-supplied keys take priority over system
@@ -81,10 +83,19 @@ def make_config(overrides: dict | None = None, user_keys: dict | None = None):
     Args:
         overrides: Optional dict of PipelineConfig field overrides from the
                    Step Functions event ``config`` payload.
-        user_keys: Optional dict with ``anthropic_api_key`` and/or
-                   ``openai_api_key`` supplied by the user via the settings UI.
+        user_hash: Owner identifier used to fetch user-supplied keys from the
+                   settings table. The key values stay out of Step Functions input.
     """
     from src.pipeline import PipelineConfig
+    user_keys: dict[str, Any] = {}
+    if user_hash:
+        try:
+            user_keys = user_settings_table.get_item(
+                Key={"user_hash": user_hash},
+                ProjectionExpression="anthropic_api_key, openai_api_key",
+            ).get("Item", {})
+        except Exception as exc:
+            logger.error("Failed to fetch user API keys for pipeline: %s", exc)
     cfg = PipelineConfig(
         anthropic_api_key=get_anthropic_key(user_keys),
         openai_api_key=get_openai_key(user_keys),

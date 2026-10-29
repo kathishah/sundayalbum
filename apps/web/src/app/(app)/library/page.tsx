@@ -75,7 +75,7 @@ export default function LibraryPage() {
 
         try {
           const created = await createJob(file.name, file.size)
-          await s3Upload(created.upload_url, file)
+          await s3Upload(created.upload_url, created.upload_fields, file)
           await startJob(created.job_id)
 
           // Fetch real job and replace optimistic — preserve preview_url as fallback

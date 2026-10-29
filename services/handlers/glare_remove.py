@@ -1,11 +1,18 @@
 """Step Functions handler: glare_remove (per-photo, runs inside Map state)."""
 from __future__ import annotations
+
 import logging
 from typing import Any
-from handlers.common import (
-    fail_job, make_config, make_storage, update_step, write_thumbnail,
-)
+
 import src.steps.glare_remove as step
+
+from handlers.common import (
+    fail_job,
+    make_config,
+    make_storage,
+    update_step,
+    write_thumbnail,
+)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -16,7 +23,7 @@ def handler(event: dict, context: Any) -> dict:
     photo_index: int = int(event["photo_index"])
     update_step(user_hash, job_id, "glare_remove", f"Removing glare from photo {photo_index}")
     storage = make_storage(user_hash)
-    config = make_config(event.get("config"), user_keys=event.get("user_keys"))
+    config = make_config(event.get("config"), user_hash=event.get("user_hash"))
     try:
         result = step.run(storage, stem, config, photo_index=photo_index)
     except Exception as exc:

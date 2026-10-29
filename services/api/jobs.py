@@ -19,7 +19,6 @@ from pathlib import Path
 from typing import Any
 
 from boto3.dynamodb.conditions import Key
-
 from common import (
     DAILY_JOB_LIMIT,
     S3_BUCKET,
@@ -35,18 +34,23 @@ from common import (
     parse_body,
     presign_get,
     presign_get_if_exists,
-    presign_put,
+    presign_post,
     require_auth,
     s3_client,
     too_many_requests,
-    unauthorized,
     user_settings_table,
 )
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-ALLOWED_EXTENSIONS = {".heic", ".heif", ".jpg", ".jpeg", ".png"}
+ALLOWED_EXTENSIONS = {
+    ext.strip().lower()
+    for ext in os.environ.get(
+        "UPLOAD_EXTENSIONS", ".heic,.heif,.jpg,.jpeg,.png"
+    ).split(",")
+    if ext.strip()
+}
 MAX_FILE_SIZE_MB = 200
 JOB_TTL_DAYS = 30
 
@@ -147,7 +151,7 @@ def _handle_create(event: dict, user_hash: str) -> dict:
     now_iso = datetime.now(timezone.utc).isoformat()
     now_ts = int(time.time())
 
-    upload_key = f"{user_hash}/uploads/{filename}"
+    upload_key = f"{user_hash}/jobs/{job_id}/uploads/{filename}"
 
     item: dict[str, Any] = {
         "user_hash": user_hash,
@@ -176,18 +180,23 @@ def _handle_create(event: dict, user_hash: str) -> dict:
         logger.error("DynamoDB put_item failed: %s", exc)
         return internal("Could not create job")
 
-    # Generate presigned PUT URL for direct browser-to-S3 upload
+    # Generate a presigned POST with a server-enforced content-length range.
     try:
-        upload_url = presign_put(upload_key, expires=3600)
+        upload_post = presign_post(
+            upload_key,
+            max_bytes=MAX_FILE_SIZE_MB * 1024 * 1024,
+            expires=3600,
+        )
     except Exception as exc:
-        logger.error("Failed to generate presigned PUT URL: %s", exc)
+        logger.error("Failed to generate presigned POST: %s", exc)
         return internal("Could not generate upload URL")
 
     logger.info("Created job %s for user %s...", job_id, user_hash[:8])
     return created(
         {
             "job_id": job_id,
-            "upload_url": upload_url,
+            "upload_url": upload_post["url"],
+            "upload_fields": upload_post["fields"],
             "upload_key": upload_key,
             "expires_in": 3600,
         }
@@ -260,24 +269,44 @@ def _handle_delete(job_id: str, user_hash: str) -> dict:
 def _count_jobs_today(user_hash: str) -> int:
     """Count jobs started today (UTC) for rate limiting.
 
-    Queries all jobs for the user today using created_at as a filter.
-    ``created_at`` is an ISO-8601 string (e.g. "2026-03-26T14:23:00+00:00").
-    We filter client-side after a partition-key-only query and cap at 50 items —
-    more than enough to evaluate the 20-job limit without a table scan.
+    Queries the ULID sort-key range beginning at UTC midnight and counts matching
+    ``created_at`` records. The range avoids reading older jobs, and pagination
+    avoids DynamoDB's per-query Limit applying before the filter.
     """
-    today_prefix = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     try:
-        from boto3.dynamodb.conditions import Attr, Key as DKey
-        resp = jobs_table.query(
-            KeyConditionExpression=DKey("user_hash").eq(user_hash),
-            FilterExpression=Attr("created_at").begins_with(today_prefix),
-            Select="COUNT",
-            Limit=100,  # cap pages; 20-job limit makes this sufficient
+        from boto3.dynamodb.conditions import Attr
+        from boto3.dynamodb.conditions import Key as DKey
+
+        alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+        midnight = datetime.now(timezone.utc).replace(
+            hour=0, minute=0, second=0, microsecond=0
         )
-        return int(resp.get("Count", 0))
+        today_prefix = midnight.strftime("%Y-%m-%d")
+        timestamp_ms = int(midnight.timestamp() * 1000)
+        encoded_timestamp = ""
+        for _ in range(10):
+            encoded_timestamp = alphabet[timestamp_ms & 31] + encoded_timestamp
+            timestamp_ms >>= 5
+        start_job_id = encoded_timestamp + ("0" * 16)
+
+        count = 0
+        query_args = {
+            "KeyConditionExpression": (
+                DKey("user_hash").eq(user_hash) & DKey("job_id").gte(start_job_id)
+            ),
+            "FilterExpression": Attr("created_at").begins_with(today_prefix),
+            "Select": "COUNT",
+            "ScanIndexForward": False,
+        }
+        while True:
+            resp = jobs_table.query(**query_args)
+            count += int(resp.get("Count", 0))
+            if count >= DAILY_JOB_LIMIT or "LastEvaluatedKey" not in resp:
+                return count
+            query_args["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
     except Exception as exc:
         logger.error("Rate limit count query failed: %s", exc)
-        return 0  # fail open — don't block users if DynamoDB is unavailable
+        raise RuntimeError("Could not verify daily job limit") from exc
 
 
 def _get_user_keys(user_hash: str) -> dict:
@@ -320,7 +349,10 @@ def _handle_start(job_id: str, user_hash: str, email: str) -> dict:
 
     # Rate limit check: skip for admins and users who supply their own keys
     if not is_admin(email) and not has_both_user_keys:
-        jobs_today = _count_jobs_today(user_hash)
+        try:
+            jobs_today = _count_jobs_today(user_hash)
+        except RuntimeError:
+            return internal("Could not verify daily job limit")
         if jobs_today >= DAILY_JOB_LIMIT:
             logger.info(
                 "Rate limit hit for user %s... (%d jobs today)", user_hash[:8], jobs_today
@@ -335,6 +367,7 @@ def _handle_start(job_id: str, user_hash: str, email: str) -> dict:
     if STATE_MACHINE_ARN:
         # Phase 2: trigger Step Functions
         import json
+
         import boto3
 
         sfn = boto3.client("stepfunctions")
@@ -346,7 +379,6 @@ def _handle_start(job_id: str, user_hash: str, email: str) -> dict:
                 "upload_key": upload_key,
                 "start_time": time.time(),
                 "config": {},
-                "user_keys": user_keys,
                 # Always present so PrepareMap and item_selector can safely use .$
                 "start_from": "",
                 "reprocess_photo_index": None,
@@ -424,6 +456,10 @@ def _handle_reprocess(job_id: str | None, event: dict, user_hash: str) -> dict:
     from_step = (body.get("from_step") or "").strip()
     photo_index = body.get("photo_index")  # optional int
     config_overrides = body.get("config") or {}
+    if not isinstance(config_overrides, dict):
+        return bad_request("config must be an object")
+    if {"anthropic_api_key", "openai_api_key"} & config_overrides.keys():
+        return bad_request("API keys cannot be passed as pipeline config")
 
     if from_step and from_step not in _VALID_REPROCESS_STEPS:
         return bad_request(
@@ -439,10 +475,10 @@ def _handle_reprocess(job_id: str | None, event: dict, user_hash: str) -> dict:
     if not STATE_MACHINE_ARN:
         return error(501, "not_implemented", "Pipeline not deployed")
 
-    user_keys = _get_user_keys(user_hash)
     now_iso = datetime.now(timezone.utc).isoformat()
 
     import json
+
     import boto3
 
     sfn = boto3.client("stepfunctions")
@@ -453,7 +489,6 @@ def _handle_reprocess(job_id: str | None, event: dict, user_hash: str) -> dict:
         "upload_key": item.get("upload_key", ""),
         "start_time": time.time(),
         "config": config_overrides,
-        "user_keys": user_keys,
         "start_from": from_step,
         # photo_count is needed by PrepareMap when photo_split is skipped
         "photo_count": int(item.get("photo_count", 1)),

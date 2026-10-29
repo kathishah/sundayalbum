@@ -3,10 +3,12 @@
 import { useEffect, useRef } from 'react'
 import { WS_URL, POLLING_INTERVAL_MS } from '@/lib/constants'
 import { getJob } from '@/lib/api'
+import { getToken } from '@/lib/auth'
 import type { StepUpdate, Job, JobStatus } from '@/lib/types'
 
-export function createWebSocketUrl(jobId: string): string {
-  return `${WS_URL}?jobId=${jobId}`
+export function createWebSocketUrl(jobId: string, token: string): string {
+  const params = new URLSearchParams({ jobId, token })
+  return `${WS_URL}?${params.toString()}`
 }
 
 function jobToStepUpdate(job: Job): StepUpdate {
@@ -39,6 +41,8 @@ export function useJobProgress({
 
   useEffect(() => {
     if (!enabled || !jobId) return
+    const token = getToken()
+    if (!token) return
 
     let useFallback = false
 
@@ -75,7 +79,7 @@ export function useJobProgress({
     }
 
     try {
-      const ws = new WebSocket(createWebSocketUrl(jobId))
+      const ws = new WebSocket(createWebSocketUrl(jobId, token))
       wsRef.current = ws
 
       const connectionTimer = setTimeout(() => {
