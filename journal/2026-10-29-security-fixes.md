@@ -31,9 +31,21 @@ changes. All eight findings remained present. Implemented the fixes on local bra
   starting on or after 2026-10-24. None contained nonempty `user_keys` or API-key
   fields in config. No key values were printed.
 
-## Remaining deployment steps
+## Deployment and production verification
 
-No push, PR, workflow, CDK diff, or deployment was done. CDK changes need the owner to
-run `cdk diff` and deploy with the admin e-mail setting preserved, as described in
-`docs/OPERATIONS.md`. The implementation is currently combined on one branch; split
-it into one PR per finding before creating PRs if following the original PR plan.
+- PR [#114](https://github.com/kathishah/sundayalbum/pull/114) merged the security
+  implementation into `dev` at `e96bfe08c622031a2dbf2e056a5d458c5ec4b2e1` on
+  2026-10-29.
+- PR [#115](https://github.com/kathishah/sundayalbum/pull/115) promoted `dev` to
+  `main` with a merge commit at `c052746fc7df65fa8c8228055a728aca7344f1c1`.
+- The `main` test, Lambda deployment, and web deployment workflows all passed.
+- Reviewed the production CDK diff and deployed `SundayAlbumStack`, preserving the
+  existing admin email configuration. CloudFormation completed with
+  `UPDATE_COMPLETE`. The deployment added S3 `POST` CORS support, applied the Lambda
+  configuration and asset updates, and updated the state machine to remove
+  `user_keys` forwarding and add reprocessing start points.
+- Post-deployment checks confirmed S3 allows `POST`, the state machine no longer
+  forwards `user_keys`, and the admin email configuration remains populated. The
+  production web app returned HTTP 200; unauthenticated API and WebSocket requests
+  returned HTTP 401.
+- The owner confirmed that production image processing works after deployment.
