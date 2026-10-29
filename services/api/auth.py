@@ -9,25 +9,23 @@ Routes:
 from __future__ import annotations
 
 import logging
-import random
 import re
+import secrets
 import time
 import uuid
 from typing import Any
 
 from common import (
+    SES_SENDER,
     bad_request,
     error,
     get_session,
     hash_email,
     internal,
-    jobs_table,
-    not_found,
     ok,
     parse_body,
     ses_client,
     sessions_table,
-    SES_SENDER,
     unauthorized,
 )
 
@@ -94,7 +92,7 @@ def _handle_send_code(event: dict) -> dict:
         return error(429, "rate_limited", "Too many code requests. Try again in an hour.")
 
     # Generate 6-digit code
-    code = str(random.randint(100000, 999999))
+    code = f"{secrets.randbelow(900000) + 100000:06d}"
     code_expires_at = now + CODE_TTL_SECONDS
 
     # Store in DynamoDB — session_token is omitted if not yet issued
@@ -179,15 +177,22 @@ def _handle_verify(event: dict) -> dict:
     if attempts >= MAX_VERIFY_ATTEMPTS:
         return error(429, "rate_limited", "Too many attempts. Request a new code.")
 
-    # Increment attempt counter regardless of success
+    # Atomically consume an attempt so concurrent requests cannot exceed the cap.
     try:
         sessions_table.update_item(
             Key={"email": email},
-            UpdateExpression="SET verify_attempts = verify_attempts + :one",
-            ExpressionAttributeValues={":one": 1},
+            UpdateExpression="ADD verify_attempts :one",
+            ConditionExpression=(
+                "attribute_not_exists(verify_attempts) OR verify_attempts < :max"
+            ),
+            ExpressionAttributeValues={":one": 1, ":max": MAX_VERIFY_ATTEMPTS},
         )
-    except Exception:
-        pass  # non-fatal
+    except Exception as exc:
+        error_code = getattr(exc, "response", {}).get("Error", {}).get("Code")
+        if error_code == "ConditionalCheckFailedException":
+            return error(429, "rate_limited", "Too many attempts. Request a new code.")
+        logger.error("Could not increment verification attempts: %s", exc)
+        return internal("Could not verify code")
 
     # Check expiry
     if now > item.get("code_expires_at", 0):

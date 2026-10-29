@@ -18,11 +18,10 @@ import os
 from typing import Any
 
 import boto3
-
 from common import (
     REGION,
-    internal,
-    ok,
+    get_session,
+    jobs_table,
     parse_body,
     ws_table,
 )
@@ -55,12 +54,28 @@ def handler(event: dict, context: Any) -> dict:
 
 
 def _handle_connect(event: dict, connection_id: str) -> dict:
-    """Store connection in DynamoDB on $connect."""
+    """Authenticate and store a job subscription on $connect."""
     params = event.get("queryStringParameters") or {}
     job_id = params.get("jobId", "")
-    user_hash = params.get("userHash", "")
+    token = params.get("token", "")
 
-    if connection_id and job_id:
+    session_event = {"headers": {"authorization": f"Bearer {token}"}}
+    session = get_session(session_event) if token else None
+    if not session or not job_id:
+        return {"statusCode": 401}
+    _email, user_hash = session
+    try:
+        job = jobs_table.get_item(
+            Key={"user_hash": user_hash, "job_id": job_id},
+            ProjectionExpression="job_id",
+        ).get("Item")
+    except Exception as exc:
+        logger.warning("Could not verify WebSocket job ownership: %s", exc)
+        return {"statusCode": 500}
+    if not job:
+        return {"statusCode": 403}
+
+    if connection_id:
         try:
             ws_table.put_item(
                 Item={

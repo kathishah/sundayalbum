@@ -10,9 +10,9 @@ logger = logging.getLogger(__name__)
 
 # Extensions to probe when searching for the uploaded source file.
 _UPLOAD_EXTENSIONS = [
-    ".heic", ".HEIC",
-    ".jpg", ".JPG", ".jpeg", ".JPEG",
-    ".png", ".PNG",
+    ".heic", ".heif",
+    ".jpg", ".jpeg",
+    ".png",
     ".dng", ".DNG",
 ]
 
@@ -49,6 +49,10 @@ def run(
         candidate = f"uploads/{stem}{ext}"
         if storage.exists(candidate):
             source_key = candidate
+            break
+        upper_candidate = f"uploads/{stem}{ext.upper()}"
+        if storage.exists(upper_candidate):
+            source_key = upper_candidate
             break
 
     if source_key is None:

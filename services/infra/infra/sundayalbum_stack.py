@@ -8,17 +8,35 @@ from aws_cdk import (
     Duration,
     RemovalPolicy,
     Stack,
+)
+from aws_cdk import (
     aws_apigatewayv2 as apigw,
+)
+from aws_cdk import (
     aws_dynamodb as dynamodb,
+)
+from aws_cdk import (
     aws_ecr_assets as ecr_assets,
+)
+from aws_cdk import (
     aws_iam as iam,
+)
+from aws_cdk import (
     aws_lambda as lambda_,
-    aws_s3 as s3,
-    aws_secretsmanager as secretsmanager,
-    aws_stepfunctions as sfn,
-    aws_stepfunctions_tasks as sfn_tasks,
 )
 from aws_cdk import aws_lambda_event_sources as event_sources
+from aws_cdk import (
+    aws_s3 as s3,
+)
+from aws_cdk import (
+    aws_secretsmanager as secretsmanager,
+)
+from aws_cdk import (
+    aws_stepfunctions as sfn,
+)
+from aws_cdk import (
+    aws_stepfunctions_tasks as sfn_tasks,
+)
 from aws_cdk.aws_apigatewayv2_integrations import HttpLambdaIntegration, WebSocketLambdaIntegration
 from constructs import Construct
 
@@ -70,6 +88,7 @@ class SundayAlbumStack(Stack):
                 s3.CorsRule(
                     allowed_methods=[
                         s3.HttpMethods.GET,
+                        s3.HttpMethods.POST,
                         s3.HttpMethods.PUT,
                         s3.HttpMethods.HEAD,
                     ],
@@ -207,6 +226,7 @@ class SundayAlbumStack(Stack):
             or os.environ.get("SUNDAYALBUM_ADMIN_EMAILS")
             or ""
         )
+        upload_extensions = ".heic,.heif,.jpg,.jpeg,.png"
         if not admin_emails:
             Annotations.of(self).add_warning(
                 "ADMIN_EMAILS is empty, so no one is exempt from the daily job limit. "
@@ -223,6 +243,7 @@ class SundayAlbumStack(Stack):
             "AWS_ACCOUNT_ID": self.account,
             "AWS_DEPLOY_REGION": self.region,
             "ADMIN_EMAILS": admin_emails,
+            "UPLOAD_EXTENSIONS": upload_extensions,
             "SECRET_ARN": api_keys_secret.secret_arn,
         }
 
@@ -275,6 +296,8 @@ class SundayAlbumStack(Stack):
         # ── Pipeline Lambda functions (container image) ───────────────────────
         pipeline_env = {
             "JOBS_TABLE": jobs_table.table_name,
+            "USER_SETTINGS_TABLE": user_settings_table.table_name,
+            "UPLOAD_EXTENSIONS": upload_extensions,
             "S3_BUCKET": bucket.bucket_name,
             "AWS_DEPLOY_REGION": self.region,
             "SECRET_ARN": api_keys_secret.secret_arn,
@@ -366,7 +389,6 @@ class SundayAlbumStack(Stack):
                 "start_time.$":             "$.start_time",
                 "photo_count.$":            "$.photo_count",
                 "config.$":                 "$.config",
-                "user_keys.$":              "$.user_keys",
                 "start_from.$":             "$.start_from",
                 "reprocess_photo_index.$":  "$.reprocess_photo_index",
                 "photo_indices.$":          "States.ArrayRange(1, $.photo_count, 1)",
@@ -420,7 +442,6 @@ class SundayAlbumStack(Stack):
                 "stem.$":                   "$.stem",
                 "start_time.$":             "$.start_time",
                 "config.$":                 "$.config",
-                "user_keys.$":              "$.user_keys",
                 "start_from.$":             "$.start_from",
                 "reprocess_photo_index.$":  "$.reprocess_photo_index",
             },

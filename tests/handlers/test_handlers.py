@@ -10,11 +10,8 @@ from unittest.mock import MagicMock, patch
 import boto3
 import numpy as np
 import pytest
-from PIL import Image
-
 from handler_helpers import (
     FAKE_IMAGE,
-    JOBS_TABLE,
     REGION,
     S3_BUCKET,
     create_job_record,
@@ -22,6 +19,7 @@ from handler_helpers import (
     make_base_event,
     put_s3_image,
 )
+from PIL import Image
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -49,7 +47,7 @@ def test_load_writes_debug_and_thumbnail_keys():
     # Put a real JPEG at the upload key so load.handler can read it
     boto3.client("s3", region_name=REGION).put_object(
         Bucket=S3_BUCKET,
-        Key=f"{user_hash}/uploads/test.heic",
+        Key=f"{user_hash}/jobs/{job_id}/uploads/test.HEIF",
         Body=_jpeg_bytes(),
     )
 
@@ -73,6 +71,27 @@ def test_load_writes_debug_and_thumbnail_keys():
     s3.head_object(Bucket=S3_BUCKET, Key=f"{user_hash}/{debug_key}")
     thumb_key = item["thumbnail_keys"]["01_loaded"]
     s3.head_object(Bucket=S3_BUCKET, Key=f"{user_hash}/{thumb_key}")
+
+
+def test_pipeline_config_fetches_user_keys_from_settings_table() -> None:
+    user_hash = "a" * 64
+    settings = boto3.resource("dynamodb", region_name=REGION).Table(
+        "sa-user-settings-test"
+    )
+    settings.put_item(
+        Item={
+            "user_hash": user_hash,
+            "anthropic_api_key": "sk-ant-owned-key",
+            "openai_api_key": "sk-openai-owned-key",
+        }
+    )
+
+    from handlers.common import make_config
+
+    config = make_config(user_hash=user_hash)
+
+    assert config.anthropic_api_key == "sk-ant-owned-key"
+    assert config.openai_api_key == "sk-openai-owned-key"
 
 
 # ── 24. normalize writes keys ────────────────────────────────────────────────
@@ -285,7 +304,7 @@ def test_load_runs_with_start_from():
 
     boto3.client("s3", region_name=REGION).put_object(
         Bucket=S3_BUCKET,
-        Key=f"{user_hash}/uploads/test.heic",
+        Key=f"{user_hash}/jobs/{job_id}/uploads/test.HEIF",
         Body=_jpeg_bytes(),
     )
 

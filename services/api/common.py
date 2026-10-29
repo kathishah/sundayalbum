@@ -7,7 +7,7 @@ import json
 import logging
 import os
 import time
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 import boto3
 from botocore.config import Config
@@ -192,6 +192,20 @@ def presign_put(key: str, expires: int = 3600) -> str:
         "put_object",
         Params={"Bucket": S3_BUCKET, "Key": key},
         ExpiresIn=expires,
+    )
+
+
+def presign_post(key: str, max_bytes: int, expires: int = 3600) -> dict[str, Any]:
+    """Generate a presigned S3 POST with an enforced upload size range."""
+    return cast(
+        dict[str, Any],
+        s3_client.generate_presigned_post(
+            Bucket=S3_BUCKET,
+            Key=key,
+            Fields={"key": key},
+            Conditions=[{"key": key}, ["content-length-range", 1, max_bytes]],
+            ExpiresIn=expires,
+        ),
     )
 
 
