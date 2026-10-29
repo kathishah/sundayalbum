@@ -46,14 +46,14 @@ PIPELINE_STEPS = [
     {
         'id': 'glare_detect',
         'name': 'Glare Detection & Removal',
-        'description': 'Detect and remove glare — OpenAI gpt-image-1.5 by default, OpenCV inpainting fallback',
+        'description': 'Detect and remove glare — OpenAI gpt-image-2.5-sunburst by default, OpenCV inpainting fallback',
         'priority': 1,
         'implemented': True,
     },
     {
         'id': 'ai_orientation',
         'name': 'AI Orientation Correction',
-        'description': 'Claude Haiku call per photo — corrects 90°/180°/270° rotation errors and produces scene description',
+        'description': 'Claude Haiku 5.5 call per photo — corrects 90°/180°/270° rotation errors and produces scene description',
         'priority': 2,
         'implemented': True,
     },
@@ -197,18 +197,18 @@ class PipelineConfig:
     # at minimum a ``bbox`` key ([x1, y1, x2, y2] in page-image pixel coordinates).
     forced_detections: Optional[list[dict]] = None
 
-    # AI orientation correction — Claude Haiku, one call per photo
+    # AI orientation correction — Claude Haiku 5.5, one call per photo
     use_ai_orientation: bool = True
-    ai_orientation_model: str = "claude-haiku-4-5-20251001"
+    ai_orientation_model: str = "claude-haiku-5-5"
     ai_orientation_min_confidence: str = "medium"
     # When set, skip the AI call and apply this exact clockwise rotation (0/90/180/270°)
     forced_rotation_degrees: Optional[int] = None
 
     # OpenAI glare removal (default)
     use_openai_glare_removal: bool = True
-    openai_model: str = "gpt-image-1.5"
+    openai_model: str = "gpt-image-2.5-sunburst"
     openai_glare_quality: str = "high"
-    openai_glare_input_fidelity: str = "high"
+    openai_glare_input_fidelity: Optional[str] = None
     forced_scene_description: Optional[str] = None
 
     # API keys — passed explicitly so steps are pure functions with no env-var reads.

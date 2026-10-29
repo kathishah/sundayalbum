@@ -272,7 +272,7 @@ def test_retryable_failure_at_attempt_cap_remains_failed(tmp_path: Path, monkeyp
     assert folder is not None
     failed_job = f"{args.cases[0]}__baseline__1"
     not_run_job = f"{args.cases[0]}__candidate__1"
-    assert calls == ["claude-haiku-4-5-20251001"]
+    assert calls == [runner.PipelineConfig().ai_orientation_model]
     assert sleeps == []
     assert sorted((folder / "attempts" / failed_job).glob("*.json")) == [
         folder / "attempts" / failed_job / "001.json"

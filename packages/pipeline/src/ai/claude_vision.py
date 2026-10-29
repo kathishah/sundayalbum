@@ -12,6 +12,18 @@ from anthropic import Anthropic
 
 logger = logging.getLogger(__name__)
 
+_ORIENTATION_OUTPUT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "rotation_degrees": {"type": "integer", "enum": [0, 90, 180, 270]},
+        "flip_horizontal": {"type": "boolean"},
+        "confidence": {"type": "string", "enum": ["low", "medium", "high"]},
+        "scene_description": {"type": "string"},
+    },
+    "required": ["rotation_degrees", "flip_horizontal", "confidence", "scene_description"],
+    "additionalProperties": False,
+}
+
 
 # ---------------------------------------------------------------------------
 # Orientation correction
@@ -83,7 +95,7 @@ def build_orientation_prompt() -> str:
 def analyze_photo_for_processing(
     image: np.ndarray,
     api_key: Optional[str] = None,
-    model: str = "claude-haiku-4-5-20251001",
+    model: str = "claude-haiku-5-5",
 ) -> PhotoAnalysis:
     """Detect gross orientation error and generate a scene description.
 
@@ -131,6 +143,13 @@ def analyze_photo_for_processing(
         response = client.messages.create(
             model=model,
             max_tokens=256,
+            thinking={"type": "disabled"},
+            output_config={
+                "format": {
+                    "type": "json_schema",
+                    "schema": _ORIENTATION_OUTPUT_SCHEMA,
+                }
+            },
             messages=[
                 {
                     "role": "user",

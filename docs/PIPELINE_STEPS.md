@@ -235,7 +235,7 @@ new top") to help the model reason about direction rather than guessing.
 | Param | Default | Effect |
 |-------|---------|--------|
 | `use_ai_orientation` | `True` | Disable to skip this step entirely |
-| `ai_orientation_model` | `"claude-haiku-4-5-20251001"` | Claude model for orientation; Haiku for cost/speed |
+| `ai_orientation_model` | `"claude-haiku-5-5"` | Claude model for orientation; Haiku for cost/speed |
 | `ai_orientation_min_confidence` | `"medium"` | Ignores `"low"` confidence results; pass-through instead |
 
 ---
@@ -247,7 +247,7 @@ new top") to help the model reason about direction rather than guessing.
 ### What it does
 Removes glare from each extracted photo. Two paths:
 
-**Default path (OpenAI `gpt-image-1.5`):**  
+**Default path (OpenAI `gpt-image-2.5-sunburst`):**
 Sends the oriented photo + scene description to OpenAI `images.edit`. The model performs
 semantic, diffusion-based inpainting with scene understanding — it knows what should be there
 and reconstructs it. Output is at most 1536×1024 (resolution reduction accepted for quality).
@@ -279,8 +279,9 @@ OpenAI handles both well. OpenCV fallback works adequately only on sleeve glare.
 | Param | Default | Effect |
 |-------|---------|--------|
 | `use_openai_glare_removal` | `True` | Set `False` to force OpenCV fallback |
-| `openai_model` | `"gpt-image-1.5"` | OpenAI model for glare removal |
+| `openai_model` | `"gpt-image-2.5-sunburst"` | OpenAI model for glare removal |
 | `openai_glare_quality` | `"high"` | OpenAI image quality setting |
+| `openai_glare_input_fidelity` | `None` | Omitted from Sunburst requests |
 | `forced_scene_description` | `None` | Override Claude's scene description (CLI: `--scene-desc`) |
 | `glare_intensity_threshold` | `0.85` | OpenCV path: V threshold for glare detection |
 | `glare_saturation_threshold` | `0.15` | OpenCV path: S threshold (glare is desaturated) |
