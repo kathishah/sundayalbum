@@ -171,23 +171,22 @@ async function uploadAndProcess(token: string): Promise<string> {
   const fileBytes = fs.readFileSync(FIXTURE_IMAGE)
   const fileSize  = fileBytes.length
 
-  // 1. Create job → get upload_url + job_id
+  // 1. Create job → get upload URL, fields, and job ID
   console.log(`[setup] Creating job for ${filename} (${Math.round(fileSize / 1024)} KB)`)
   const createResp = await fetch(`${API_URL}/jobs`, {
     method: 'POST',
     headers: { ...authed(token), 'Content-Type': 'application/json' },
-    body: JSON.stringify({ filename, file_size: fileSize }),
+    body: JSON.stringify({ filename, size: fileSize }),
   })
   if (!createResp.ok) throw new Error(`createJob failed: ${createResp.status} ${await createResp.text()}`)
-  const { job_id, upload_url } = await createResp.json()
+  const { job_id, upload_url, upload_fields } = await createResp.json()
   console.log(`[setup] Job created: ${job_id}`)
 
   // 2. Upload to S3 pre-signed URL
-  const uploadResp = await fetch(upload_url, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'image/jpeg' },
-    body: fileBytes,
-  })
+  const uploadForm = new FormData()
+  for (const [key, value] of Object.entries(upload_fields)) uploadForm.append(key, value as string)
+  uploadForm.append('file', new Blob([new Uint8Array(fileBytes)], { type: 'image/jpeg' }), filename)
+  const uploadResp = await fetch(upload_url, { method: 'POST', body: uploadForm })
   if (!uploadResp.ok) throw new Error(`S3 upload failed: ${uploadResp.status}`)
   console.log('[setup] File uploaded to S3')
 

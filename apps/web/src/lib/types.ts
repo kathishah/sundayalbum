@@ -52,6 +52,7 @@ export interface AuthResponse {
 export interface CreateJobResponse {
   job_id: string
   upload_url: string
+  upload_fields: Record<string, string>
   upload_key: string
   expires_in: number
 }

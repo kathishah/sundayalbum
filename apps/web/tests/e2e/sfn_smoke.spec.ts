@@ -102,16 +102,15 @@ async function uploadAndProcess(token: string, fixturePath: string): Promise<str
   const createResp = await fetch(`${API_URL}/jobs`, {
     method: 'POST',
     headers: authed(token),
-    body: JSON.stringify({ filename, file_size: fileSize }),
+    body: JSON.stringify({ filename, size: fileSize }),
   })
   if (!createResp.ok) throw new Error(`createJob failed: ${createResp.status}`)
-  const { job_id, upload_url } = await createResp.json()
+  const { job_id, upload_url, upload_fields } = await createResp.json()
 
-  const uploadResp = await fetch(upload_url, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'image/jpeg' },
-    body: fileBytes,
-  })
+  const uploadForm = new FormData()
+  for (const [key, value] of Object.entries(upload_fields)) uploadForm.append(key, value as string)
+  uploadForm.append('file', new Blob([new Uint8Array(fileBytes)], { type: 'image/jpeg' }), filename)
+  const uploadResp = await fetch(upload_url, { method: 'POST', body: uploadForm })
   if (!uploadResp.ok) throw new Error(`S3 upload failed: ${uploadResp.status}`)
 
   const startResp = await fetch(`${API_URL}/jobs/${job_id}/start`, {

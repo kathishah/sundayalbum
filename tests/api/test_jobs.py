@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
-import time
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timedelta, timezone
 
 import boto3
 import pytest
-
+import jobs as jobs_module
 from helpers import (
     JOBS_TABLE,
     REGION,
@@ -21,11 +21,11 @@ from helpers import (
     make_session,
 )
 
-import jobs as jobs_module
-
 
 def _hash(email: str) -> str:
     return hashlib.sha256(email.encode()).hexdigest()
+
+
 
 
 def _auth(email: str = "user@example.com") -> tuple[str, str, str]:
@@ -42,9 +42,9 @@ def _create_job(token: str, filename: str = "test.heic", size: int = 1024) -> di
     return json.loads(resp["body"]), resp["statusCode"]
 
 
-def _put_upload(user_hash: str, filename: str = "test.heic") -> str:
+def _put_upload(user_hash: str, job_id: str, filename: str = "test.heic") -> str:
     """Put a dummy file into the moto S3 bucket at the upload key."""
-    key = f"{user_hash}/uploads/{filename}"
+    key = f"{user_hash}/jobs/{job_id}/uploads/{filename}"
     boto3.client("s3", region_name=REGION).put_object(
         Bucket=S3_BUCKET, Key=key, Body=b"fake-image-data"
     )
@@ -70,6 +70,58 @@ def test_create_job_initializes_maps():
     assert item["debug_keys"] == {}
     assert item["thumbnail_keys"] == {}
     assert item["status"] == "uploading"
+
+
+def test_create_job_uses_size_limited_post_and_job_scoped_key() -> None:
+    _, user_hash, token = _auth()
+    body, status = _create_job(token, filename="Album.HEIF")
+
+    assert status == 201
+    assert body["upload_key"].startswith(
+        f"{user_hash}/jobs/{body['job_id']}/uploads/"
+    )
+    policy = json.loads(base64.b64decode(body["upload_fields"]["policy"]))
+    assert ["content-length-range", 1, 200 * 1024 * 1024] in policy["conditions"]
+
+
+def test_daily_job_count_ignores_more_than_100_older_jobs() -> None:
+    _, user_hash, _ = _auth("history@example.com")
+    now = datetime.now(UTC)
+    yesterday = (now - timedelta(days=1)).isoformat()
+
+    for i in range(125):
+        insert_job(
+            user_hash,
+            f"000000000000000000000000{i:02X}",
+            created_at=yesterday,
+        )
+    today = now.strftime("%Y-%m-%d")
+    for i in range(3):
+        insert_job(
+            user_hash,
+            jobs_module.generate_ulid(),
+            created_at=f"{today}T12:00:0{i}+00:00",
+        )
+
+    assert jobs_module._count_jobs_today(user_hash) == 3
+
+
+def test_daily_job_count_failure_fails_closed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _, user_hash, token = _auth("count-error@example.com")
+    body, _ = _create_job(token)
+    job_id = body["job_id"]
+    _put_upload(user_hash, job_id)
+
+    def fail_query(**_kwargs):
+        raise RuntimeError("DynamoDB unavailable")
+
+    monkeypatch.setattr(jobs_module.jobs_table, "query", fail_query)
+    event = make_event("POST /jobs/start", path_params={"jobId": job_id}, token=token)
+    response = jobs_module.handler(event, None)
+
+    assert response["statusCode"] == 500
 
 
 # ── 8. create_job unsupported format ─────────────────────────────────────────
@@ -121,7 +173,7 @@ def test_get_job_returns_debug_urls():
     job_id = body["job_id"]
 
     # Simulate pipeline writing debug_keys
-    debug_key = f"debug/test_01_loaded.jpg"
+    debug_key = "debug/test_01_loaded.jpg"
     boto3.client("s3", region_name=REGION).put_object(
         Bucket=S3_BUCKET, Key=f"{user_hash}/{debug_key}", Body=b"jpg"
     )
@@ -149,7 +201,7 @@ def test_get_job_returns_thumbnail_urls():
     body, _ = _create_job(token)
     job_id = body["job_id"]
 
-    thumb_key = f"thumbnails/test_01_loaded.jpg"
+    thumb_key = "thumbnails/test_01_loaded.jpg"
     boto3.client("s3", region_name=REGION).put_object(
         Bucket=S3_BUCKET, Key=f"{user_hash}/{thumb_key}", Body=b"jpg"
     )
@@ -177,7 +229,7 @@ def test_list_jobs_returns_thumbnail_url():
     body, _ = _create_job(token)
     job_id = body["job_id"]
 
-    thumb_key = f"thumbnails/test_01_loaded.jpg"
+    thumb_key = "thumbnails/test_01_loaded.jpg"
     boto3.client("s3", region_name=REGION).put_object(
         Bucket=S3_BUCKET, Key=f"{user_hash}/{thumb_key}", Body=b"jpg"
     )
@@ -252,7 +304,7 @@ def test_rate_limit_enforced():
     for i in range(19):
         insert_job(
             user_hash,
-            f"fake-job-{i:04d}",
+            jobs_module.generate_ulid(),
             status="complete",
             created_at=f"{today}T00:00:0{i % 10}.000000+00:00",
         )
@@ -260,7 +312,7 @@ def test_rate_limit_enforced():
     # Create a real job (this becomes the 20th record with today's date)
     body, _ = _create_job(token)
     job_id = body["job_id"]
-    _put_upload(user_hash)
+    _put_upload(user_hash, job_id)
 
     event = make_event(
         "POST /jobs/start",
@@ -287,7 +339,7 @@ def test_rate_limit_bypassed_with_own_keys():
     for i in range(20):
         insert_job(
             user_hash,
-            f"fake-job-{i:04d}",
+            jobs_module.generate_ulid(),
             status="complete",
             created_at=f"{today}T00:00:{i:02d}.000000+00:00",
         )
@@ -303,7 +355,7 @@ def test_rate_limit_bypassed_with_own_keys():
 
     body, _ = _create_job(token)
     job_id = body["job_id"]
-    _put_upload(user_hash)
+    _put_upload(user_hash, job_id)
 
     event = make_event(
         "POST /jobs/start",
@@ -313,6 +365,29 @@ def test_rate_limit_bypassed_with_own_keys():
     resp = jobs_module.handler(event, None)
     # Should be 200 (started) not 429
     assert resp["statusCode"] == 200
+    execution_arn = json.loads(resp["body"])["execution_arn"]
+    execution = boto3.client("stepfunctions", region_name=REGION).describe_execution(
+        executionArn=execution_arn
+    )
+    assert "user_keys" not in json.loads(execution["input"])
+    assert "sk-ant-test" not in execution["input"]
+    assert "sk-openai-test" not in execution["input"]
+
+
+def test_reprocess_rejects_api_keys_in_config() -> None:
+    _, user_hash, token = _auth("config-key@example.com")
+    job_id = str(uuid.uuid4())
+    insert_job(user_hash, job_id, status="complete")
+
+    event = make_event(
+        "POST /jobs/reprocess",
+        body={"from_step": "color_restore", "config": {"anthropic_api_key": "sk-ant-secret"}},
+        path_params={"jobId": job_id},
+        token=token,
+    )
+    response = jobs_module.handler(event, None)
+
+    assert response["statusCode"] == 400
 
 
 # ── 18. rate_limit_admin_bypass ───────────────────────────────────────────────
@@ -330,14 +405,14 @@ def test_rate_limit_admin_bypass():
     for i in range(20):
         insert_job(
             user_hash,
-            f"fake-job-{i:04d}",
+            jobs_module.generate_ulid(),
             status="complete",
             created_at=f"{today}T00:00:{i:02d}.000000+00:00",
         )
 
     body, _ = _create_job(token)
     job_id = body["job_id"]
-    _put_upload(user_hash)
+    _put_upload(user_hash, job_id)
 
     event = make_event(
         "POST /jobs/start",
@@ -382,6 +457,13 @@ def test_reprocess_sfn_input_always_has_reprocess_photo_index():
     _, user_hash, token = _auth()
     job_id = str(uuid.uuid4())
     insert_job(user_hash, job_id, status="complete", extra={"input_stem": "test", "photo_count": 1})
+    boto3.resource("dynamodb", region_name=REGION).Table(USER_SETTINGS_TABLE).put_item(
+        Item={
+            "user_hash": user_hash,
+            "anthropic_api_key": "sk-ant-reprocess-secret",
+            "openai_api_key": "sk-openai-reprocess-secret",
+        }
+    )
 
     event = make_event(
         "POST /jobs/reprocess",
@@ -406,6 +488,9 @@ def test_reprocess_sfn_input_always_has_reprocess_photo_index():
         "reprocess_photo_index must always be present in SFN input — PrepareMap uses $.reprocess_photo_index"
     )
     assert sfn_input["reprocess_photo_index"] is None
+    assert "user_keys" not in sfn_input
+    assert "sk-ant-reprocess-secret" not in execution["input"]
+    assert "sk-openai-reprocess-secret" not in execution["input"]
 
 
 # ── 20. reprocess invalid step ───────────────────────────────────────────────

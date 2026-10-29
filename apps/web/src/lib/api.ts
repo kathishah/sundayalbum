@@ -138,13 +138,17 @@ export async function deleteApiKeys(): Promise<void> {
 
 // ── S3 direct upload ──────────────────────────────────────────────────────────
 
-export async function s3Upload(url: string, file: File): Promise<void> {
+export async function s3Upload(
+  url: string,
+  fields: Record<string, string>,
+  file: File,
+): Promise<void> {
+  const form = new FormData()
+  for (const [key, value] of Object.entries(fields)) form.append(key, value)
+  form.append('file', file)
   const res = await fetch(url, {
-    method: 'PUT',
-    body: file,
-    headers: {
-      'Content-Type': file.type || 'application/octet-stream',
-    },
+    method: 'POST',
+    body: form,
   })
 
   if (!res.ok) {
