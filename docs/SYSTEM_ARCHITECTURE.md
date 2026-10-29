@@ -122,8 +122,8 @@ load → normalize → page_detect → perspective → photo_detect → photo_sp
 | `perspective` | `sa-pipeline-perspective` | Active | Homographic warp to fronto-parallel view |
 | `photo_detect` | `sa-pipeline-photo-detect` | Active | Contour detection of individual photo boundaries |
 | `photo_split` | `sa-pipeline-photo-split` | Active | Extract individual photo crops via homography |
-| `ai_orient` | `sa-pipeline-ai-orient` | Active | Claude Haiku: detect rotation + get scene description |
-| `glare_remove` | `sa-pipeline-glare-remove` | Active (OpenAI default) | OpenAI `gpt-image-1.5` semantic inpainting; OpenCV fallback |
+| `ai_orient` | `sa-pipeline-ai-orient` | Active | Claude Haiku 5.5: detect rotation + get scene description |
+| `glare_remove` | `sa-pipeline-glare-remove` | Active (OpenAI default) | OpenAI `gpt-image-2.5-sunburst` semantic inpainting; OpenCV fallback |
 | `geometry` | `sa-pipeline-geometry` | Pass-through | Dewarp + small-angle rotation (both disabled — false positives) |
 | `color_restore` | `sa-pipeline-color-restore` | Active | WB → deyellow → adaptive brightness/vibrance → sharpen |
 | `finalize` | `sa-pipeline-finalize` | Web only | Collect output keys; update job to `complete` |
@@ -146,7 +146,7 @@ The CLI supports `--steps load,normalize,...` to run only specific steps.
 
 ### Glare removal: OpenAI by default
 
-OpenAI `gpt-image-1.5` (`images.edit`) is the default glare removal path. It performs semantic,
+OpenAI `gpt-image-2.5-sunburst` (`images.edit`) is the default glare removal path. It performs semantic,
 diffusion-based inpainting with scene understanding — it knows what the photo should look like
 and reconstructs it. The scene description from the `ai_orient` step is included in the prompt.
 

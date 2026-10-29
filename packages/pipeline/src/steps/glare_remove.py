@@ -17,7 +17,7 @@ def run(
 ) -> dict:
     """Remove glare from an oriented photo.
 
-    Default path: OpenAI ``gpt-image-1.5`` images.edit (semantic inpainting).
+    Default path: OpenAI ``gpt-image-2.5-sunburst`` images.edit (semantic inpainting).
     Fallback: OpenCV inpainting (used when OPENAI_API_KEY is absent or
     ``config.use_openai_glare_removal`` is False).
 

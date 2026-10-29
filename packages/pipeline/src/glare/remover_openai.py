@@ -132,7 +132,7 @@ def _call_openai_with_retry(
     prompt: str,
     api_size: str,
     quality: str,
-    input_fidelity: str,
+    input_fidelity: Optional[str],
 ) -> "openai.types.ImagesResponse":
     """Call client.images.edit with up to _MAX_RETRIES retries on transient errors.
 
@@ -143,7 +143,7 @@ def _call_openai_with_retry(
         prompt: Glare-removal prompt.
         api_size: API size string (e.g. "1536x1024").
         quality: API quality parameter.
-        input_fidelity: API input_fidelity parameter.
+        input_fidelity: Optional API input_fidelity parameter; omitted when None.
 
     Returns:
         ImagesResponse from the API on success.
@@ -157,16 +157,18 @@ def _call_openai_with_retry(
     for attempt in range(1, _MAX_RETRIES + 2):  # attempts: 1 .. MAX_RETRIES+1
         try:
             with tmp_path.open("rb") as f:
-                return client.images.edit(
+                request = dict(
                     model=model,
                     image=f,
                     prompt=prompt,
                     n=1,
                     size=api_size,
                     quality=quality,
-                    input_fidelity=input_fidelity,
                     output_format="png",
                 )
+                if input_fidelity is not None:
+                    request["input_fidelity"] = input_fidelity
+                return client.images.edit(**request)
         except Exception as exc:
             last_exc = exc
             delay_range = _classify_openai_error(exc)
@@ -194,9 +196,9 @@ def remove_glare_openai(
     image: np.ndarray,
     scene_desc: str,
     api_key: str,
-    model: str = "gpt-image-1.5",
+    model: str = "gpt-image-2.5-sunburst",
     quality: str = "high",
-    input_fidelity: str = "high",
+    input_fidelity: Optional[str] = None,
 ) -> np.ndarray:
     """Remove glare from a photo using OpenAI's image editing API.
 
@@ -215,9 +217,9 @@ def remove_glare_openai(
         image: Input photo, float32 RGB [0, 1], shape (H, W, 3).
         scene_desc: One-sentence description of the scene (used in prompt).
         api_key: OpenAI API key.
-        model: OpenAI image model to use. Default "gpt-image-1.5".
+        model: OpenAI image model to use. Default "gpt-image-2.5-sunburst".
         quality: API quality parameter ("low", "medium", "high", "auto").
-        input_fidelity: API input_fidelity parameter ("high" or "low").
+        input_fidelity: Optional API input_fidelity parameter. Omitted by default.
 
     Returns:
         Glare-removed photo as float32 RGB [0, 1], shape may differ from input
