@@ -25,6 +25,11 @@ part of rollout review.
 This change is scoped to the dev deployment until separately merged from `dev`
 to `main`. The offline suite was not run locally. The first PR CI run passed 69
 tests and found one eval-runner assertion that hard-coded the former Haiku 4.5
-production baseline. The assertion now reads the configured default model, so
-future model rollouts do not make that runner test stale. CI will rerun on the
-updated PR.
+production baseline. The assertion now reads the configured default model; the
+updated PR CI passed, and post-merge API, handler, and eval CI passed.
+
+PR #111 merged to `dev` as `58bc409`. The dev Lambda deployment completed
+successfully (workflow run 40810330392). Live requests to `/` and `/api/version`
+returned HTTP 200; the version endpoint reports backend `58bc409` as the current
+deployed revision. No authenticated album-processing run was performed as part
+of this rollout.
