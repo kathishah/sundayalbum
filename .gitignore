@@ -22,6 +22,8 @@ default.profraw
 
 test-images-2/
 test-images-3/
+test-cropped-images/
+eval-runs/
 
 # macOS app build artifacts
 apps/mac/.build/

@@ -7,16 +7,24 @@ on:
       - "services/handlers/**"
       - "tests/api/**"
       - "tests/handlers/**"
+      - "tests/evals/**"
+      - "evals/model-upgrade/**"
       - "packages/pipeline/src/storage/**"
       - "packages/pipeline/src/steps/**"
+      - "packages/pipeline/src/ai/**"
+      - "packages/pipeline/src/glare/**"
   push:
     paths:
       - "services/api/**"
       - "services/handlers/**"
       - "tests/api/**"
       - "tests/handlers/**"
+      - "tests/evals/**"
+      - "evals/model-upgrade/**"
       - "packages/pipeline/src/storage/**"
       - "packages/pipeline/src/steps/**"
+      - "packages/pipeline/src/ai/**"
+      - "packages/pipeline/src/glare/**"
 
 permissions:
   contents: read
@@ -50,7 +58,7 @@ jobs:
             click \
             python-dotenv
 
-      - name: Run API and handler tests
-        run: pytest tests/api/ tests/handlers/ -v
+      - name: Run API, handler, and offline eval tests
+        run: pytest tests/api/ tests/handlers/ tests/evals/ -v
         env:
           PYTHONPATH: ${{ github.workspace }}

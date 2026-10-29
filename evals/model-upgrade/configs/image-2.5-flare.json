@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "name": "image-2.5-flare-glare",
+  "steps": {
+    "glare_remove": {
+      "model": "gpt-image-2.5-flare",
+      "parameters": {
+        "input_fidelity": null
+      }
+    }
+  }
+}
