@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "name": "haiku-5-5-orientation",
+  "steps": {
+    "ai_orientation": {
+      "model": "claude-haiku-5-5",
+      "parameters": {
+        "thinking": {"type": "disabled"},
+        "output_config": {
+          "format": {
+            "type": "json_schema",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "rotation_degrees": {"type": "integer", "enum": [0, 90, 180, 270]},
+                "flip_horizontal": {"type": "boolean"},
+                "confidence": {"type": "string", "enum": ["low", "medium", "high"]},
+                "scene_description": {"type": "string"}
+              },
+              "required": ["rotation_degrees", "flip_horizontal", "confidence", "scene_description"],
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -19,6 +19,14 @@ Development log for Sunday Album. Entries fall into two categories:
 | 2026-02-16 | [phase-7-geometry-correction](2026-02-16-phase-7-geometry-correction.md) | Keystone, rotation detection, dewarp implementation |
 | 2026-02-16 | [phase-8-color-restoration](2026-02-16-phase-8-color-restoration.md) | White balance, deyellowing, CLAHE-based fade restoration, sharpening |
 | 2026-02-16 | [phase-9-pipeline-integration](2026-02-16-phase-9-pipeline-integration.md) | End-to-end pipeline wiring, AI quality check, output naming |
+| 2026-10-27 | [model-eval-phase-1](2026-10-27-model-eval-phase-1.md) | Approved frozen crop pairs, hashes, fixture preparation and fetch support |
+| 2026-10-27 | [model-eval-phase-2](2026-10-27-model-eval-phase-2.md) | Versioned run records, atomic results, redaction and strict resume checks |
+| 2026-10-27 | [model-eval-phase-3](2026-10-27-model-eval-phase-3.md) | Local dry-run runner, explicit provider adapters, call caps and resume |
+| 2026-10-27 | [model-eval-phase-4](2026-10-27-model-eval-phase-4.md) | Orientation metrics and blinded glare review with ratings reveal |
+| 2026-10-27 | [model-eval-phase-5](2026-10-27-model-eval-phase-5.md) | Full summaries, dated cost estimates, decisions and developer workflow |
+| 2026-10-27 | [model-eval-phase-6](2026-10-27-model-eval-phase-6.md) | Offline CI gate, orientation pilot, and full-set evaluation |
+| 2026-10-28 | [model-eval-orientation-fixture-expansion](2026-10-28-model-eval-orientation-fixture-expansion.md) | Owner-approved 180° city and water-ride crops; local-only orientation fixture v2 |
+| 2026-10-28 | [model-eval-glare](2026-10-28-model-eval-glare.md) | Glare pilot and full run; simplified labelled preference review |
 
 ---
 
@@ -43,3 +51,4 @@ Development log for Sunday Album. Entries fall into two categories:
 | 2026-08-15 | [monorepo-layout](2026-08-15-monorepo-layout.md) | Spec: rearrange repo into apps/ packages/ services/; keep `src` import names |
 | 2026-08-15 | [monorepo-implementation-plan](2026-08-15-monorepo-implementation-plan.md) | Plan: 5 commits (git-mv → pyproject/conftest → Docker/CDK/CI → macOS PYTHONPATH → docs) |
 | 2026-10-27 | [dependency-security-plan](2026-10-27-sundayalbum-dependency-security-plan.md) | Plan + decisions: Next 14.2.29 critical alerts, Next 15 / React 19 / Node 24 upgrade, web PR build check, Dependabot triage |
+| 2026-10-27 | [model-upgrade-evaluation-harness](2026-10-27-model-upgrade-evaluation-harness.md) | Spec: reusable, human-reviewed eval runs for model and prompt changes across pipeline tasks |

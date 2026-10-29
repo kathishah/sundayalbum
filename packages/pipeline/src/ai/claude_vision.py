@@ -49,6 +49,37 @@ def _rotate_image(image: np.ndarray, degrees: int) -> np.ndarray:
     return np.rot90(image, k=k)
 
 
+def build_orientation_prompt() -> str:
+    """Return the exact production orientation prompt."""
+    return (
+        "You are examining a scanned or re-photographed physical print that may have "
+        "been placed at an incorrect orientation.\n\n"
+        "Orientation cues — check in this priority order:\n"
+        "  1. PEOPLE / ANIMALS (most reliable): heads must be at the top, feet at the "
+        "bottom. If you see people standing on their heads or hanging upside-down, "
+        "the image needs a 180° rotation.\n"
+        "  2. SKY / GROUND: sky belongs at the top, ground at the bottom.\n"
+        "  3. HORIZON LINES: should run horizontally, not vertically.\n"
+        "  4. READABLE TEXT: letters should read left-to-right.\n"
+        "  ⚠ Do NOT use vehicle orientation as a cue — vehicles may legitimately be "
+        "overturned or crashed in the scene itself.\n\n"
+        "Step 1 — Apply the cues above (starting with people). "
+        "Where is the CORRECT top of the scene in the image AS CURRENTLY SHOWN?\n"
+        "  A) Already at the TOP edge      → correctly oriented\n"
+        "  B) Currently at the BOTTOM edge → scene is upside-down (people are inverted)\n"
+        "  C) Currently at the LEFT edge   → content rotated 90° clockwise\n"
+        "  D) Currently at the RIGHT edge  → content rotated 90° counter-clockwise\n\n"
+        "Step 2 — Map to the clockwise rotation to apply:\n"
+        "  A → 0     B → 180     C → 90     D → 270\n\n"
+        "Step 3 — Write a one-sentence description of what the scene shows.\n\n"
+        "Reply with JSON only — no markdown, no extra text:\n"
+        '{"rotation_degrees": <0|90|180|270>, "flip_horizontal": <true|false>, '
+        '"confidence": <"low"|"medium"|"high">, "scene_description": "<one sentence>"}\n\n'
+        "flip_horizontal is only true for a genuine lateral mirror image (a physical "
+        "defect, extremely rare). When genuinely uncertain about orientation, use 0."
+    )
+
+
 def analyze_photo_for_processing(
     image: np.ndarray,
     api_key: Optional[str] = None,
@@ -93,33 +124,7 @@ def analyze_photo_for_processing(
 
     image_b64 = _image_to_base64_jpeg(image, quality=85)
 
-    prompt = (
-        "You are examining a scanned or re-photographed physical print that may have "
-        "been placed at an incorrect orientation.\n\n"
-        "Orientation cues — check in this priority order:\n"
-        "  1. PEOPLE / ANIMALS (most reliable): heads must be at the top, feet at the "
-        "bottom. If you see people standing on their heads or hanging upside-down, "
-        "the image needs a 180° rotation.\n"
-        "  2. SKY / GROUND: sky belongs at the top, ground at the bottom.\n"
-        "  3. HORIZON LINES: should run horizontally, not vertically.\n"
-        "  4. READABLE TEXT: letters should read left-to-right.\n"
-        "  ⚠ Do NOT use vehicle orientation as a cue — vehicles may legitimately be "
-        "overturned or crashed in the scene itself.\n\n"
-        "Step 1 — Apply the cues above (starting with people). "
-        "Where is the CORRECT top of the scene in the image AS CURRENTLY SHOWN?\n"
-        "  A) Already at the TOP edge      → correctly oriented\n"
-        "  B) Currently at the BOTTOM edge → scene is upside-down (people are inverted)\n"
-        "  C) Currently at the LEFT edge   → content rotated 90° clockwise\n"
-        "  D) Currently at the RIGHT edge  → content rotated 90° counter-clockwise\n\n"
-        "Step 2 — Map to the clockwise rotation to apply:\n"
-        "  A → 0     B → 180     C → 90     D → 270\n\n"
-        "Step 3 — Write a one-sentence description of what the scene shows.\n\n"
-        "Reply with JSON only — no markdown, no extra text:\n"
-        '{"rotation_degrees": <0|90|180|270>, "flip_horizontal": <true|false>, '
-        '"confidence": <"low"|"medium"|"high">, "scene_description": "<one sentence>"}\n\n'
-        "flip_horizontal is only true for a genuine lateral mirror image (a physical "
-        "defect, extremely rare). When genuinely uncertain about orientation, use 0."
-    )
+    prompt = build_orientation_prompt()
 
     try:
         client = Anthropic(api_key=api_key)

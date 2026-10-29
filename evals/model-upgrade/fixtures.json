@@ -1,0 +1,1198 @@
+{
+  "schema_version": 1,
+  "fixture_set": "approved-2026-10-28-v2",
+  "cases": [
+    {
+      "case_id": "test-images-img_two_pics_vertical_horizontal_normal-01",
+      "source_path": "test-images/IMG_two_pics_vertical_horizontal_normal.HEIC",
+      "source_sha256": "65f1149ca14b93e56afbf44240bbd1ed6acda57595a4a2708e841f1216197de1",
+      "photo_index": 1,
+      "crop": {
+        "bbox": [
+          0,
+          0,
+          2854,
+          2064
+        ],
+        "corners": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            2854.0,
+            0.0
+          ],
+          [
+            2854.0,
+            2064.0
+          ],
+          [
+            0.0,
+            2064.0
+          ]
+        ],
+        "confidence": 0.75,
+        "region_type": "photo",
+        "orientation": "landscape"
+      },
+      "orientation_input": "test-cropped-images/orientation/test-images-img_two_pics_vertical_horizontal_normal-01.jpg",
+      "orientation_sha256": "c2c47c521f66e3a85024985ff4c32fb21e525ebea53f94e01c39f9a59c025331",
+      "extraction_tool": "production load/normalize/page_detect/perspective/photo_detect/photo_split",
+      "extraction_config": {
+        "max_working_resolution": 4000,
+        "prefer_heic_for_iteration": true,
+        "page_detect_min_area_ratio": 0.3,
+        "page_detect_grabcut_iterations": 5,
+        "page_detect_grabcut_max_dimension": 800,
+        "glare_intensity_threshold": 0.85,
+        "glare_saturation_threshold": 0.15,
+        "glare_min_area": 100,
+        "glare_inpaint_radius": 5,
+        "glare_feather_radius": 5,
+        "glare_type": "auto",
+        "photo_detect_method": "contour",
+        "photo_detect_min_area_ratio": 0.02,
+        "photo_detect_max_count": 8,
+        "keystone_max_angle": 40.0,
+        "rotation_auto_correct_max": 15.0,
+        "dewarp_detection_threshold": 0.02,
+        "use_dewarp": false,
+        "color_restore_wp_percentile": 99.0,
+        "color_restore_wp_target": 0.96,
+        "color_restore_shadow_lift_max": 0.15,
+        "color_restore_brightness_ceiling": 0.75,
+        "color_restore_vibrance_boost": 0.25,
+        "sharpen_radius": 1.5,
+        "sharpen_amount": 0.5,
+        "output_format": "jpeg",
+        "jpeg_quality": 92,
+        "use_ai_quality_check": false,
+        "use_ai_fallback_detection": false,
+        "anthropic_model": "claude-sonnet-4-5-20250929",
+        "forced_detections": null,
+        "use_ai_orientation": false,
+        "ai_orientation_model": "claude-haiku-4-5-20251001",
+        "ai_orientation_min_confidence": "medium",
+        "forced_rotation_degrees": null,
+        "use_openai_glare_removal": false,
+        "openai_model": "gpt-image-1.5",
+        "openai_glare_quality": "high",
+        "openai_glare_input_fidelity": "high",
+        "forced_scene_description": null
+      },
+      "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
+      "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+      "architecture": "arm64",
+      "review_status": "approved_2026-10-27",
+      "expected_rotation_degrees": 270,
+      "expected_flip_horizontal": false,
+      "ambiguous": false,
+      "glare_input": "test-cropped-images/glare/test-images-img_two_pics_vertical_horizontal_normal-01.jpg",
+      "glare_sha256": "96a2c45e30a6143ee35940dae6a4a4792991d27877e5abec46974ff58db0f575",
+      "glare_transform": {
+        "rotation_clockwise_degrees": 270,
+        "flip_horizontal": false
+      },
+      "scene_description": "A man in a light jacket standing outdoors.",
+      "distribution": "v0.0.4-evaldata",
+      "photo_position": "top",
+      "tags": [
+        "orientation",
+        "glare",
+        "album-page"
+      ],
+      "notes": "Approved frozen crop; orientation label reviewed against exact extracted bytes."
+    },
+    {
+      "case_id": "test-images-img_two_pics_vertical_horizontal_normal-02",
+      "source_path": "test-images/IMG_two_pics_vertical_horizontal_normal.HEIC",
+      "source_sha256": "65f1149ca14b93e56afbf44240bbd1ed6acda57595a4a2708e841f1216197de1",
+      "photo_index": 2,
+      "crop": {
+        "bbox": [
+          0,
+          2064,
+          2854,
+          3729
+        ],
+        "corners": [
+          [
+            0.0,
+            2064.0
+          ],
+          [
+            2854.0,
+            2064.0
+          ],
+          [
+            2854.0,
+            3729.0
+          ],
+          [
+            0.0,
+            3729.0
+          ]
+        ],
+        "confidence": 0.75,
+        "region_type": "photo",
+        "orientation": "landscape"
+      },
+      "orientation_input": "test-cropped-images/orientation/test-images-img_two_pics_vertical_horizontal_normal-02.jpg",
+      "orientation_sha256": "9d959c8542b530349d80e55d44eb77cad3ace9761a655026725932fee05a810f",
+      "extraction_tool": "production load/normalize/page_detect/perspective/photo_detect/photo_split",
+      "extraction_config": {
+        "max_working_resolution": 4000,
+        "prefer_heic_for_iteration": true,
+        "page_detect_min_area_ratio": 0.3,
+        "page_detect_grabcut_iterations": 5,
+        "page_detect_grabcut_max_dimension": 800,
+        "glare_intensity_threshold": 0.85,
+        "glare_saturation_threshold": 0.15,
+        "glare_min_area": 100,
+        "glare_inpaint_radius": 5,
+        "glare_feather_radius": 5,
+        "glare_type": "auto",
+        "photo_detect_method": "contour",
+        "photo_detect_min_area_ratio": 0.02,
+        "photo_detect_max_count": 8,
+        "keystone_max_angle": 40.0,
+        "rotation_auto_correct_max": 15.0,
+        "dewarp_detection_threshold": 0.02,
+        "use_dewarp": false,
+        "color_restore_wp_percentile": 99.0,
+        "color_restore_wp_target": 0.96,
+        "color_restore_shadow_lift_max": 0.15,
+        "color_restore_brightness_ceiling": 0.75,
+        "color_restore_vibrance_boost": 0.25,
+        "sharpen_radius": 1.5,
+        "sharpen_amount": 0.5,
+        "output_format": "jpeg",
+        "jpeg_quality": 92,
+        "use_ai_quality_check": false,
+        "use_ai_fallback_detection": false,
+        "anthropic_model": "claude-sonnet-4-5-20250929",
+        "forced_detections": null,
+        "use_ai_orientation": false,
+        "ai_orientation_model": "claude-haiku-4-5-20251001",
+        "ai_orientation_min_confidence": "medium",
+        "forced_rotation_degrees": null,
+        "use_openai_glare_removal": false,
+        "openai_model": "gpt-image-1.5",
+        "openai_glare_quality": "high",
+        "openai_glare_input_fidelity": "high",
+        "forced_scene_description": null
+      },
+      "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
+      "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+      "architecture": "arm64",
+      "review_status": "approved_2026-10-27",
+      "expected_rotation_degrees": 180,
+      "expected_flip_horizontal": false,
+      "ambiguous": false,
+      "glare_input": "test-cropped-images/glare/test-images-img_two_pics_vertical_horizontal_normal-02.jpg",
+      "glare_sha256": "b5dfee0b865fe559c25c78d5004d689a0919042b21a8112fa5b5dc65558a1cbf",
+      "glare_transform": {
+        "rotation_clockwise_degrees": 180,
+        "flip_horizontal": false
+      },
+      "scene_description": "A white car with a person in the driver's seat.",
+      "distribution": "v0.0.4-evaldata",
+      "photo_position": "bottom",
+      "tags": [
+        "orientation",
+        "glare",
+        "album-page"
+      ],
+      "notes": "Approved frozen crop; orientation label reviewed against exact extracted bytes."
+    },
+    {
+      "case_id": "test-images-img_three_pics_normal-01",
+      "source_path": "test-images/IMG_three_pics_normal.HEIC",
+      "source_sha256": "50fd69fc6a607fab14fcef005d950895f74f1b280c11beaf38775f5732ddfc98",
+      "photo_index": 1,
+      "crop": {
+        "bbox": [
+          0,
+          0,
+          1955,
+          1337
+        ],
+        "corners": [
+          [
+            4.090320408225122e-14,
+            0.0
+          ],
+          [
+            1954.0,
+            0.0
+          ],
+          [
+            1954.0,
+            1336.0
+          ],
+          [
+            -4.090320408225122e-14,
+            1336.0
+          ]
+        ],
+        "confidence": 0.42799688962760546,
+        "region_type": "photo",
+        "orientation": "landscape"
+      },
+      "orientation_input": "test-cropped-images/orientation/test-images-img_three_pics_normal-01.jpg",
+      "orientation_sha256": "be7ee0f07d9103d86c02019bf0bc788327cd210aba98074f5af80f20e2ada5a6",
+      "extraction_tool": "production load/normalize/page_detect/perspective/photo_detect/photo_split",
+      "extraction_config": {
+        "max_working_resolution": 4000,
+        "prefer_heic_for_iteration": true,
+        "page_detect_min_area_ratio": 0.3,
+        "page_detect_grabcut_iterations": 5,
+        "page_detect_grabcut_max_dimension": 800,
+        "glare_intensity_threshold": 0.85,
+        "glare_saturation_threshold": 0.15,
+        "glare_min_area": 100,
+        "glare_inpaint_radius": 5,
+        "glare_feather_radius": 5,
+        "glare_type": "auto",
+        "photo_detect_method": "contour",
+        "photo_detect_min_area_ratio": 0.02,
+        "photo_detect_max_count": 8,
+        "keystone_max_angle": 40.0,
+        "rotation_auto_correct_max": 15.0,
+        "dewarp_detection_threshold": 0.02,
+        "use_dewarp": false,
+        "color_restore_wp_percentile": 99.0,
+        "color_restore_wp_target": 0.96,
+        "color_restore_shadow_lift_max": 0.15,
+        "color_restore_brightness_ceiling": 0.75,
+        "color_restore_vibrance_boost": 0.25,
+        "sharpen_radius": 1.5,
+        "sharpen_amount": 0.5,
+        "output_format": "jpeg",
+        "jpeg_quality": 92,
+        "use_ai_quality_check": false,
+        "use_ai_fallback_detection": false,
+        "anthropic_model": "claude-sonnet-4-5-20250929",
+        "forced_detections": null,
+        "use_ai_orientation": false,
+        "ai_orientation_model": "claude-haiku-4-5-20251001",
+        "ai_orientation_min_confidence": "medium",
+        "forced_rotation_degrees": null,
+        "use_openai_glare_removal": false,
+        "openai_model": "gpt-image-1.5",
+        "openai_glare_quality": "high",
+        "openai_glare_input_fidelity": "high",
+        "forced_scene_description": null
+      },
+      "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
+      "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+      "architecture": "arm64",
+      "review_status": "approved_2026-10-27",
+      "expected_rotation_degrees": 180,
+      "expected_flip_horizontal": false,
+      "ambiguous": false,
+      "glare_input": "test-cropped-images/glare/test-images-img_three_pics_normal-01.jpg",
+      "glare_sha256": "3e9ccd4eb6694f4e4c5f24748be3d5a669db9c823f5d705744beaa135c5fcd94",
+      "glare_transform": {
+        "rotation_clockwise_degrees": 180,
+        "flip_horizontal": false
+      },
+      "scene_description": "People standing and talking outdoors near a building.",
+      "distribution": "v0.0.4-evaldata",
+      "photo_position": "index-1",
+      "tags": [
+        "orientation",
+        "glare",
+        "album-page"
+      ],
+      "notes": "Approved frozen crop; orientation label reviewed against exact extracted bytes."
+    },
+    {
+      "case_id": "test-images-img_three_pics_normal-02",
+      "source_path": "test-images/IMG_three_pics_normal.HEIC",
+      "source_sha256": "50fd69fc6a607fab14fcef005d950895f74f1b280c11beaf38775f5732ddfc98",
+      "photo_index": 2,
+      "crop": {
+        "bbox": [
+          0,
+          1298,
+          1708,
+          2557
+        ],
+        "corners": [
+          [
+            3.8515143765266435e-14,
+            1298.0
+          ],
+          [
+            1707.0,
+            1298.0
+          ],
+          [
+            1707.0,
+            2556.0
+          ],
+          [
+            -3.8515143765266435e-14,
+            2556.0
+          ]
+        ],
+        "confidence": 0.4706258963564348,
+        "region_type": "photo",
+        "orientation": "landscape"
+      },
+      "orientation_input": "test-cropped-images/orientation/test-images-img_three_pics_normal-02.jpg",
+      "orientation_sha256": "0bd3d8e68a586a4f9ec596ca29baa835e7cfc0a0c3c29461eaef0f77631d84ac",
+      "extraction_tool": "production load/normalize/page_detect/perspective/photo_detect/photo_split",
+      "extraction_config": {
+        "max_working_resolution": 4000,
+        "prefer_heic_for_iteration": true,
+        "page_detect_min_area_ratio": 0.3,
+        "page_detect_grabcut_iterations": 5,
+        "page_detect_grabcut_max_dimension": 800,
+        "glare_intensity_threshold": 0.85,
+        "glare_saturation_threshold": 0.15,
+        "glare_min_area": 100,
+        "glare_inpaint_radius": 5,
+        "glare_feather_radius": 5,
+        "glare_type": "auto",
+        "photo_detect_method": "contour",
+        "photo_detect_min_area_ratio": 0.02,
+        "photo_detect_max_count": 8,
+        "keystone_max_angle": 40.0,
+        "rotation_auto_correct_max": 15.0,
+        "dewarp_detection_threshold": 0.02,
+        "use_dewarp": false,
+        "color_restore_wp_percentile": 99.0,
+        "color_restore_wp_target": 0.96,
+        "color_restore_shadow_lift_max": 0.15,
+        "color_restore_brightness_ceiling": 0.75,
+        "color_restore_vibrance_boost": 0.25,
+        "sharpen_radius": 1.5,
+        "sharpen_amount": 0.5,
+        "output_format": "jpeg",
+        "jpeg_quality": 92,
+        "use_ai_quality_check": false,
+        "use_ai_fallback_detection": false,
+        "anthropic_model": "claude-sonnet-4-5-20250929",
+        "forced_detections": null,
+        "use_ai_orientation": false,
+        "ai_orientation_model": "claude-haiku-4-5-20251001",
+        "ai_orientation_min_confidence": "medium",
+        "forced_rotation_degrees": null,
+        "use_openai_glare_removal": false,
+        "openai_model": "gpt-image-1.5",
+        "openai_glare_quality": "high",
+        "openai_glare_input_fidelity": "high",
+        "forced_scene_description": null
+      },
+      "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
+      "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+      "architecture": "arm64",
+      "review_status": "approved_2026-10-27",
+      "expected_rotation_degrees": 180,
+      "expected_flip_horizontal": false,
+      "ambiguous": false,
+      "glare_input": "test-cropped-images/glare/test-images-img_three_pics_normal-02.jpg",
+      "glare_sha256": "72d133193211394f5df5dd4d161283df3049f80495c4bfbbb7203d4a176574c1",
+      "glare_transform": {
+        "rotation_clockwise_degrees": 180,
+        "flip_horizontal": false
+      },
+      "scene_description": "A large group posing together outdoors.",
+      "distribution": "v0.0.4-evaldata",
+      "photo_position": "index-2",
+      "tags": [
+        "orientation",
+        "glare",
+        "album-page"
+      ],
+      "notes": "Approved frozen crop; orientation label reviewed against exact extracted bytes."
+    },
+    {
+      "case_id": "test-images-img_three_pics_normal-03",
+      "source_path": "test-images/IMG_three_pics_normal.HEIC",
+      "source_sha256": "50fd69fc6a607fab14fcef005d950895f74f1b280c11beaf38775f5732ddfc98",
+      "photo_index": 3,
+      "crop": {
+        "bbox": [
+          0,
+          2828,
+          1811,
+          3815
+        ],
+        "corners": [
+          [
+            -47.89593505859375,
+            2890.15625
+          ],
+          [
+            1771.057373046875,
+            2795.853515625
+          ],
+          [
+            1819.7578125,
+            3735.208984375
+          ],
+          [
+            0.80450439453125,
+            3829.51171875
+          ]
+        ],
+        "confidence": 0.452352112526286,
+        "region_type": "photo",
+        "orientation": "landscape"
+      },
+      "orientation_input": "test-cropped-images/orientation/test-images-img_three_pics_normal-03.jpg",
+      "orientation_sha256": "4fdf6a1c2b512786a4a2128765b7449b3222a1419e3cced0728904291d1ae95b",
+      "extraction_tool": "production load/normalize/page_detect/perspective/photo_detect/photo_split",
+      "extraction_config": {
+        "max_working_resolution": 4000,
+        "prefer_heic_for_iteration": true,
+        "page_detect_min_area_ratio": 0.3,
+        "page_detect_grabcut_iterations": 5,
+        "page_detect_grabcut_max_dimension": 800,
+        "glare_intensity_threshold": 0.85,
+        "glare_saturation_threshold": 0.15,
+        "glare_min_area": 100,
+        "glare_inpaint_radius": 5,
+        "glare_feather_radius": 5,
+        "glare_type": "auto",
+        "photo_detect_method": "contour",
+        "photo_detect_min_area_ratio": 0.02,
+        "photo_detect_max_count": 8,
+        "keystone_max_angle": 40.0,
+        "rotation_auto_correct_max": 15.0,
+        "dewarp_detection_threshold": 0.02,
+        "use_dewarp": false,
+        "color_restore_wp_percentile": 99.0,
+        "color_restore_wp_target": 0.96,
+        "color_restore_shadow_lift_max": 0.15,
+        "color_restore_brightness_ceiling": 0.75,
+        "color_restore_vibrance_boost": 0.25,
+        "sharpen_radius": 1.5,
+        "sharpen_amount": 0.5,
+        "output_format": "jpeg",
+        "jpeg_quality": 92,
+        "use_ai_quality_check": false,
+        "use_ai_fallback_detection": false,
+        "anthropic_model": "claude-sonnet-4-5-20250929",
+        "forced_detections": null,
+        "use_ai_orientation": false,
+        "ai_orientation_model": "claude-haiku-4-5-20251001",
+        "ai_orientation_min_confidence": "medium",
+        "forced_rotation_degrees": null,
+        "use_openai_glare_removal": false,
+        "openai_model": "gpt-image-1.5",
+        "openai_glare_quality": "high",
+        "openai_glare_input_fidelity": "high",
+        "forced_scene_description": null
+      },
+      "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
+      "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+      "architecture": "arm64",
+      "review_status": "approved_2026-10-27",
+      "expected_rotation_degrees": 180,
+      "expected_flip_horizontal": false,
+      "ambiguous": false,
+      "glare_input": "test-cropped-images/glare/test-images-img_three_pics_normal-03.jpg",
+      "glare_sha256": "5978962e092d05fca133422fbf1bef8c8d685c61bed0579193cb4a499b347d44",
+      "glare_transform": {
+        "rotation_clockwise_degrees": 180,
+        "flip_horizontal": false
+      },
+      "scene_description": "A large group posing together outdoors.",
+      "distribution": "v0.0.4-evaldata",
+      "photo_position": "index-3",
+      "tags": [
+        "orientation",
+        "glare",
+        "album-page"
+      ],
+      "notes": "Approved frozen crop; orientation label reviewed against exact extracted bytes."
+    },
+    {
+      "case_id": "test-images-2-img_1250-01",
+      "source_path": "test-images-2/IMG_1250.HEIC",
+      "source_sha256": "bdcff2ea24a37b602eef1150e67831a2af8564415b4bebd64b8f2d25d5902b4f",
+      "photo_index": 1,
+      "crop": {
+        "photo_quad": [
+          [
+            365.14569091796875,
+            2337.02392578125
+          ],
+          [
+            2619.917236328125,
+            2362.3583984375
+          ],
+          [
+            2603.01123046875,
+            3867.0
+          ],
+          [
+            348.2396240234375,
+            3841.66552734375
+          ]
+        ]
+      },
+      "orientation_input": "test-cropped-images/orientation/test-images-2-img_1250-01.jpg",
+      "orientation_sha256": "2395d326b0aa929ab394bad01d11a4dbbf0675d6a34856ce7d3f7c55461ade44",
+      "extraction_tool": "production load/normalize/page_detect/perspective/photo_detect/photo_split",
+      "extraction_config": {
+        "max_working_resolution": 4000,
+        "prefer_heic_for_iteration": true,
+        "page_detect_min_area_ratio": 0.3,
+        "page_detect_grabcut_iterations": 5,
+        "page_detect_grabcut_max_dimension": 800,
+        "glare_intensity_threshold": 0.85,
+        "glare_saturation_threshold": 0.15,
+        "glare_min_area": 100,
+        "glare_inpaint_radius": 5,
+        "glare_feather_radius": 5,
+        "glare_type": "auto",
+        "photo_detect_method": "contour",
+        "photo_detect_min_area_ratio": 0.02,
+        "photo_detect_max_count": 8,
+        "keystone_max_angle": 40.0,
+        "rotation_auto_correct_max": 15.0,
+        "dewarp_detection_threshold": 0.02,
+        "use_dewarp": false,
+        "color_restore_wp_percentile": 99.0,
+        "color_restore_wp_target": 0.96,
+        "color_restore_shadow_lift_max": 0.15,
+        "color_restore_brightness_ceiling": 0.75,
+        "color_restore_vibrance_boost": 0.25,
+        "sharpen_radius": 1.5,
+        "sharpen_amount": 0.5,
+        "output_format": "jpeg",
+        "jpeg_quality": 92,
+        "use_ai_quality_check": false,
+        "use_ai_fallback_detection": false,
+        "anthropic_model": "claude-sonnet-4-5-20250929",
+        "forced_detections": null,
+        "use_ai_orientation": false,
+        "ai_orientation_model": "claude-haiku-4-5-20251001",
+        "ai_orientation_min_confidence": "medium",
+        "forced_rotation_degrees": null,
+        "use_openai_glare_removal": false,
+        "openai_model": "gpt-image-1.5",
+        "openai_glare_quality": "high",
+        "openai_glare_input_fidelity": "high",
+        "forced_scene_description": null
+      },
+      "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
+      "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+      "architecture": "arm64",
+      "review_status": "approved_2026-10-27",
+      "expected_rotation_degrees": 0,
+      "expected_flip_horizontal": false,
+      "ambiguous": false,
+      "glare_input": "test-cropped-images/glare/test-images-2-img_1250-01.jpg",
+      "glare_sha256": "579851c059da590580d6e848a7fcd4bb9a878dc7ea3c5166d39c83e24715cfdb",
+      "glare_transform": {
+        "rotation_clockwise_degrees": 0,
+        "flip_horizontal": false
+      },
+      "scene_description": "Two people posing inside a cave.",
+      "distribution": "local-only",
+      "photo_position": "index-1",
+      "tags": [
+        "orientation",
+        "glare",
+        "single-print"
+      ],
+      "notes": "Approved frozen crop; orientation label reviewed against exact extracted bytes."
+    },
+    {
+      "case_id": "test-images-2-img_1250-02",
+      "source_path": "test-images-2/IMG_1250.HEIC",
+      "source_sha256": "bdcff2ea24a37b602eef1150e67831a2af8564415b4bebd64b8f2d25d5902b4f",
+      "photo_index": 2,
+      "crop": {
+        "photo_quad": [
+          [
+            272.9243469238281,
+            362.9859924316406
+          ],
+          [
+            2512.561767578125,
+            329.0521240234375
+          ],
+          [
+            2535.103515625,
+            1816.8165283203125
+          ],
+          [
+            295.4661560058594,
+            1850.7506103515625
+          ]
+        ]
+      },
+      "orientation_input": "test-cropped-images/orientation/test-images-2-img_1250-02.jpg",
+      "orientation_sha256": "02102bccd28e7f5b2b46b12b278813a0767411dc63956f0e5eb7f34bcc174d87",
+      "extraction_tool": "production load/normalize/page_detect/perspective/photo_detect/photo_split",
+      "extraction_config": {
+        "max_working_resolution": 4000,
+        "prefer_heic_for_iteration": true,
+        "page_detect_min_area_ratio": 0.3,
+        "page_detect_grabcut_iterations": 5,
+        "page_detect_grabcut_max_dimension": 800,
+        "glare_intensity_threshold": 0.85,
+        "glare_saturation_threshold": 0.15,
+        "glare_min_area": 100,
+        "glare_inpaint_radius": 5,
+        "glare_feather_radius": 5,
+        "glare_type": "auto",
+        "photo_detect_method": "contour",
+        "photo_detect_min_area_ratio": 0.02,
+        "photo_detect_max_count": 8,
+        "keystone_max_angle": 40.0,
+        "rotation_auto_correct_max": 15.0,
+        "dewarp_detection_threshold": 0.02,
+        "use_dewarp": false,
+        "color_restore_wp_percentile": 99.0,
+        "color_restore_wp_target": 0.96,
+        "color_restore_shadow_lift_max": 0.15,
+        "color_restore_brightness_ceiling": 0.75,
+        "color_restore_vibrance_boost": 0.25,
+        "sharpen_radius": 1.5,
+        "sharpen_amount": 0.5,
+        "output_format": "jpeg",
+        "jpeg_quality": 92,
+        "use_ai_quality_check": false,
+        "use_ai_fallback_detection": false,
+        "anthropic_model": "claude-sonnet-4-5-20250929",
+        "forced_detections": null,
+        "use_ai_orientation": false,
+        "ai_orientation_model": "claude-haiku-4-5-20251001",
+        "ai_orientation_min_confidence": "medium",
+        "forced_rotation_degrees": null,
+        "use_openai_glare_removal": false,
+        "openai_model": "gpt-image-1.5",
+        "openai_glare_quality": "high",
+        "openai_glare_input_fidelity": "high",
+        "forced_scene_description": null
+      },
+      "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
+      "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+      "architecture": "arm64",
+      "review_status": "approved_2026-10-27",
+      "expected_rotation_degrees": null,
+      "expected_flip_horizontal": false,
+      "ambiguous": true,
+      "glare_input": "test-cropped-images/glare/test-images-2-img_1250-02.jpg",
+      "glare_sha256": "088e950211a26ee39cea0b1c31e019fc0069da8236784a76cee42dbe94fb54c1",
+      "glare_transform": {
+        "rotation_clockwise_degrees": 0,
+        "flip_horizontal": false
+      },
+      "scene_description": "A cave formation with a bright reflection near the bottom edge.",
+      "distribution": "local-only",
+      "photo_position": "index-2",
+      "tags": [
+        "orientation",
+        "glare",
+        "single-print",
+        "orientation-ambiguous"
+      ],
+      "notes": "Approved frozen crop; orientation label reviewed against exact extracted bytes."
+    },
+    {
+      "case_id": "test-images-2-img_1251-01",
+      "source_path": "test-images-2/IMG_1251.HEIC",
+      "source_sha256": "eeb9fe046721e872f0e6502f37c607a75ee33a063adaf03e200f90ea656d7192",
+      "photo_index": 1,
+      "crop": {
+        "bbox": [
+          0,
+          0,
+          2805,
+          1905
+        ],
+        "corners": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            2805.0,
+            0.0
+          ],
+          [
+            2805.0,
+            1905.0
+          ],
+          [
+            0.0,
+            1905.0
+          ]
+        ],
+        "confidence": 0.9,
+        "region_type": "photo",
+        "orientation": "landscape"
+      },
+      "orientation_input": "test-cropped-images/orientation/test-images-2-img_1251-01.jpg",
+      "orientation_sha256": "a08dcd71710b135fb96b11852950e1c10c214f91080c5d2c373c00ca1e733042",
+      "extraction_tool": "production load/normalize/page_detect/perspective/photo_detect/photo_split",
+      "extraction_config": {
+        "max_working_resolution": 4000,
+        "prefer_heic_for_iteration": true,
+        "page_detect_min_area_ratio": 0.3,
+        "page_detect_grabcut_iterations": 5,
+        "page_detect_grabcut_max_dimension": 800,
+        "glare_intensity_threshold": 0.85,
+        "glare_saturation_threshold": 0.15,
+        "glare_min_area": 100,
+        "glare_inpaint_radius": 5,
+        "glare_feather_radius": 5,
+        "glare_type": "auto",
+        "photo_detect_method": "contour",
+        "photo_detect_min_area_ratio": 0.02,
+        "photo_detect_max_count": 8,
+        "keystone_max_angle": 40.0,
+        "rotation_auto_correct_max": 15.0,
+        "dewarp_detection_threshold": 0.02,
+        "use_dewarp": false,
+        "color_restore_wp_percentile": 99.0,
+        "color_restore_wp_target": 0.96,
+        "color_restore_shadow_lift_max": 0.15,
+        "color_restore_brightness_ceiling": 0.75,
+        "color_restore_vibrance_boost": 0.25,
+        "sharpen_radius": 1.5,
+        "sharpen_amount": 0.5,
+        "output_format": "jpeg",
+        "jpeg_quality": 92,
+        "use_ai_quality_check": false,
+        "use_ai_fallback_detection": false,
+        "anthropic_model": "claude-sonnet-4-5-20250929",
+        "forced_detections": null,
+        "use_ai_orientation": false,
+        "ai_orientation_model": "claude-haiku-4-5-20251001",
+        "ai_orientation_min_confidence": "medium",
+        "forced_rotation_degrees": null,
+        "use_openai_glare_removal": false,
+        "openai_model": "gpt-image-1.5",
+        "openai_glare_quality": "high",
+        "openai_glare_input_fidelity": "high",
+        "forced_scene_description": null
+      },
+      "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
+      "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+      "architecture": "arm64",
+      "review_status": "approved_2026-10-27",
+      "expected_rotation_degrees": 0,
+      "expected_flip_horizontal": false,
+      "ambiguous": false,
+      "glare_input": "test-cropped-images/glare/test-images-2-img_1251-01.jpg",
+      "glare_sha256": "4ebcf9b54ff37fd6f41b72bcbdaed88fb631c3c3f071cf010a8911c586309893",
+      "glare_transform": {
+        "rotation_clockwise_degrees": 0,
+        "flip_horizontal": false
+      },
+      "scene_description": "A group sitting on rocks outdoors in bright sunlight.",
+      "distribution": "local-only",
+      "photo_position": "index-1",
+      "tags": [
+        "orientation",
+        "glare",
+        "single-print"
+      ],
+      "notes": "Approved frozen crop; orientation label reviewed against exact extracted bytes."
+    },
+    {
+      "case_id": "test-images-3-img_1267-01",
+      "source_path": "test-images-3/IMG_1267.HEIC",
+      "source_sha256": "11a932f540e4a30ca98a43d401e03a4ae8c62eb0b7596b6ee2f4008b69a632b2",
+      "photo_index": 1,
+      "crop": {
+        "bbox": [
+          0,
+          0,
+          2995,
+          1944
+        ],
+        "corners": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            2995.0,
+            0.0
+          ],
+          [
+            2995.0,
+            1944.0
+          ],
+          [
+            0.0,
+            1944.0
+          ]
+        ],
+        "confidence": 0.9,
+        "region_type": "photo",
+        "orientation": "landscape"
+      },
+      "orientation_input": "test-cropped-images/orientation/test-images-3-img_1267-01.jpg",
+      "orientation_sha256": "b0416139ccf8f0344b1a5db9787faf32ad05915f629d3fad97713fd3c5a24606",
+      "extraction_tool": "production load/normalize/page_detect/perspective/photo_detect/photo_split",
+      "extraction_config": {
+        "max_working_resolution": 4000,
+        "prefer_heic_for_iteration": true,
+        "page_detect_min_area_ratio": 0.3,
+        "page_detect_grabcut_iterations": 5,
+        "page_detect_grabcut_max_dimension": 800,
+        "glare_intensity_threshold": 0.85,
+        "glare_saturation_threshold": 0.15,
+        "glare_min_area": 100,
+        "glare_inpaint_radius": 5,
+        "glare_feather_radius": 5,
+        "glare_type": "auto",
+        "photo_detect_method": "contour",
+        "photo_detect_min_area_ratio": 0.02,
+        "photo_detect_max_count": 8,
+        "keystone_max_angle": 40.0,
+        "rotation_auto_correct_max": 15.0,
+        "dewarp_detection_threshold": 0.02,
+        "use_dewarp": false,
+        "color_restore_wp_percentile": 99.0,
+        "color_restore_wp_target": 0.96,
+        "color_restore_shadow_lift_max": 0.15,
+        "color_restore_brightness_ceiling": 0.75,
+        "color_restore_vibrance_boost": 0.25,
+        "sharpen_radius": 1.5,
+        "sharpen_amount": 0.5,
+        "output_format": "jpeg",
+        "jpeg_quality": 92,
+        "use_ai_quality_check": false,
+        "use_ai_fallback_detection": false,
+        "anthropic_model": "claude-sonnet-4-5-20250929",
+        "forced_detections": null,
+        "use_ai_orientation": false,
+        "ai_orientation_model": "claude-haiku-4-5-20251001",
+        "ai_orientation_min_confidence": "medium",
+        "forced_rotation_degrees": null,
+        "use_openai_glare_removal": false,
+        "openai_model": "gpt-image-1.5",
+        "openai_glare_quality": "high",
+        "openai_glare_input_fidelity": "high",
+        "forced_scene_description": null
+      },
+      "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
+      "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+      "architecture": "arm64",
+      "review_status": "approved_2026-10-27",
+      "expected_rotation_degrees": 0,
+      "expected_flip_horizontal": false,
+      "ambiguous": false,
+      "glare_input": "test-cropped-images/glare/test-images-3-img_1267-01.jpg",
+      "glare_sha256": "755b5ea394fb5c5f54798dc19216ed204a63ae432574007c3960b595451804f0",
+      "glare_transform": {
+        "rotation_clockwise_degrees": 0,
+        "flip_horizontal": false
+      },
+      "scene_description": "Four people sitting in front of a fountain.",
+      "distribution": "local-only",
+      "photo_position": "index-1",
+      "tags": [
+        "orientation",
+        "glare",
+        "single-print"
+      ],
+      "notes": "Approved frozen crop; orientation label reviewed against exact extracted bytes."
+    },
+    {
+      "case_id": "test-images-3-img_1270-01",
+      "source_path": "test-images-3/IMG_1270.HEIC",
+      "source_sha256": "06394fb1f985a240aa2ff3c9d68727da3d9daa2e4f99417bbd4b9a7638b1e2db",
+      "photo_index": 1,
+      "crop": {
+        "bbox": [
+          0,
+          0,
+          2924,
+          1941
+        ],
+        "corners": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            2924.0,
+            0.0
+          ],
+          [
+            2924.0,
+            1941.0
+          ],
+          [
+            0.0,
+            1941.0
+          ]
+        ],
+        "confidence": 0.9,
+        "region_type": "photo",
+        "orientation": "landscape"
+      },
+      "orientation_input": "test-cropped-images/orientation/test-images-3-img_1270-01.jpg",
+      "orientation_sha256": "1ef33b86cc4f8b07fadd7f54f42c99f7ef429106d5e988dafdd48fa337acc84c",
+      "extraction_tool": "production load/normalize/page_detect/perspective/photo_detect/photo_split",
+      "extraction_config": {
+        "max_working_resolution": 4000,
+        "prefer_heic_for_iteration": true,
+        "page_detect_min_area_ratio": 0.3,
+        "page_detect_grabcut_iterations": 5,
+        "page_detect_grabcut_max_dimension": 800,
+        "glare_intensity_threshold": 0.85,
+        "glare_saturation_threshold": 0.15,
+        "glare_min_area": 100,
+        "glare_inpaint_radius": 5,
+        "glare_feather_radius": 5,
+        "glare_type": "auto",
+        "photo_detect_method": "contour",
+        "photo_detect_min_area_ratio": 0.02,
+        "photo_detect_max_count": 8,
+        "keystone_max_angle": 40.0,
+        "rotation_auto_correct_max": 15.0,
+        "dewarp_detection_threshold": 0.02,
+        "use_dewarp": false,
+        "color_restore_wp_percentile": 99.0,
+        "color_restore_wp_target": 0.96,
+        "color_restore_shadow_lift_max": 0.15,
+        "color_restore_brightness_ceiling": 0.75,
+        "color_restore_vibrance_boost": 0.25,
+        "sharpen_radius": 1.5,
+        "sharpen_amount": 0.5,
+        "output_format": "jpeg",
+        "jpeg_quality": 92,
+        "use_ai_quality_check": false,
+        "use_ai_fallback_detection": false,
+        "anthropic_model": "claude-sonnet-4-5-20250929",
+        "forced_detections": null,
+        "use_ai_orientation": false,
+        "ai_orientation_model": "claude-haiku-4-5-20251001",
+        "ai_orientation_min_confidence": "medium",
+        "forced_rotation_degrees": null,
+        "use_openai_glare_removal": false,
+        "openai_model": "gpt-image-1.5",
+        "openai_glare_quality": "high",
+        "openai_glare_input_fidelity": "high",
+        "forced_scene_description": null
+      },
+      "pipeline_revision": "bbaf03e71e5065f5556335a730347d192eb8548c",
+      "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+      "architecture": "arm64",
+      "review_status": "approved_2026-10-27",
+      "expected_rotation_degrees": null,
+      "expected_flip_horizontal": false,
+      "ambiguous": true,
+      "glare_input": "test-cropped-images/glare/test-images-3-img_1270-01.jpg",
+      "glare_sha256": "7f0230aca2fe3e7cf36affdab6fd692649d45a89d3ca81b51dec28baaf97503b",
+      "glare_transform": {
+        "rotation_clockwise_degrees": 0,
+        "flip_horizontal": false
+      },
+      "scene_description": "Shallow water with bright reflections and a vertical pole.",
+      "distribution": "local-only",
+      "photo_position": "index-1",
+      "tags": [
+        "orientation",
+        "glare",
+        "single-print",
+        "orientation-ambiguous"
+      ],
+      "notes": "Approved frozen crop; orientation label reviewed against exact extracted bytes."
+    },
+    {
+      "case_id": "test-images-2-img_1247-01-rot180",
+      "source_path": "test-images-2/IMG_1247.HEIC",
+      "source_sha256": "ac16c50d3eae9371f73cfcb71775f737af006956a3a9fbbc27c4f4fcd1eb5484",
+      "photo_index": 1,
+      "crop": {
+        "photo_quad": [
+          [
+            225.0,
+            2285.000244140625
+          ],
+          [
+            2664.999755859375,
+            2285.000244140625
+          ],
+          [
+            2664.999755859375,
+            3915.0
+          ],
+          [
+            225.0,
+            3915.0
+          ]
+        ]
+      },
+      "extraction_tool": "production load/normalize/page_detect/perspective/photo_detect/photo_split; Pillow 180-degree rotation, JPEG quality 95/subsampling 0",
+      "extraction_config": {
+        "max_working_resolution": 4000,
+        "prefer_heic_for_iteration": true,
+        "page_detect_min_area_ratio": 0.3,
+        "page_detect_grabcut_iterations": 5,
+        "page_detect_grabcut_max_dimension": 800,
+        "glare_intensity_threshold": 0.85,
+        "glare_saturation_threshold": 0.15,
+        "glare_min_area": 100,
+        "glare_inpaint_radius": 5,
+        "glare_feather_radius": 5,
+        "glare_type": "auto",
+        "photo_detect_method": "contour",
+        "photo_detect_min_area_ratio": 0.02,
+        "photo_detect_max_count": 8,
+        "keystone_max_angle": 40.0,
+        "rotation_auto_correct_max": 15.0,
+        "dewarp_detection_threshold": 0.02,
+        "use_dewarp": false,
+        "color_restore_wp_percentile": 99.0,
+        "color_restore_wp_target": 0.96,
+        "color_restore_shadow_lift_max": 0.15,
+        "color_restore_brightness_ceiling": 0.75,
+        "color_restore_vibrance_boost": 0.25,
+        "sharpen_radius": 1.5,
+        "sharpen_amount": 0.5,
+        "output_format": "jpeg",
+        "jpeg_quality": 92,
+        "use_ai_quality_check": false,
+        "use_ai_fallback_detection": false,
+        "anthropic_model": "claude-sonnet-4-5-20250929",
+        "forced_detections": null,
+        "use_ai_orientation": false,
+        "ai_orientation_model": "claude-haiku-4-5-20251001",
+        "ai_orientation_min_confidence": "medium",
+        "forced_rotation_degrees": null,
+        "use_openai_glare_removal": false,
+        "openai_model": "gpt-image-1.5",
+        "openai_glare_quality": "high",
+        "openai_glare_input_fidelity": "high",
+        "forced_scene_description": null
+      },
+      "pipeline_revision": "022804f1bdd573da4d9b4ffb104f93ad281a9317",
+      "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+      "architecture": "arm64",
+      "orientation_input": "test-cropped-images/orientation/test-images-2-img_1247-01-rot180.jpg",
+      "orientation_sha256": "64e934e488e486c9c7d78bf781332759850ab9b98ffeb062b9f0159c1cbc6050",
+      "orientation_derivation": {
+        "source_crop_sha256": "33aeb0f7763c22365e219a11662efa66a6813dc4e529c21ad0cbbd17c30b47a1",
+        "rotation_clockwise_degrees": 180,
+        "jpeg_quality": 95,
+        "jpeg_subsampling": 0
+      },
+      "review_status": "approved_2026-10-28",
+      "expected_rotation_degrees": 180,
+      "expected_flip_horizontal": false,
+      "ambiguous": false,
+      "scene_description": "Buildings near the water line",
+      "distribution": "local-only",
+      "photo_position": "bottom",
+      "tags": [
+        "orientation",
+        "album-page",
+        "synthetic-rotation",
+        "object-scene"
+      ],
+      "notes": "Owner approved exact pre-rotated bytes and 180-degree labels on 2026-10-28; orientation-only fixture."
+    },
+    {
+      "case_id": "test-images-2-img_1247-02-rot180",
+      "source_path": "test-images-2/IMG_1247.HEIC",
+      "source_sha256": "ac16c50d3eae9371f73cfcb71775f737af006956a3a9fbbc27c4f4fcd1eb5484",
+      "photo_index": 2,
+      "crop": {
+        "photo_quad": [
+          [
+            100.88386535644531,
+            126.38349914550781
+          ],
+          [
+            2558.51123046875,
+            57.15455627441406
+          ],
+          [
+            2606.3251953125,
+            1754.54052734375
+          ],
+          [
+            148.6975860595703,
+            1823.7694091796875
+          ]
+        ]
+      },
+      "extraction_tool": "production load/normalize/page_detect/perspective/photo_detect/photo_split; Pillow 180-degree rotation, JPEG quality 95/subsampling 0",
+      "extraction_config": {
+        "max_working_resolution": 4000,
+        "prefer_heic_for_iteration": true,
+        "page_detect_min_area_ratio": 0.3,
+        "page_detect_grabcut_iterations": 5,
+        "page_detect_grabcut_max_dimension": 800,
+        "glare_intensity_threshold": 0.85,
+        "glare_saturation_threshold": 0.15,
+        "glare_min_area": 100,
+        "glare_inpaint_radius": 5,
+        "glare_feather_radius": 5,
+        "glare_type": "auto",
+        "photo_detect_method": "contour",
+        "photo_detect_min_area_ratio": 0.02,
+        "photo_detect_max_count": 8,
+        "keystone_max_angle": 40.0,
+        "rotation_auto_correct_max": 15.0,
+        "dewarp_detection_threshold": 0.02,
+        "use_dewarp": false,
+        "color_restore_wp_percentile": 99.0,
+        "color_restore_wp_target": 0.96,
+        "color_restore_shadow_lift_max": 0.15,
+        "color_restore_brightness_ceiling": 0.75,
+        "color_restore_vibrance_boost": 0.25,
+        "sharpen_radius": 1.5,
+        "sharpen_amount": 0.5,
+        "output_format": "jpeg",
+        "jpeg_quality": 92,
+        "use_ai_quality_check": false,
+        "use_ai_fallback_detection": false,
+        "anthropic_model": "claude-sonnet-4-5-20250929",
+        "forced_detections": null,
+        "use_ai_orientation": false,
+        "ai_orientation_model": "claude-haiku-4-5-20251001",
+        "ai_orientation_min_confidence": "medium",
+        "forced_rotation_degrees": null,
+        "use_openai_glare_removal": false,
+        "openai_model": "gpt-image-1.5",
+        "openai_glare_quality": "high",
+        "openai_glare_input_fidelity": "high",
+        "forced_scene_description": null
+      },
+      "pipeline_revision": "022804f1bdd573da4d9b4ffb104f93ad281a9317",
+      "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+      "architecture": "arm64",
+      "orientation_input": "test-cropped-images/orientation/test-images-2-img_1247-02-rot180.jpg",
+      "orientation_sha256": "b01b4f64769496e9d2c8f20e67c9c9212fb11f02e4f3ac49cd9bf12355d03fbf",
+      "orientation_derivation": {
+        "source_crop_sha256": "aa95fff658d93653feb80aa4657e559aaa0970174a0614f9134eaf82f55aa094",
+        "rotation_clockwise_degrees": 180,
+        "jpeg_quality": 95,
+        "jpeg_subsampling": 0
+      },
+      "review_status": "approved_2026-10-28",
+      "expected_rotation_degrees": 180,
+      "expected_flip_horizontal": false,
+      "ambiguous": false,
+      "scene_description": "Water ride ending in water before a splash",
+      "distribution": "local-only",
+      "photo_position": "top",
+      "tags": [
+        "orientation",
+        "album-page",
+        "synthetic-rotation",
+        "water-ride"
+      ],
+      "notes": "Owner approved exact pre-rotated bytes and 180-degree labels on 2026-10-28; orientation-only fixture."
+    }
+  ]
+}
