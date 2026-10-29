@@ -23,5 +23,8 @@ the glare comparison had one preference per crop, so dev observation remains
 part of rollout review.
 
 This change is scoped to the dev deployment until separately merged from `dev`
-to `main`. The offline unit test suite was not run in this phase. The PR review
-and CI results will be recorded after implementation checks.
+to `main`. The offline suite was not run locally. The first PR CI run passed 69
+tests and found one eval-runner assertion that hard-coded the former Haiku 4.5
+production baseline. The assertion now reads the configured default model, so
+future model rollouts do not make that runner test stale. CI will rerun on the
+updated PR.
