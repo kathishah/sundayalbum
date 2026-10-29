@@ -182,7 +182,7 @@ def call_glare(
             model=model,
             image=("fixture.jpg", image_bytes, "image/jpeg"),
             prompt=prompt,
-            n=parameters.get("n", 1),
+            n=1,
             size=parameters["size"],
             quality=parameters["quality"],
             output_format="png",

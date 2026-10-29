@@ -165,6 +165,22 @@ def test_glare_arms_can_overlay_production_independently(tmp_path: Path) -> None
     )
 
 
+def test_glare_rejects_n_override_for_either_arm(tmp_path: Path) -> None:
+    config = tmp_path / "multiple-images.json"
+    config.write_text(
+        json.dumps({"schema_version": 1, "steps": {"glare_remove": {"parameters": {"n": 2}}}})
+    )
+    invalid = runner.load_override(config)
+    _, cases = runner.selected_cases(
+        "glare", ["test-images-img_two_pics_vertical_horizontal_normal-01"]
+    )
+    empty = {"schema_version": 1, "steps": {}}
+    with pytest.raises(ValueError, match="Unsupported request parameter override"):
+        runner.effective_config("glare", invalid, cases)
+    with pytest.raises(ValueError, match="Unsupported request parameter override"):
+        runner.effective_config("glare", empty, cases, invalid)
+
+
 def test_mocked_execution_uses_exact_crop_and_honors_cap(tmp_path: Path, monkeypatch) -> None:
     inputs = []
     monkeypatch.setattr(runner, "read_eval_keys", lambda *args: {"anthropic": "test-key"})
@@ -222,6 +238,57 @@ def test_mocked_execution_uses_exact_crop_and_honors_cap(tmp_path: Path, monkeyp
         limitations="No live calls",
     )
     assert (folder / "decision.json").exists()
+
+
+def test_retryable_failure_at_attempt_cap_remains_failed(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(runner, "read_eval_keys", lambda *args: {"anthropic": "test-key"})
+    monkeypatch.setattr(runner, "make_client", lambda *args: object())
+    monkeypatch.setattr(runner, "preflight", lambda *args: None)
+    monkeypatch.setattr(runner, "revision", lambda: "a" * 40)
+    calls = []
+    sleeps = []
+
+    def retryable_failure(client, *, image_bytes, model, prompt, parameters):
+        calls.append(model)
+        return {
+            "status": "failed",
+            "error_class": "provider_error",
+            "retryable": True,
+            "latency_ms": 1,
+            "usage": None,
+        }
+
+    monkeypatch.setattr(runner, "call_orientation", retryable_failure)
+    monkeypatch.setattr(runner.time, "sleep", sleeps.append)
+    args = arguments(
+        tmp_path,
+        max_retries=1,
+        execute=True,
+        max_attempts=1,
+        max_estimated_usd=0.08,
+        retention_url="https://example.org",
+    )
+    folder = runner.run(args)
+    assert folder is not None
+    failed_job = f"{args.cases[0]}__baseline__1"
+    not_run_job = f"{args.cases[0]}__candidate__1"
+    assert calls == ["claude-haiku-4-5-20251001"]
+    assert sleeps == []
+    assert sorted((folder / "attempts" / failed_job).glob("*.json")) == [
+        folder / "attempts" / failed_job / "001.json"
+    ]
+    assert len(RunStore(folder).attempts(failed_job)) == 1
+    assert RunStore(folder).result(failed_job)["status"] == "failed"
+    assert RunStore(folder).result(not_run_job)["status"] == "not_run"
+    summary = json.loads((folder / "summary.json").read_text())
+    assert summary["attempts_used"] == 1
+    assert summary["coverage"]["failed_jobs"] == 1
+    assert summary["coverage"]["not_run_jobs"] == 1
+    args.resume = True
+    args.retry_failed = True
+    runner.run(args)
+    assert len(calls) == 1
+    assert RunStore(folder).result(failed_job)["status"] == "failed"
 
 
 def test_failures_stay_recorded_until_retry_failed(tmp_path: Path, monkeypatch) -> None:

@@ -113,9 +113,10 @@ def test_glare_sends_exact_jpeg_and_preserves_decoded_output() -> None:
         image_bytes=b"original jpeg",
         model="gpt-image-1.5",
         prompt="prompt",
-        parameters={"size": "1024x1024", "quality": "high", "input_fidelity": "high"},
+        parameters={"size": "1024x1024", "quality": "high", "input_fidelity": "high", "n": 2},
     )
     assert sent["image"] == ("fixture.jpg", b"original jpeg", "image/jpeg")
+    assert sent["n"] == 1
     assert sent["input_fidelity"] == "high"
     assert result["output_bytes"] == output
     assert result["raw_response"]["data"][0]["b64_json"] == "[saved as raw-output.png]"

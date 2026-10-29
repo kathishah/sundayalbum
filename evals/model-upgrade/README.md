@@ -64,6 +64,8 @@ SDK clients are constructed with explicit keys and official base URLs; the
 runner does not use environment fallbacks. Run artifacts go to ignored
 `eval-runs/<run-id>/`. A stopped run can resume with `--resume --run-id <id>`;
 recorded failures are kept unless `--retry-failed` is supplied.
+When the attempt cap stops a retry, the attempted job remains `failed`; only
+jobs with no attempts are marked `not_run`.
 
 Orientation runs score raw and production confidence-gated rotation against
 reviewed labels. Ambiguous crops stay visible but do not enter accuracy
@@ -157,6 +159,8 @@ evaluation baseline and Sunburst as candidate:
 Both configs omit the unsupported `input_fidelity` parameter. This command is
 a dry run until the usual `--execute`, call cap, estimated spend limit, and
 retention URL are supplied.
+The glare harness requests exactly one image per call (`n=1`); an `n` override
+in either arm is rejected.
 
 The current OpenAI [pricing guide](https://developers.openai.com/api/docs/guides/image-generation)
 lists equal token rates for 2.5 Flare and Sunburst; Flare is the tie-break

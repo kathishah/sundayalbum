@@ -166,3 +166,14 @@ labelled rather than blinded preferences, and no returned model ID in the
 OpenAI image-edit responses. This is an evaluation decision only. Production
 still uses `gpt-image-1.5`; promotion requires a separate production change
 and review on the feature branch. No merge or deployment occurred.
+
+## Code review safety fixes
+
+The owner approved two review findings for the evaluation harness. Glare
+overrides now reject `n`, and the provider adapter always sends `n=1`, so the
+saved output and one-image planning estimate correspond to the request.
+When a retryable failure reaches the attempt cap, the attempted job keeps its
+`failed` status and saved attempt; only jobs never attempted become `not_run`.
+The runner also skips retry sleep once the cap is reached. Offline tests cover
+both override arms, the fixed provider request, cap behavior, saved attempts,
+and resume behavior. No paid evaluation calls were made for these fixes.

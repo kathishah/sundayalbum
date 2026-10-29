@@ -107,7 +107,7 @@ def effective_config(
     allowed_params = (
         {"max_tokens", "thinking", "output_config"}
         if task == "orientation"
-        else {"quality", "input_fidelity", "n", "size"}
+        else {"quality", "input_fidelity", "size"}
     )
 
     def apply_overlay(arm_override: dict) -> dict:
@@ -313,17 +313,18 @@ def run(args: argparse.Namespace) -> Path | None:
         image_bytes = path.read_bytes()
         for _ in range(args.max_retries + 1):
             if used >= args.max_attempts:
-                store.save_result(
-                    key,
-                    {
-                        "status": "not_run",
-                        "reason": "attempt_cap",
-                        "case_id": row["case_id"],
-                        "arm": arm,
-                        "repeat": repeat,
-                        "input_sha256": row[f"{args.task}_sha256"],
-                    },
-                )
+                if not store.attempts(key):
+                    store.save_result(
+                        key,
+                        {
+                            "status": "not_run",
+                            "reason": "attempt_cap",
+                            "case_id": row["case_id"],
+                            "arm": arm,
+                            "repeat": repeat,
+                            "input_sha256": row[f"{args.task}_sha256"],
+                        },
+                    )
                 break
             attempt = len(store.attempts(key)) + 1
             parameters = config.get("parameters_by_case", {}).get(
@@ -363,6 +364,8 @@ def run(args: argparse.Namespace) -> Path | None:
             store.save_attempt(key, attempt, result)
             store.save_result(key, result)
             if result["status"] == "success" or not result.get("retryable"):
+                break
+            if used >= args.max_attempts:
                 break
             time.sleep(min(2**attempt, 10))
     if args.task == "glare":
