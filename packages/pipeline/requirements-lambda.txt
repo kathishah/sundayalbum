@@ -13,7 +13,7 @@ pillow-heif>=0.18.0
 
 # AI APIs
 anthropic>=0.125.0
-openai>=1.47.1
+openai>=1.109.1
 
 # AWS SDK (pre-installed in Lambda runtime but pin for container builds)
 boto3>=1.43.118
