@@ -9,7 +9,7 @@ scipy>=1.13.1
 Pillow>=10.4.0
 
 # HEIC support — pillow-heif ships bundled libheif wheels (no system package needed)
-pillow-heif>=0.18.0
+pillow-heif>=0.22.0
 
 # AI APIs
 anthropic>=0.125.0
