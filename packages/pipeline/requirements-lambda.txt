@@ -17,4 +17,4 @@ openai>=1.47.1
 
 # AWS SDK (pre-installed in Lambda runtime but pin for container builds)
 boto3>=1.43.118
-botocore>=1.35.0
+botocore>=1.43.122
