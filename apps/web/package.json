@@ -15,21 +15,21 @@
   "dependencies": {
     "clsx": "^2",
     "framer-motion": "^12",
-    "next": "15.5.28",
+    "next": "15.5.29",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "zustand": "^5"
   },
   "devDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.1156.0",
-    "@aws-sdk/client-sfn": "^3.1156.0",
-    "@playwright/test": "^1.64.1",
+    "@aws-sdk/client-dynamodb": "^3.1163.0",
+    "@aws-sdk/client-sfn": "^3.1163.0",
+    "@playwright/test": "^1.65.0",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10",
     "eslint": "^8",
-    "eslint-config-next": "15.5.28",
+    "eslint-config-next": "15.5.29",
     "postcss": "^8",
     "tailwindcss": "^3",
     "typescript": "^5"
